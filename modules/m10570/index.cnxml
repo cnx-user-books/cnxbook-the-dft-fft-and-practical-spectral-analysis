@@ -1,0 +1,777 @@
+<document xmlns="http://cnx.rice.edu/cnxml" xmlns:m="http://www.w3.org/1998/Math/MathML" xmlns:md="http://cnx.rice.edu/mdml">
+
+  <title>Short Time Fourier Transform</title>
+  <metadata><md:content-id>undefined</md:content-id><md:title/><md:uuid>3e616316-822e-4d63-8ec2-11a31ed932fe</md:uuid>
+</metadata>
+
+  <content>
+    <section id="sec1">
+      <title>Short Time Fourier Transform</title>
+      
+      <para id="para1">
+	The Fourier transforms (FT, DTFT, DFT,
+	<foreign>etc.</foreign>) do not clearly indicate how the
+	frequency content of a signal changes over time.  </para>
+      <para id="para2">
+	That information is hidden in the phase - it is not
+	revealed by the plot of the magnitude of the spectrum.
+	<note type="Note" id="idm10001408"><label>Note</label>
+	  To see how the frequency content of a signal changes over
+	  time, we can cut the signal into blocks and compute the
+	  spectrum of each block.
+	</note>
+	To improve the result,
+	<list id="list1" list-type="enumerated">
+	  <item>blocks are overlapping</item>
+	  <item>
+	    each block is multiplied by a window that is tapered
+	    at its endpoints.
+	  </item>
+	</list>
+	Several parameters must be chosen:
+	<list id="list2">
+	  <item>Block length, <m:math><m:ci>R</m:ci></m:math>.</item>
+	  <item>The type of window.</item>
+	  <item>
+	    Amount of overlap between blocks. (<link target-id="overlapfig" strength="3"/>)
+	  </item>
+	  <item>Amount of zero padding, if any.</item>
+	</list>
+      </para>
+
+      <figure orient="vertical" id="overlapfig">
+	<title>STFT: Overlap Parameter</title>
+	<media id="idm2888704" alt=""><image src="../../media/stftfigs.png" mime-type="image/png"/></media>
+      </figure>
+
+      <para id="para3">
+	The short-time Fourier transform is defined as
+
+	<equation id="stfteq">
+	  <m:math>
+	    <m:apply>
+	      <m:eq/>
+	      <m:apply>
+		<m:ci type="fn">X</m:ci>
+		<m:ci>ω</m:ci>
+		<m:ci>m</m:ci>
+	      </m:apply>
+	      <m:apply>
+		<m:ci><m:mo>≔</m:mo></m:ci>
+		<m:apply>
+		  <m:ci type="fn">STFT</m:ci>
+		  <m:apply>
+		    <m:ci type="fn">x</m:ci>
+		    <m:ci>n</m:ci>
+		  </m:apply>
+		</m:apply>
+		<m:apply>
+		  <m:ci type="fn">DTFT</m:ci>
+		  <m:apply>
+		    <m:times/>
+		    <m:apply>
+		      <m:ci type="fn">x</m:ci>
+		      <m:apply>
+			<m:minus/>
+			<m:ci>n</m:ci>
+			<m:ci>m</m:ci>
+		      </m:apply>
+		    </m:apply>
+		    <m:apply>
+		      <m:ci type="fn">w</m:ci>
+		      <m:ci>n</m:ci>
+		  </m:apply>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+
+	      <m:apply>
+		<m:sum/>
+		<m:bvar>
+		  <m:ci>n</m:ci>
+		</m:bvar>
+		<m:lowlimit>
+		  <m:apply>
+		    <m:minus/>
+		    <m:infinity/>
+		  </m:apply>
+		</m:lowlimit>
+		<m:uplimit>
+		  <m:infinity/>
+		</m:uplimit>
+		<m:apply>
+		  <m:times/>
+		  <m:apply>
+		    <m:ci type="fn">x</m:ci>
+		    <m:apply>
+		      <m:minus/>
+		      <m:ci>n</m:ci>
+		      <m:ci>m</m:ci>
+		    </m:apply>
+		  </m:apply>
+		  <m:apply>
+		    <m:ci type="fn">w</m:ci>
+		    <m:ci>n</m:ci>
+		  </m:apply>
+		  <m:apply>
+		    <m:exp/>
+		    <m:apply>
+		      <m:minus/>
+		      <m:apply>
+			<m:times/>
+			<m:imaginaryi/>
+			<m:ci>ω</m:ci>
+			<m:ci>n</m:ci>
+		      </m:apply>
+		    </m:apply>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+	      <m:apply>
+		<m:sum/>
+		<m:bvar>
+		  <m:ci>n</m:ci>
+		</m:bvar>
+		<m:lowlimit>
+		  <m:cn>0</m:cn>
+		</m:lowlimit>
+		<m:uplimit>
+		  <m:apply>
+		    <m:minus/>
+		    <m:ci>R</m:ci>
+		    <m:cn>1</m:cn>
+		  </m:apply>
+		</m:uplimit>
+		<m:apply>
+		  <m:times/>
+		  <m:apply>
+		    <m:ci type="fn">x</m:ci>
+		    <m:apply>
+		      <m:minus/>
+		      <m:ci>n</m:ci>
+		      <m:ci>m</m:ci>
+		    </m:apply>
+		  </m:apply>
+		  <m:apply>
+		    <m:ci type="fn">w</m:ci>
+		    <m:ci>n</m:ci>
+		  </m:apply>
+		  <m:apply>
+		    <m:exp/>
+		    <m:apply>
+		      <m:minus/>
+		      <m:apply>
+			<m:times/>
+			<m:imaginaryi/>
+			<m:ci>ω</m:ci>
+			<m:ci>n</m:ci>
+		      </m:apply>
+		    </m:apply>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+	    </m:apply>
+	  </m:math>
+	</equation>
+	where 
+	<m:math display="inline">
+	  <m:apply>
+	    <m:ci type="fn">w</m:ci>
+	    <m:ci>n</m:ci>
+	  </m:apply>
+	</m:math>
+	is the window function of length
+	<m:math><m:ci>R</m:ci></m:math>.
+
+	<list id="stftlist2" list-type="enumerated">
+	  <item>
+	    The STFT of a signal 
+	    <m:math>
+	      <m:apply>
+		<m:ci type="fn">x</m:ci>
+		<m:ci>n</m:ci>
+	      </m:apply>
+	    </m:math> is a function of two variables: time and
+	    frequency.
+	  </item>
+	  <item>
+	    The block length is determined by the support of the
+	    window function
+	    <m:math>
+	      <m:apply>
+		<m:ci type="fn">w</m:ci>
+		<m:ci>n</m:ci>
+	      </m:apply>
+	    </m:math>.
+	  </item>
+	  <item>
+	    A graphical display of the magnitude of the STFT,
+	    <m:math>
+	      <m:apply>
+		<m:abs/>
+		<m:apply>
+		  <m:ci type="fn">X</m:ci>
+		  <m:ci>ω</m:ci>
+		  <m:ci>m</m:ci>
+		</m:apply>
+	      </m:apply>
+	    </m:math>, is called the <term>spectrogram</term> of the
+	    signal.  It is often used in speech processing.
+	  </item>
+	  <item>
+	    The STFT of a signal is invertible.
+	  </item>
+	  <item>
+	    One can choose the block length.  A long block length will
+	    provide higher frequency resolution (because the main-lobe
+	    of the window function will be narrow).  A short block
+	    length will provide higher time resolution because less
+	    averaging across samples is performed for each STFT value.
+	  </item>
+	  <item>
+	    A <term>narrow-band spectrogram</term> is one computed
+	    using a relatively long block length
+	    <m:math><m:ci>R</m:ci></m:math>, (long window function).
+	  </item>
+	  <item>
+	    A <term>wide-band spectrogram</term> is one computed using
+	    a relatively short block length
+	    <m:math><m:ci>R</m:ci></m:math>, (short window function).
+	  </item>
+	</list>
+      </para>
+
+      <section id="sec2">
+	<title>Sampled STFT</title>
+	
+	<para id="sttftpata2">
+	  To numerically evaluate the STFT, we sample the frequency
+	  axis <m:math><m:ci>ω</m:ci></m:math> in
+	  <m:math><m:ci>N</m:ci></m:math> equally spaced samples from
+	  <m:math>
+	    <m:apply>
+	      <m:eq/>
+	      <m:ci>ω</m:ci>
+	      <m:cn>0</m:cn>
+	    </m:apply>
+	  </m:math> to
+	  <m:math>
+	    <m:apply>
+	      <m:eq/>
+	      <m:ci>ω</m:ci>
+	      <m:apply>
+		<m:times/>
+		<m:ci>2</m:ci>
+		<m:pi/>
+	      </m:apply>
+	    </m:apply>
+	  </m:math>.
+
+	  <equation id="stfteq1">
+	    <m:math>
+	      <m:apply>
+		<m:forall/>
+		<m:bvar><m:ci>k</m:ci></m:bvar>
+		<m:condition>
+		  <m:apply>
+		    <m:leq/>
+		    <m:cn>0</m:cn>
+		    <m:apply>
+		      <m:leq/>
+		      <m:ci>k</m:ci>
+		      <m:apply>
+			<m:minus/>
+			<m:ci>N</m:ci>
+			<m:cn>1</m:cn>
+		      </m:apply>
+		    </m:apply>
+		  </m:apply>
+		</m:condition>
+		<m:apply>
+		  <m:eq/>
+		  <m:ci>
+		    <m:msub>
+		      <m:mi>ω</m:mi>
+		      <m:mi>k</m:mi>
+		    </m:msub>
+		  </m:ci>
+		  <m:apply>
+		    <m:times/>
+		    <m:apply>
+		      <m:divide/>
+		      <m:apply>
+			<m:times/>
+			<m:cn>2</m:cn>
+			<m:pi/>
+		      </m:apply>
+		      <m:ci>N</m:ci>
+		    </m:apply>
+		    <m:ci>k</m:ci>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+	    </m:math>
+	  </equation>
+	  We then have the discrete STFT,
+
+	  <equation id="stfteq3">
+	    <m:math>
+	      <m:apply>
+		<m:eq/>
+		<m:apply>
+		  <m:ci><m:mo>≔</m:mo></m:ci>
+		  <m:apply>
+		    <m:ci type="fn"><m:msup>
+			<m:mi>X</m:mi>
+			<m:mi>d</m:mi>
+		      </m:msup></m:ci>
+		    <m:ci>k</m:ci>
+		    <m:ci>m</m:ci>
+		  </m:apply>
+		  <m:apply>
+		    <m:ci type="fn">X</m:ci>
+		    <m:apply>
+		      <m:times/>
+		      <m:apply>
+			<m:divide/>
+			<m:apply>
+			  <m:times/>
+			  <m:cn>2</m:cn>
+			  <m:pi/>
+			</m:apply>
+			<m:ci>N</m:ci>
+		      </m:apply>
+		      <m:ci>k</m:ci>
+		    </m:apply>
+		    <m:ci>m</m:ci>
+		  </m:apply>
+		</m:apply>
+
+		<m:apply>
+		  <m:sum/>
+		  <m:bvar>
+		    <m:ci>n</m:ci>
+		  </m:bvar>
+		  <m:lowlimit>
+		    <m:cn>0</m:cn>
+		  </m:lowlimit>
+		  <m:uplimit>
+		    <m:apply>
+		      <m:minus/>
+		      <m:ci>R</m:ci>
+		      <m:cn>1</m:cn>
+		    </m:apply>
+		  </m:uplimit>
+		  <m:apply>
+		    <m:times/>
+		    <m:apply>
+		      <m:ci type="fn">x</m:ci>
+		      <m:apply>
+			<m:minus/>
+			<m:ci>n</m:ci>
+			<m:ci>m</m:ci>
+		      </m:apply>
+		    </m:apply>
+		    <m:apply>
+		      <m:ci type="fn">w</m:ci>
+		      <m:ci>n</m:ci>
+		    </m:apply>
+		    <m:apply>
+		      <m:exp/>
+		      <m:apply>
+			<m:minus/>
+			<m:apply>
+			  <m:times/>
+			  <m:imaginaryi/>
+			  <m:ci>ω</m:ci>
+			  <m:ci>n</m:ci>
+			</m:apply>
+		      </m:apply>
+		    </m:apply>
+		  </m:apply>
+		</m:apply>
+		<m:apply>
+		  <m:sum/>
+		  <m:bvar>
+		    <m:ci>n</m:ci>
+		  </m:bvar>
+		  <m:lowlimit>
+		    <m:cn>0</m:cn>
+		  </m:lowlimit>
+		  <m:uplimit>
+		    <m:apply>
+		      <m:minus/>
+		      <m:ci>R</m:ci>
+		      <m:cn>1</m:cn>
+		    </m:apply>
+		  </m:uplimit>
+		  <m:apply>
+		    <m:times/>
+		    <m:apply>
+		      <m:ci type="fn">x</m:ci>
+		      <m:apply>
+			<m:minus/>
+			<m:ci>n</m:ci>
+			<m:ci>m</m:ci>
+		      </m:apply>
+		    </m:apply>
+		    <m:apply>
+		      <m:ci type="fn">w</m:ci>
+		      <m:ci>n</m:ci>
+		    </m:apply>
+		    <m:apply>
+		      <m:power/>
+		      <m:ci>
+			<m:msub>
+			  <m:mi>W</m:mi>
+			  <m:mi>N</m:mi>
+			</m:msub>
+		      </m:ci>
+		      <m:apply>
+			<m:minus/>
+			<m:apply>
+			  <m:times/>
+			  <m:ci>k</m:ci>
+			  <m:ci>n</m:ci>
+			</m:apply>
+		      </m:apply>
+		    </m:apply>
+		  </m:apply>
+		</m:apply>
+		<m:apply>
+		  <m:ci type="fn">
+		    <m:msub>
+		      <m:mi>DFT</m:mi>
+		      <m:mi>N</m:mi>
+		    </m:msub>
+		  </m:ci>
+		  <m:apply>
+		    <m:csymbol definitionURL="http://cnx.rice.edu/cd/cnxmath.ocd#evaluateat"/>
+		    <m:bvar><m:ci>n</m:ci></m:bvar>
+		    <m:interval>
+		      <m:cn>0</m:cn>
+		      <m:apply>
+			<m:minus/>
+			<m:ci>R</m:ci>
+			<m:cn>1</m:cn>
+		      </m:apply>
+		    </m:interval>
+		    <m:apply>
+		      <m:times/>
+		      <m:apply>
+			<m:ci type="fn">x</m:ci>
+			<m:apply>
+			  <m:minus/>
+			  <m:ci>n</m:ci>
+			  <m:ci>m</m:ci>
+			</m:apply>
+		      </m:apply>
+		      <m:apply>
+			<m:ci type="fn">w</m:ci>
+			<m:ci>n</m:ci>
+		      </m:apply>
+		    </m:apply>
+		  </m:apply>
+		  <m:mtext>0,…0</m:mtext>
+		</m:apply>
+	      </m:apply>
+	    </m:math>
+	  </equation> where
+	  <m:math><m:mtext>0,…0</m:mtext></m:math> is
+	  <m:math><m:apply><m:minus/><m:ci>N</m:ci><m:ci>R</m:ci>
+	    </m:apply></m:math>.
+	</para>
+
+	<para id="parastft4">
+	  In this definition, the overlap between adjacent blocks is
+	  <m:math>
+	    <m:apply>
+	      <m:minus/>
+	      <m:ci>R</m:ci>
+	      <m:cn>1</m:cn>
+	    </m:apply>
+	  </m:math>. The signal is shifted along the window one sample
+	  at a time. That generates more points than is usually
+	  needed, so we also sample the STFT along the time
+	  direction. That means we usually evaluate
+
+	  <m:math display="block">
+	    <m:apply>
+	      <m:ci type="fn">
+		<m:msup>
+		  <m:mi>X</m:mi>
+		  <m:mi>d</m:mi>
+		</m:msup>
+	      </m:ci>
+	      <m:ci>k</m:ci>
+	      <m:apply>
+		<m:times/>
+		<m:ci>L</m:ci>
+		<m:ci>m</m:ci>
+	      </m:apply>
+	    </m:apply>
+	  </m:math> where <m:math><m:ci>L</m:ci></m:math> is the
+	  time-skip. The relation between the time-skip, the number of
+	  overlapping samples, and the block length is
+	  
+	  <m:math display="block">
+	    <m:apply>
+	      <m:eq/>
+	      <m:ci>Overlap</m:ci>
+	      <m:apply>
+		<m:minus/>
+		<m:ci>R</m:ci>
+		<m:ci>L</m:ci>
+	      </m:apply>
+	    </m:apply>
+	  </m:math>
+	</para>
+
+	<exercise id="exer1">
+	  <problem id="idm2202224">
+	    <para id="exer1para">
+	      Match each signal to its spectrogram in <link target-id="exerfigset" strength="3"/>.
+	    </para>
+	    <figure id="exerfigset" orient="vertical">
+	      <subfigure id="subfigexer1">
+		<media id="idm9888496" alt=""><image src="../../media/sgrams1.png" mime-type="image/png"/></media>
+	      </subfigure>
+	      <subfigure id="idp225072">
+		<media id="idm8806368" alt=""><image src="../../media/sgrams2.png" mime-type="image/png"/></media>
+	      </subfigure>
+	    </figure>
+	  </problem>
+	  <solution id="idm1463664">
+	    <para id="parasolution">
+	    </para>
+	  </solution>
+	</exercise>
+      </section>
+
+      <section id="specexamplesec">
+	<title>Spectrogram Example</title>
+	
+	<figure id="specxfig">
+	  <media id="idm1635856" alt=""><image src="../../media/stft_x.png" mime-type="image/png"/></media>
+	</figure>
+	
+	<figure id="stft256fig">
+	  <media id="idp969392" alt=""><image src="../../media/stft_256.png" mime-type="image/png"/></media>
+	</figure>
+
+	<para id="codeblockpara">
+	  The matlab program for producing the figures above (<link target-id="specxfig" strength="3"/> and <link target-id="stft256fig" strength="3"/>).
+	</para>
+
+	<code display="block" id="stftcode">
+	  
+
+	  % LOAD DATA
+	  load mtlb;
+	  x = mtlb;
+
+	  figure(1), clf
+	  plot(0:4000,x)
+	  xlabel('n')
+	  ylabel('x(n)')
+
+	  % SET PARAMETERS
+	  R = 256;               % R: block length
+	  window = hamming(R);   % window function of length R
+	  N = 512;               % N: frequency discretization
+	  L = 35;                % L: time lapse between blocks
+	  fs = 7418;             % fs: sampling frequency
+	  overlap = R - L;
+
+	  % COMPUTE SPECTROGRAM
+	  [B,f,t] = specgram(x,N,fs,window,overlap);
+
+	  % MAKE PLOT
+	  figure(2), clf
+	  imagesc(t,f,log10(abs(B)));
+	  colormap('jet')
+	  axis xy 
+	  xlabel('time')
+	  ylabel('frequency')
+	  title('SPECTROGRAM, R = 256')
+
+	  
+	</code>
+      </section>
+
+      <section id="secwinlengthr">
+	<title>Effect of window length R</title>
+
+	<figure id="narrowband">
+	  <title>Narrow-band spectrogram: better frequency
+	    resolution</title>
+	  <media id="idp4267296" alt=""><image src="../../media/stft_512.png" mime-type="image/png"/></media>
+	</figure>
+
+	<figure id="wideband">
+	  <title>Wide-band spectrogram: better time resolution
+	  </title>
+	  <media id="idp4597984" alt=""><image src="../../media/stft_128.png" mime-type="image/png"/></media>
+	</figure>
+
+	<para id="specpara">
+	  Here is another example to illustrate the frequency/time
+	  resolution trade-off (See figures - <link target-id="narrowband" strength="3"/>, <link target-id="wideband" strength="3"/>, and <link target-id="tradeoff" strength="3"/>).
+	</para>
+	
+	<figure id="tradeoff" orient="vertical">
+	  <title>Effect of Window Length R</title>
+	  <subfigure id="topfig">
+	    <media id="idm9750560" alt=""><image src="../../media/sgramsR_1.png" mime-type="image/png"/></media>
+	  </subfigure>
+	  <subfigure id="bottomfig">
+	    <media id="idm9303536" alt=""><image src="../../media/sgramsR_2.png" mime-type="image/png"/></media>
+	  </subfigure>
+	</figure>
+      </section>
+
+      <section id="secefectn">
+	<title>Effect of L and N</title>
+	
+	<para id="effectpara">
+	  A spectrogram is computed with different parameters:
+
+	  <m:math display="block">
+	    <m:apply>
+	      <m:in/>
+	      <m:ci>L</m:ci>
+	      <m:set>
+		<m:cn>1</m:cn>
+		<m:cn>10</m:cn>
+	      </m:set>
+	    </m:apply>
+	  </m:math>
+
+	  <m:math display="block">
+	    <m:apply>
+	      <m:in/>
+	      <m:ci>N</m:ci>
+	      <m:set>
+		<m:cn>32</m:cn>
+		<m:cn>256</m:cn>
+	      </m:set>
+	    </m:apply>
+	  </m:math>
+
+	  <list id="landnlist">
+	    <item>
+	      <m:math><m:ci>L</m:ci></m:math> = time lapse between
+	      blocks.
+	    </item>
+	    <item>
+	      <m:math><m:ci>N</m:ci></m:math> = FFT length (Each
+	      block is zero-padded to length
+	      <m:math><m:ci>N</m:ci></m:math>.)
+	    </item>
+	  </list>
+	  
+	  In each case, the block length is 30 samples.
+	</para>
+
+	<exercise id="fourspecs">
+	  <problem id="idm1185824">
+	    <para id="paraprob2">
+	      For each of the four spectrograms in <link target-id="prob2figs" strength="3"/> can you tell what
+	      <m:math><m:ci>L</m:ci></m:math> and
+	      <m:math><m:ci>N</m:ci></m:math> are?
+	    </para>
+	    <figure id="prob2figs" orient="vertical">
+	      <subfigure id="subfig22">
+		<media id="idm1563344" alt=""><image src="../../media/sgramsLN_1.png" mime-type="image/png"/></media>
+	      </subfigure>
+	      <subfigure id="subfig23">
+		<media id="idp4212960" alt=""><image src="../../media/sgramsLN_2.png" mime-type="image/png"/></media>
+	      </subfigure>
+	    </figure>
+	  </problem>
+
+	  <solution id="idm1888016">
+	    <para id="parasol2">
+	    </para>
+	  </solution>
+	</exercise>
+	
+	<para id="blah">
+	  <m:math><m:ci>L</m:ci></m:math> and
+	  <m:math><m:ci>N</m:ci></m:math> do not effect the time
+	  resolution or the frequency resolution. They only affect the
+	  'pixelation'.
+	</para>
+      </section>
+
+      <section id="effectrlsec">
+	<title>Effect of R and L</title>
+	
+	<para id="effectrlpara">
+	  Shown below are four spectrograms of the same signal. Each
+	  spectrogram is computed using a different set of parameters.
+
+	  <m:math display="block">
+	    <m:apply>
+	      <m:in/>
+	      <m:ci>R</m:ci>
+	      <m:set>
+		<m:cn>120</m:cn>
+		<m:cn>256</m:cn>
+		<m:cn>1024</m:cn>
+	      </m:set>
+	    </m:apply>
+	  </m:math>
+
+	  <m:math display="block">
+	    <m:apply>
+	      <m:in/>
+	      <m:ci>L</m:ci>
+	      <m:set>
+		<m:cn>35</m:cn>
+		<m:cn>250</m:cn>
+	      </m:set>
+	    </m:apply>
+	  </m:math>
+
+	  where
+	  <list id="listrl">
+	    <item><m:math><m:ci>R</m:ci></m:math> = block length
+	    </item>
+	    <item><m:math><m:ci>L</m:ci></m:math> = time lapse between
+	    blocks.</item>
+	  </list>
+	</para>
+	<exercise id="exerLR">
+	  <problem id="idm1385648">
+	    <para id="problemLR">
+	      For each of the four spectrograms in <link target-id="LRfigure" strength="3"/>, match the above values
+	      of <m:math><m:ci>L</m:ci></m:math> and
+	      <m:math><m:ci>R</m:ci></m:math>.
+	    </para>
+	    <figure id="LRfigure">
+	      <media id="idm382064" alt=""><image src="../../media/stft.png" mime-type="image/png"/></media>
+	    </figure>
+	  </problem>
+	  <solution id="idm3054064">
+	    <para id="solutionRL">
+	    </para>
+	  </solution>
+	</exercise>
+
+	<para id="problemaddition">
+	  If you like, you may listen to this signal with the
+	  <code>soundsc</code> command; the data is in the
+	  file: <code>stft_data.m</code>. <link target-id="stftsignalfig" strength="3">Here</link> is a figure
+	  of the signal.
+	</para>
+	
+	<figure id="stftsignalfig">
+	  <media id="idp514560" alt=""><image src="../../media/stft_signal.png" mime-type="image/png"/></media>
+	</figure>
+
+      </section>
+    </section>      
+  </content>
+  
+</document>

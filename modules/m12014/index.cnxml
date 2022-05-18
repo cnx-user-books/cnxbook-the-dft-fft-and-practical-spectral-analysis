@@ -1,0 +1,537 @@
+<document xmlns="http://cnx.rice.edu/cnxml" xmlns:m="http://www.w3.org/1998/Math/MathML" xmlns:md="http://cnx.rice.edu/mdml">
+  <title>Classical Statistical Spectral Estimation</title>
+  <metadata><md:content-id>undefined</md:content-id><md:title/><md:uuid>73139376-d884-4c50-ae2b-cfca8498b4a8</md:uuid>
+</metadata>
+
+  <content>
+    <para id="intro">Many signals are either partly or wholly stochastic, or random.
+      Important examples include human speech, vibration in machines,
+      and <link url="http://en.wikipedia.org/wiki/Cdma">CDMA</link> communication signals.
+      Given the ever-present noise in electronic systems, it can be argued
+      that almost <emphasis>all</emphasis> signals are at least partly stochastic.
+      Such signals may have a distinct <emphasis>average</emphasis> spectral
+      structure that reveals important information (such as for speech
+      recognition or early detection of damage in machinery).
+      Spectrum analysis of any single block of data using 
+      <link document="m12032">window-based
+      deterministic spectrum analysis</link>, however, produces
+      a random spectrum that may be difficult to interpret.
+      For such situations, the classical statistical spectrum estimation
+      methods described in this module can be used.
+    </para>
+    <para id="para2">The goal in classical statistical spectrum analysis is to estimate
+        <m:math>
+	  <m:apply>
+	    <m:csymbol definitionURL="http://cnx.rice.edu/cd/cnxmath.ocd#expectedvalue"/>
+	    <m:apply>
+	      <m:power/>
+	      <m:apply>
+		<m:abs/>
+		<m:apply>
+		  <m:ci type="fn">X</m:ci>
+		  <m:ci>ω</m:ci>
+		</m:apply>
+	      </m:apply>
+	      <m:cn>2</m:cn>
+	    </m:apply>
+	  </m:apply>
+	</m:math>,
+      the <term>power spectral density (PSD)</term> across frequency
+      of the stochastic signal.
+      That is, the goal is to find the expected (mean, or average)
+      energy density of the signal as a function of frequency.
+      (For zero-mean signals, this equals the variance of each frequency sample.)
+      Since the spectrum of each block of signal samples is itself random,
+      we must average the squared spectral magnitudes over a number of blocks
+      of data to find the mean.
+    There are two main classical approaches,
+    the <link target-id="sect.periodogram">periodogram</link>
+    and <link target-id="sect.autocorr">auto-correlation</link> methods.</para>
+    
+    <section id="sect.periodogram">
+      <title>Periodogram method</title>
+      <para id="perodogram">The periodogram method divides the signal into a number of shorter
+        (and often overlapped) blocks of data, computes the squared magnitude
+        of the <link document="m12032" target-id="windowing">windowed</link>
+        (and usually <link document="m12032" target-id="zeropad">zero-padded</link>)
+        <link document="m12032" target-id="DFTequation">DFT</link>,
+        <m:math>
+		    <m:apply>
+		      <m:ci type="fn">
+			<m:msub>
+			  <m:mi>X</m:mi>
+			  <m:mi>i</m:mi>
+			</m:msub>
+		      </m:ci>
+		      <m:ci>
+			<m:msub>
+			  <m:mi>ω</m:mi>
+			  <m:mi>k</m:mi>
+			</m:msub>
+		      </m:ci>
+		    </m:apply>
+        </m:math>,
+        of each block,
+        and averages them to estimate the power spectral density.
+        The squared magnitudes of the DFTs of <m:math><m:ci>L</m:ci></m:math> possibly overlapped
+        length-<m:math><m:ci>N</m:ci></m:math> windowed blocks
+        of signal (each probably with <link document="m12032" target-id="zeropad">zero-padding</link>) are averaged to estimate the
+        power spectral density:
+ 
+	<m:math display="block">
+	  <m:apply>
+	    <m:eq/>
+	    <m:apply>
+	      <m:csymbol definitionURL="http://cnx.rice.edu/cd/cnxmath.ocd#estimate"/>
+	      <m:apply>
+		<m:ci type="fn">X</m:ci>
+		<m:ci>
+		  <m:msub>
+		    <m:mi>ω</m:mi>
+		    <m:mi>k</m:mi>
+		  </m:msub>
+		</m:ci>
+	      </m:apply>
+	    </m:apply>
+	    <m:apply>
+	      <m:times/>
+	      <m:apply>
+		<m:divide/>
+		<m:cn>1</m:cn>
+		<m:ci>L</m:ci>
+	      </m:apply>
+	      <m:apply>
+		<m:sum/>
+		<m:bvar>
+		  <m:ci>i</m:ci>
+		</m:bvar>
+		<m:uplimit>
+		  <m:ci>L</m:ci>
+		</m:uplimit>
+		<m:lowlimit>
+		  <m:cn>1</m:cn>
+		</m:lowlimit>
+		<m:apply>
+		  <m:power/>
+		  <m:apply>
+		    <m:abs/>
+		    <m:apply>
+		      <m:ci type="fn">
+			<m:msub>
+			  <m:mi>X</m:mi>
+			  <m:mi>i</m:mi>
+			</m:msub>
+		      </m:ci>
+		      <m:ci>
+			<m:msub>
+			  <m:mi>ω</m:mi>
+			  <m:mi>k</m:mi>
+			</m:msub>
+		      </m:ci>
+		    </m:apply>
+		  </m:apply>
+		  <m:cn>2</m:cn>
+		</m:apply>
+	      </m:apply>
+	    </m:apply>
+	  </m:apply>
+	</m:math>
+        For a fixed <emphasis>total</emphasis> number of samples,
+        this introduces a tradeoff: Larger individual data blocks provides
+        better frequency resolution due to the use of a longer window,
+        but it means there are less blocks to average, so the estimate
+        has higher variance and appears more noisy.
+        The best tradeoff depends on the application.
+        Overlapping blocks by a factor of two to four increases the number
+        of averages and reduces the variance, but since the same data is being
+        reused, still more overlapping does not further reduce the variance.
+        As with any <link document="m12032" target-id="windowing">window-based spectrum estimation</link> procedure, the window
+        function introduces broadening and sidelobes into the power spectrum
+        estimate.
+        That is, the periodogram produces an estimate of the <emphasis>windowed</emphasis> spectrum
+	<m:math>
+	  <m:apply>
+	    <m:eq/>
+	    <m:apply>
+	      <m:csymbol definitionURL="http://cnx.rice.edu/cd/cnxmath.ocd#estimate"/>
+	      <m:apply>
+		<m:ci type="fn">X</m:ci>
+		<m:ci>ω</m:ci>
+	      </m:apply>
+	    </m:apply>
+	    <m:apply>
+	      <m:csymbol definitionURL="http://cnx.rice.edu/cd/cnxmath.ocd#expectedvalue"/>
+	      <m:apply>
+		<m:power/>
+		<m:apply>
+		  <m:abs/>
+		  <m:apply>
+		    <m:csymbol definitionURL="http://cnx.rice.edu/cd/cnxmath.ocd#convolve"/>
+		    <m:apply>
+		      <m:ci type="fn">X</m:ci>
+		      <m:ci>ω</m:ci>
+		    </m:apply>
+		    <m:apply>
+		      <m:ci>
+			<m:msub>
+			  <m:mi>W</m:mi>
+			  <m:mi>M</m:mi>
+			</m:msub>
+		      </m:ci>
+		    </m:apply>
+		  </m:apply>
+		</m:apply>
+		<m:cn>2</m:cn>
+	      </m:apply>
+	    </m:apply>
+	  </m:apply>
+	</m:math>, not of 
+	<m:math>
+	  <m:apply>
+	    <m:csymbol definitionURL="http://cnx.rice.edu/cd/cnxmath.ocd#expectedvalue"/>
+	    <m:apply>
+	      <m:power/>
+	      <m:apply>
+	      <m:abs/>
+	      <m:apply>
+		<m:ci type="fn">X</m:ci>
+		<m:ci>ω</m:ci>
+	      </m:apply>
+              </m:apply>
+	      <m:cn>2</m:cn>
+	    </m:apply>
+	  </m:apply>
+	</m:math>.
+        </para><example id="element-965"><para id="element-632"><link target-id="fig.stoch64"/> shows the non-negative frequencies of the DFT
+          (zero-padded to 1024 total samples) of 64 samples of a
+          real-valued stochastic signal.
+      <figure id="fig.stoch64">
+	<media id="idp8434816" alt=""><image src="../../media/stoch64.png" mime-type="image/png"/></media>
+      <caption>DFT magnitude (in dB) of 64 samples of a stochastic signal
+      </caption>
+      </figure>
+          With no averaging, the power spectrum is very noisy and difficult
+          to interpret other than noting a significant reduction in spectral energy
+          above about half the Nyquist frequency.
+          Various peaks and valleys appear in the lower frequencies,
+          but it is impossible to say from this figure whether they
+          represent actual structure in the power spectral density (PSD)
+          or simply random variation in this single realization.
+          <link target-id="fig.stoch1024"/> shows the same frequencies of a length-1024 DFT of a
+          length-1024 signal. While the frequency resolution has improved,
+          there is still no averaging, so it remains difficult to
+          understand the power spectral density of this signal.
+          Certain small peaks in frequency might represent narrowband
+          components in the spectrum, or may just be random noise peaks.
+        <figure id="fig.stoch1024">
+	<media id="idp8207232" alt=""><image src="../../media/stoch1024.png" mime-type="image/png"/></media>
+      <caption>DFT magnitude (in dB) of 1024 samples of a stochastic signal
+      </caption>
+      </figure>
+          In <link target-id="fig.stochPSD"/>, a power spectral density computed from averaging 
+          the squared magnitudes of length-1024 zero-padded DFTs of 508 length-64
+          blocks of data (overlapped by a factor of four, or a 16-sample
+          step between blocks) are shown.
+          <figure id="fig.stochPSD">
+	    <media id="idp6513664" alt=""><image src="../../media/stochPSD.png" mime-type="image/png"/></media>
+            <caption>Power spectrum density estimate (in dB) of 1024 samples of a stochastic signal
+           </caption>
+          </figure>
+          While the frequency resolution corresponds
+          to that of a length-64 truncation window, the averaging greatly
+          reduces the variance of the spectral estimate and allows the user to
+          reliably conclude that the signal consists of lowpass broadband noise
+          with a flat power spectrum up to half the Nyquist frequency, with
+          a stronger narrowband frequency component at around 0.65 radians.
+</para>
+</example>
+      </section>
+      <section id="sect.autocorr">
+	<title>Auto-correlation-based approach</title>
+        <para id="autocorr">The averaging necessary to estimate a power spectral density
+        can be performed in the discrete-time domain, rather than in frequency,
+        using the auto-correlation method.
+        The squared magnitude of the frequency response,
+        from the DTFT multiplication and conjugation properties,
+        corresponds in the discrete-time domain to the signal convolved
+        with the time-reverse of itself, 
+	<m:math display="block">
+	  <m:apply>
+	    <m:mo>↔</m:mo>
+	    <m:apply>
+	      <m:eq/>
+	      <m:apply>
+		<m:power/>
+		<m:apply>
+		  <m:abs/>
+		  <m:apply>
+		    <m:ci type="fn">X</m:ci>
+		    <m:ci>ω</m:ci>
+		  </m:apply>
+		</m:apply>
+		<m:cn>2</m:cn>
+	      </m:apply>
+	      <m:apply>
+		<m:times/>
+		<m:apply>
+		  <m:ci type="fn">X</m:ci>
+		  <m:ci>ω</m:ci>
+		</m:apply>
+		<m:apply>
+		  <m:ci type="fn">
+		    <m:msup>
+		      <m:mi>X</m:mi>
+		      <m:mi>*</m:mi>
+		    </m:msup>
+		  </m:ci>
+                  <m:ci>ω</m:ci>
+		</m:apply>
+	      </m:apply>
+	    </m:apply>
+	    <m:apply>
+	      <m:eq/>
+	      <m:apply>
+		<m:csymbol definitionURL="http:cnx.rice.edu/cd/cnxmath.ocd#convolve"/>
+		<m:apply>
+		  <m:ci type="fn">x</m:ci>
+		  <m:ci>n</m:ci>
+		</m:apply>
+		<m:apply>
+		  <m:ci type="fn">
+		    <m:msup>
+		      <m:mi>x</m:mi>
+		      <m:mi>*</m:mi>
+		    </m:msup>
+		  </m:ci>
+		  <m:apply>
+		    <m:minus/>
+		    <m:ci>n</m:ci>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+	      <m:apply>
+		<m:ci type="fn">r</m:ci>
+		<m:ci>n</m:ci>
+	      </m:apply>
+	    </m:apply>
+	  </m:apply>
+	</m:math>
+or its <term>auto-correlation</term>
+	<m:math display="block">
+	  <m:apply>
+	    <m:eq/>
+	    <m:apply>
+	      <m:ci type="fn">r</m:ci>
+	      <m:ci>n</m:ci>
+	    </m:apply>
+	    <m:apply>
+	      <m:sum/>
+	      <m:bvar>
+		<m:ci>k</m:ci>
+	      </m:bvar>
+	      <m:apply>
+		<m:times/>
+		<m:apply>
+		  <m:ci type="fn">x</m:ci>
+		  <m:ci>k</m:ci>
+		</m:apply>
+		<m:apply>
+		  <m:ci type="fn">
+		    <m:msup>
+		      <m:mi>x</m:mi>
+		      <m:mi>*</m:mi>
+		    </m:msup>
+		  </m:ci>
+		  <m:apply>
+		    <m:plus/>
+		    <m:ci>n</m:ci>
+		    <m:ci>k</m:ci>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+	    </m:apply>
+	  </m:apply>
+	</m:math>
+        We can thus compute the squared magnitude of
+        the spectrum of a signal by computing
+        the DFT of its auto-correlation.
+        For stochastic signals, the power spectral density
+        is an expectation, or average, and by linearity of
+        expectation can be found by transforming the
+        average of the auto-correlation.
+
+        For a finite block of <m:math><m:ci>N</m:ci></m:math>
+        signal samples, the average of the autocorrelation values,
+	<m:math>
+	  <m:apply>
+	    <m:ci type="fn">r</m:ci>
+	    <m:ci>n</m:ci>
+	  </m:apply>
+	</m:math>,
+        is
+	<m:math display="block">
+        <m:apply>
+          <m:eq/>
+	  <m:apply>
+	    <m:ci type="fn">r</m:ci>
+	    <m:ci>n</m:ci>
+	  </m:apply>
+	  <m:apply>
+	    <m:times/>
+	    <m:apply>
+	      <m:divide/>
+	      <m:cn>1</m:cn>
+	      <m:apply>
+		<m:minus/>
+		<m:ci>N</m:ci>
+		<m:ci>n</m:ci>
+	      </m:apply>
+	    </m:apply>
+	    <m:apply>
+	      <m:sum/>
+	      <m:bvar>
+		<m:ci>k</m:ci>
+	      </m:bvar>
+	      <m:uplimit>
+		<m:apply>
+		  <m:minus/>
+		  <m:ci>N</m:ci>
+		  <m:apply>
+		    <m:minus/>
+		    <m:cn>1</m:cn>
+		    <m:ci>n</m:ci>
+		  </m:apply>
+		</m:apply>
+	      </m:uplimit>
+	      <m:lowlimit>
+		<m:cn>0</m:cn>
+	      </m:lowlimit>
+	      <m:apply>
+		<m:times/>
+		<m:apply>
+		  <m:ci type="fn">x</m:ci>
+		  <m:ci>k</m:ci>
+		</m:apply>
+		<m:apply>
+		  <m:ci type="fn">
+		    <m:msup>
+		      <m:mi>x</m:mi>
+		      <m:mi>*</m:mi>
+		    </m:msup>
+		  </m:ci>
+		  <m:apply>
+		    <m:plus/>
+		    <m:ci>n</m:ci>
+		    <m:ci>k</m:ci>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+	    </m:apply>
+	  </m:apply>
+        </m:apply>
+	</m:math>
+	Note that with increasing <term>lag</term>,
+        <m:math><m:ci>n</m:ci></m:math>,
+        fewer values are averaged, so they introduce
+        more noise into the estimated power spectrum.
+        By <link document="m12032" target-id="windowing">
+	windowing</link> the auto-correlation before
+        transforming it to the frequency domain, a
+        less noisy power spectrum is obtained, at the
+        expense of less resolution.
+        The multiplication property of the DTFT shows
+        that the windowing smooths the resulting power
+        spectrum via convolution with the DTFT of the window:
+	<m:math display="block">
+	  <m:apply>
+	    <m:eq/>
+	    <m:apply>
+	      <m:csymbol definitionURL="http://cnx.rice.edu/cd/cnxmath.ocd#estimate"/>
+	      <m:apply>
+		<m:ci type="fn">X</m:ci>
+		<m:ci>ω</m:ci>
+	      </m:apply>
+	    </m:apply>
+	    <m:apply>
+	      <m:sum/>
+	      <m:bvar>
+		<m:ci>n</m:ci>
+	      </m:bvar>
+	      <m:uplimit>
+		<m:ci>M</m:ci>
+	      </m:uplimit>
+	      <m:lowlimit>
+		<m:apply>
+		  <m:minus/>
+		  <m:ci>M</m:ci>
+		</m:apply>
+	      </m:lowlimit>
+	      <m:apply>
+		<m:times/>
+		<m:apply>
+		  <m:ci type="fn">r</m:ci>
+		  <m:ci>n</m:ci>
+		</m:apply>
+		<m:apply>
+		  <m:ci type="fn">w</m:ci>
+		  <m:ci>n</m:ci>
+		</m:apply>
+		<m:apply>
+		  <m:exp/>
+		  <m:apply>
+		    <m:minus/>
+		    <m:apply>
+		      <m:times/>
+		      <m:imaginaryi/>
+		      <m:ci>ω</m:ci>
+		      <m:ci>n</m:ci>
+		    </m:apply>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+	    </m:apply>
+	    <m:apply>
+	      <m:csymbol definitionURL="http://cnx.rice.edu/cd/cnxmath.ocd#convolve"/>
+	      <m:apply>
+		<m:csymbol definitionURL="http://cnx.rice.edu/cd/cnxmath.ocd#expectedvalue"/>
+		<m:apply>
+		  <m:power/>
+		  <m:apply>
+		    <m:abs/>
+		    <m:apply>
+		      <m:ci type="fn">X</m:ci>
+		      <m:ci>ω</m:ci>
+		    </m:apply>
+		  </m:apply>
+		  <m:cn>2</m:cn>
+		</m:apply>
+	      </m:apply>
+	      <m:apply>
+		<m:ci type="fn">W</m:ci>
+		<m:ci>ω</m:ci>
+	      </m:apply>
+	    </m:apply>
+	  </m:apply>
+	</m:math>
+        This yields another important interpretation of how the auto-correlation method works:
+        it estimates the power spectral density by
+        <emphasis>averaging the power spectrum over nearby frequencies</emphasis>,
+        through convolution with the window function's transform,
+        to reduce variance.
+        Just as with the periodogram approach, there is always a 
+        variance vs. resolution tradeoff.
+        The periodogram and the auto-correlation method give
+        similar results for a similar amount of averaging; the user should
+        simply note that in the periodogram case, the window introduces smoothing
+        of the spectrum via frequency convolution <emphasis>before</emphasis> squaring the magnitude,
+        whereas the periodogram convolves the squared magnitude with
+        <m:math>
+          <m:apply>
+	    <m:ci type="fn">W</m:ci>
+	    <m:ci>ω</m:ci>
+	  </m:apply>
+        </m:math>.</para>
+      </section>
+  </content>
+  
+</document>

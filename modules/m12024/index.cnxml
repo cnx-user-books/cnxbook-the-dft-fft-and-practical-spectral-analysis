@@ -1,0 +1,770 @@
+<document xmlns="http://cnx.rice.edu/cnxml" xmlns:m="http://www.w3.org/1998/Math/MathML" xmlns:md="http://cnx.rice.edu/mdml" xmlns:bib="http://bibtexml.sf.net/">
+  <title>Goertzel's Algorithm</title>
+  <metadata><md:content-id>undefined</md:content-id><md:title/><md:uuid>930e1c73-03a8-49ba-9c1d-c4e959944572</md:uuid>
+</metadata>
+
+  <content>
+    <para id="para1">Some applications require only a few DFT frequencies.
+One example is <link url="http://en.wikipedia.org/wiki/Frequency-shift_keying">frequency-shift keying (FSK)</link> demodulation, in which typically two frequencies
+are used to transmit binary data; another example is <link url="http://en.wikipedia.org/wiki/DTMF">DTMF</link>, or touch-tone
+    telephone dialing, in which a detection circuit must constantly monitor the line for
+    two simultaneous frequencies indicating that a telephone button is depressed.
+       <cite target-id="Goertzel"><cite-title>Goertzel's algorithm</cite-title></cite> reduces the number of real-valued multiplications by almost a factor
+    of two relative to direct computation via the <link document="m12032" target-id="DFTequation">DFT equation</link>.     
+    Goertzel's algorithm is thus useful for
+    computing a <emphasis>few</emphasis> frequency values; if many or most DFT values are needed, 
+    <link document="m12026">
+    FFT algorithms</link> that compute all DFT samples in
+<m:math>
+   <m:apply>
+     <m:ci type="fn">O</m:ci>
+     <m:apply>
+       <m:times/>
+         <m:ci>N</m:ci>
+         <m:apply>
+           <m:log/>
+           <m:ci>N</m:ci>          
+         </m:apply>
+     </m:apply>
+   </m:apply> 
+ </m:math>
+    operations are faster.
+
+    Goertzel's algorithm can be derived by converting the <link document="m12019">DFT equation</link>
+    into an equivalent form as a convolution, which can be efficiently implemented as a digital filter.
+    For increased clarity, in the equations below the complex exponential is denoted as
+    <m:math>
+    <m:apply>
+      <m:eq/>
+        <m:apply>
+	  <m:exp/>
+	    <m:apply>
+	      <m:minus/>
+		 <m:apply>
+		   <m:times/>
+		     <m:imaginaryi/>
+		     <m:apply>
+		       <m:divide/>
+		       <m:apply>
+			<m:times/>
+			<m:cn>2</m:cn>
+			<m:pi/>
+			<m:ci>k</m:ci>
+		       </m:apply>
+		     <m:ci>N</m:ci>
+		    </m:apply>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+	  <m:ci>
+	    <m:msubsup>
+	      <m:mi>W</m:mi>
+	      <m:mi>N</m:mi>
+	      <m:mi>k</m:mi>
+	    </m:msubsup>
+	  </m:ci>
+        </m:apply>
+	</m:math>.
+        Note that because
+	<m:math>
+	  <m:ci>
+	    <m:msubsup>
+	      <m:mi>W</m:mi>
+	      <m:mi>N</m:mi>
+	      <m:mrow>
+		<m:mo>-</m:mo>
+		<m:mi>N</m:mi>
+		<m:mi>k</m:mi>
+	      </m:mrow>
+	    </m:msubsup>
+	  </m:ci>
+	</m:math>
+        always equals 1,
+        the <link document="m12019">DFT equation</link> can be rewritten as a convolution, or filtering operation:
+      <equation id="eq1">
+	<m:math>
+	  <m:apply>
+	    <m:eq/>
+	    <m:apply>
+	      <m:ci type="fn">X</m:ci>
+	      <m:ci>k</m:ci>
+	    </m:apply>
+	    <m:apply>
+	      <m:sum/>
+	      <m:bvar>
+		<m:ci>n</m:ci>
+	      </m:bvar>
+	      <m:uplimit>
+		<m:apply>
+		  <m:minus/>
+		  <m:ci>N</m:ci>
+		  <m:cn>1</m:cn>
+		</m:apply>
+	      </m:uplimit>
+	      <m:lowlimit>
+		<m:cn>0</m:cn>
+	      </m:lowlimit>
+	      <m:apply>
+		<m:times/>
+		<m:apply>
+		  <m:ci type="fn">x</m:ci>
+		  <m:ci>n</m:ci>
+		</m:apply>
+		<m:cn>1</m:cn>
+		<m:ci>
+		  <m:msubsup>
+		    <m:mi>W</m:mi>
+		    <m:mi>N</m:mi>
+		    <m:mrow>
+		      <m:mi>n</m:mi>
+		      <m:mi>k</m:mi>
+		    </m:mrow>
+		  </m:msubsup>
+		</m:ci>
+	      </m:apply>
+	    </m:apply>
+	    <m:apply>
+	      <m:sum/>
+	      <m:bvar>
+		<m:ci>n</m:ci>
+	      </m:bvar>
+	      <m:uplimit>
+		<m:apply>
+		  <m:minus/>
+		  <m:ci>N</m:ci>
+		  <m:cn>1</m:cn>
+		</m:apply>
+	      </m:uplimit>
+	      <m:lowlimit>
+		<m:cn>0</m:cn>
+	      </m:lowlimit>
+	      <m:apply>
+		<m:times/>
+		<m:apply>
+		  <m:ci type="fn">x</m:ci>
+		  <m:ci>n</m:ci>
+		</m:apply>
+		<m:ci>
+		  <m:msubsup>
+		    <m:mi>W</m:mi>
+		    <m:mi>N</m:mi>
+		    <m:mrow>
+		      <m:mo>-</m:mo>
+		      <m:mi>N</m:mi>
+		      <m:mi>k</m:mi>
+		    </m:mrow>
+		  </m:msubsup>
+		</m:ci>
+		<m:ci>
+		  <m:msubsup>
+		    <m:mi>W</m:mi>
+		    <m:mi>N</m:mi>
+		    <m:mrow>
+		      <m:mi>n</m:mi>
+		      <m:mi>k</m:mi>
+		    </m:mrow>
+		  </m:msubsup>
+		</m:ci>
+	      </m:apply>
+	    </m:apply>
+	    <m:apply>
+	      <m:sum/>
+	      <m:bvar>
+		<m:ci>n</m:ci>
+	      </m:bvar>
+	      <m:uplimit>
+		<m:apply>
+		  <m:minus/>
+		  <m:ci>N</m:ci>
+		  <m:cn>1</m:cn>
+		</m:apply>
+	      </m:uplimit>
+	      <m:lowlimit>
+		<m:cn>0</m:cn>
+	      </m:lowlimit>
+	      <m:apply>
+		<m:times/>
+		<m:apply>
+		  <m:ci type="fn">x</m:ci>
+		  <m:ci>n</m:ci>
+		</m:apply>
+		<m:ci>
+		  <m:msubsup>
+		    <m:mi>W</m:mi>
+		    <m:mi>N</m:mi>
+		    <m:mrow>
+		      <m:mo>(</m:mo>
+		      <m:mi>N</m:mi>
+		      <m:mo>-</m:mo>
+		      <m:mi>n</m:mi>
+		      <m:mo>)</m:mo>
+		      <m:mo>(</m:mo>
+		      <m:mo>-</m:mo>
+		      <m:mi>k</m:mi>
+		      <m:mo>)</m:mo>
+		    </m:mrow>
+		  </m:msubsup>
+		</m:ci>
+	      </m:apply>
+	    </m:apply>
+	    <m:apply>
+	      <m:times/>
+	      <m:apply>
+		<m:plus/>
+		<m:apply>
+		  <m:plus/>
+		  <m:apply>
+		    <m:times/>
+		    <m:apply>
+		      <m:plus/>
+		      <m:apply>
+			<m:times/>
+			<m:apply>
+			  <m:plus/>
+			  <m:apply>
+			    <m:times/>
+			    <m:ci>
+			      <m:msubsup>
+				<m:mi>W</m:mi>
+				<m:mi>N</m:mi>
+				<m:mrow>
+				  <m:mo>-</m:mo>
+				  <m:mi>k</m:mi>
+				</m:mrow>
+			      </m:msubsup>
+			    </m:ci>
+			    <m:apply>
+			      <m:ci type="fn">x</m:ci>
+			      <m:cn>0</m:cn>
+			    </m:apply>
+			  </m:apply>
+			  <m:apply>
+			    <m:ci type="fn">x</m:ci>
+			    <m:cn>1</m:cn>
+			  </m:apply>
+			</m:apply>
+			<m:ci>
+			  <m:msubsup>
+			    <m:mi>W</m:mi>
+			    <m:mi>N</m:mi>
+			    <m:mrow>
+			      <m:mo>-</m:mo>
+			      <m:mi>k</m:mi>
+			    </m:mrow>
+			  </m:msubsup>
+			</m:ci>
+		      </m:apply>
+		      <m:apply>
+			<m:ci type="fn">x</m:ci>
+			<m:cn>2</m:cn>
+		      </m:apply>
+		    </m:apply>
+		    <m:ci>
+		      <m:msubsup>
+			<m:mi>W</m:mi>
+			<m:mi>N</m:mi>
+			<m:mrow>
+			  <m:mo>-</m:mo>
+			  <m:mi>k</m:mi>
+			</m:mrow>
+		      </m:msubsup>
+		    </m:ci>
+		  </m:apply>
+		  <m:ci>…</m:ci>
+		</m:apply>
+		<m:apply>
+		  <m:ci type="fn">x</m:ci>
+		  <m:apply>
+		    <m:minus/>
+		    <m:ci>N</m:ci>
+		    <m:cn>1</m:cn>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+	      <m:ci>
+		<m:msubsup>
+		  <m:mi>W</m:mi>
+		  <m:mi>N</m:mi>
+		  <m:mrow>
+		    <m:mo>-</m:mo>
+		    <m:mi>k</m:mi>
+		  </m:mrow>
+		</m:msubsup>
+	      </m:ci>
+	    </m:apply>
+	  </m:apply>
+	</m:math>
+      </equation>
+      Note that this last expression can be written in terms of a recursive <link document="m10595">difference equation</link>
+      <m:math display="block">
+	<m:apply>
+	  <m:eq/>
+	  <m:apply>
+	    <m:ci type="fn">y</m:ci>
+	    <m:ci>n</m:ci>
+	  </m:apply>
+	  <m:apply>
+	    <m:plus/>
+	    <m:apply>
+	      <m:times/>
+	      <m:ci>
+		<m:msubsup>
+		  <m:mi>W</m:mi>
+		  <m:mi>N</m:mi>
+		  <m:mrow>
+		    <m:mo>-</m:mo>
+		    <m:mi>k</m:mi>
+		  </m:mrow>
+		</m:msubsup>
+	      </m:ci>
+	      <m:apply>
+		<m:ci type="fn">y</m:ci>
+		<m:apply>
+		  <m:minus/>
+		  <m:ci>n</m:ci>
+		  <m:cn>1</m:cn>
+		</m:apply>
+	      </m:apply>
+	    </m:apply>
+	    <m:apply>
+	      <m:ci type="fn">x</m:ci>
+	      <m:ci>n</m:ci>
+	    </m:apply>
+	  </m:apply>
+	</m:apply>
+      </m:math> where 
+      <m:math>
+	<m:apply>
+	  <m:eq/>
+	  <m:apply>
+	    <m:ci type="fn">y</m:ci>
+	    <m:apply>
+	      <m:minus/>
+	      <m:cn>1</m:cn>
+	    </m:apply>
+	  </m:apply>
+	  <m:cn>0</m:cn>
+	</m:apply>
+      </m:math>.
+      The DFT coefficient equals the output of the difference equation at time
+      <m:math>
+        <m:apply>
+          <m:eq/>
+            <m:ci>n</m:ci>
+            <m:ci>N</m:ci>
+        </m:apply>
+      </m:math>:
+      <m:math display="block">
+	<m:apply>
+	  <m:eq/>
+	  <m:apply>
+	    <m:ci type="fn">X</m:ci>
+	    <m:ci>k</m:ci>
+	  </m:apply>
+	  <m:apply>
+	    <m:ci type="fn">y</m:ci>
+	    <m:ci>N</m:ci>
+	  </m:apply>
+	</m:apply>
+      </m:math>
+      Expressing the difference equation as a <link document="m10595">z-transform</link> and
+      multiplying both numerator and denominator by
+          <m:math>
+            <m:apply>
+	      <m:minus/>
+	      <m:mn>1</m:mn>
+	      <m:apply>
+		<m:times/>
+		<m:ci>
+		  <m:msubsup>
+		    <m:mi>W</m:mi>
+		    <m:mi>N</m:mi>
+		    <m:mi>k</m:mi>
+		  </m:msubsup>
+		</m:ci>
+		<m:apply>
+		  <m:power/>
+		  <m:ci>z</m:ci>
+		  <m:apply>
+		    <m:minus/>
+		    <m:cn>1</m:cn>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+	    </m:apply>
+          </m:math>
+      gives the transfer function 
+      <m:math display="block">
+	<m:apply>
+	  <m:eq/>
+	  <m:apply>
+	    <m:divide/>
+	    <m:apply>
+	      <m:ci type="fn">Y</m:ci>
+	      <m:ci>z</m:ci>
+	    </m:apply>
+	    <m:apply>
+	      <m:ci type="fn">X</m:ci>
+	      <m:ci>z</m:ci>
+	    </m:apply>
+	  </m:apply>
+	  <m:apply>
+	    <m:ci type="fn">H</m:ci>
+	    <m:ci>z</m:ci>
+	  </m:apply>
+	  <m:apply>
+	    <m:divide/>
+	    <m:cn>1</m:cn>
+	    <m:apply>
+	      <m:minus/>
+	      <m:cn>1</m:cn>
+	      <m:apply>
+		<m:times/>
+		<m:ci>
+		  <m:msubsup>
+		    <m:mi>W</m:mi>
+		    <m:mi>N</m:mi>
+		    <m:mrow>
+		      <m:mo>-</m:mo>
+		      <m:mi>k</m:mi>
+		    </m:mrow>
+		  </m:msubsup>
+		</m:ci>
+		<m:apply>
+		  <m:power/>
+		  <m:ci>z</m:ci>
+		  <m:apply>
+		    <m:minus/>
+		    <m:cn>1</m:cn>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+	    </m:apply>
+	  </m:apply>
+	  <m:apply>
+	    <m:divide/>
+	    <m:apply>
+	      <m:minus/>
+	      <m:mn>1</m:mn>
+	      <m:apply>
+		<m:times/>
+		<m:ci>
+		  <m:msubsup>
+		    <m:mi>W</m:mi>
+		    <m:mi>N</m:mi>
+		    <m:mi>k</m:mi>
+		  </m:msubsup>
+		</m:ci>
+		<m:apply>
+		  <m:power/>
+		  <m:ci>z</m:ci>
+		  <m:apply>
+		    <m:minus/>
+		    <m:cn>1</m:cn>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+	    </m:apply>
+	    <m:apply>
+	      <m:minus/>
+	      <m:cn>1</m:cn>
+	      <m:apply>
+		<m:minus/>
+		<m:apply>
+		  <m:times/>
+		  <m:apply>
+		    <m:plus/>
+		    <m:ci>
+		      <m:msubsup>
+			<m:mi>W</m:mi>
+			<m:mi>N</m:mi>
+			<m:mi>k</m:mi>
+		      </m:msubsup>
+		    </m:ci>
+		    <m:ci>
+		      <m:msubsup>
+			<m:mi>W</m:mi>
+			<m:mi>N</m:mi>
+			<m:mrow>
+			  <m:mo>-</m:mo>
+			  <m:mi>k</m:mi>
+			</m:mrow>
+		      </m:msubsup>
+		    </m:ci>
+		  </m:apply>
+		  <m:apply>
+		    <m:power/>
+		    <m:ci>z</m:ci>
+		    <m:apply>
+		      <m:minus/>
+		      <m:cn>1</m:cn>
+		    </m:apply>
+		  </m:apply>
+		</m:apply>
+		<m:apply>
+		  <m:power/>
+		  <m:ci>z</m:ci>
+		  <m:apply>
+		    <m:minus/>
+		    <m:cn>2</m:cn>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+	    </m:apply>
+	  </m:apply> 
+          <m:apply>
+	    <m:divide/>
+	    <m:apply>
+	      <m:minus/>
+	      <m:mn>1</m:mn>
+	      <m:apply>
+		<m:times/>
+		<m:ci>
+		  <m:msubsup>
+		    <m:mi>W</m:mi>
+		    <m:mi>N</m:mi>
+		    <m:mi>k</m:mi>
+		  </m:msubsup>
+		</m:ci>
+		<m:apply>
+		  <m:power/>
+		  <m:ci>z</m:ci>
+		  <m:apply>
+		    <m:minus/>
+		    <m:cn>1</m:cn>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+	    </m:apply>
+	    <m:apply>
+	      <m:minus/>
+	      <m:cn>1</m:cn>
+	      <m:apply>
+		<m:minus/>
+		<m:apply>
+		  <m:times/>
+                  <m:cn>2</m:cn>
+		  <m:apply>
+		    <m:cos/>
+                      <m:apply>
+                      <m:divide/>
+                        <m:apply>
+                          <m:times/>
+                            <m:cn>2</m:cn>
+		            <m:pi/>
+                            <m:ci>k</m:ci>
+                        </m:apply>
+                        <m:ci>N</m:ci>
+                      </m:apply>
+	          </m:apply>
+		  <m:apply>
+		    <m:power/>
+		    <m:ci>z</m:ci>
+		    <m:apply>
+		      <m:minus/>
+		      <m:cn>1</m:cn>
+		    </m:apply>
+		  </m:apply>
+		</m:apply>
+		<m:apply>
+		  <m:power/>
+		  <m:ci>z</m:ci>
+		  <m:apply>
+		    <m:minus/>
+		    <m:cn>2</m:cn>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+	    </m:apply>
+	  </m:apply>
+	</m:apply>
+      </m:math>
+    This system can be realized by the structure in <link target-id="fig1"/>
+      <figure id="fig1">
+        <media id="idm1006224" alt=""><image src="../../media/Goertzelsfig1.png" mime-type="image/png"/><image for="pdf" src="../../media/Goertzelfig1.eps" mime-type="application/postscript"/></media>
+      </figure>
+      </para>
+      <para id="reduce">
+      We want 
+	<m:math>
+	  <m:apply>
+	    <m:ci type="fn">y</m:ci>
+	    <m:ci>n</m:ci>
+	  </m:apply>
+	</m:math>
+	not for all <m:math><m:ci>n</m:ci></m:math>, but only for 
+	<m:math>
+	  <m:apply>
+	    <m:eq/>
+	    <m:ci>n</m:ci>
+	    <m:ci>N</m:ci>
+	  </m:apply>
+	</m:math>.
+	We can thus compute only the <emphasis>recursive</emphasis> part, or just the left side of
+	the flow graph in <link target-id="fig1"/>, for
+	<m:math>
+	  <m:apply>
+	    <m:eq/>
+	    <m:ci>n</m:ci>
+	    <m:list>
+	      <m:cn>0</m:cn>
+	      <m:cn>1</m:cn>
+	      <m:ci>…</m:ci>
+	      <m:ci>N</m:ci>
+	    </m:list>
+	  </m:apply>
+	</m:math>, which involves only a
+	<emphasis>real/complex</emphasis> product rather than a
+	complex/complex product as in a direct <link document="m12032" target-id="DFTequation">DFT</link>, plus one complex
+	multiply to get
+	<m:math>
+	  <m:apply>
+	    <m:eq/>
+	    <m:apply>
+	      <m:ci type="fn">y</m:ci>
+	      <m:ci>N</m:ci>
+	    </m:apply>
+	    <m:apply>
+	      <m:ci type="fn">X</m:ci>
+	      <m:ci>k</m:ci>
+	    </m:apply>
+	  </m:apply>
+	</m:math>.
+        <note id="idp9015504">The input
+        <m:math>
+          <m:apply>
+	    <m:ci type="fn">x</m:ci>
+	    <m:ci>N</m:ci>
+          </m:apply>
+        </m:math>
+        at time
+        <m:math>
+          <m:apply>
+            <m:eq/>
+              <m:ci>n</m:ci>
+              <m:ci>N</m:ci>
+          </m:apply>
+        </m:math>
+        must equal 0!
+        A slightly more efficient
+        <link url="http://www.mstarlabs.com/dsp/goertzel/goertzel.html">alternate implementation</link>
+        that computes the full recursion only through
+        <m:math>
+          <m:apply>
+            <m:eq/>
+              <m:ci>n</m:ci>
+              <m:apply>
+                <m:minus/>
+                  <m:ci>N</m:ci>
+                  <m:cn>1</m:cn>
+              </m:apply>
+          </m:apply>
+        </m:math>
+        and combines the nonzero operations of the final recursion with the final complex multiply
+        can be found <link url="http://www.mstarlabs.com/dsp/goertzel/goertzel.html">here</link>,
+        complete with pseudocode (for real-valued data).</note>
+        If the data are real-valued, only real/real multiplications and real additions are needed until the
+        final multiply.
+      <note type="cost" id="idp8777456"><label>Cost</label>The computational cost of Goertzel's algorithm is thus
+	<m:math>
+	  <m:apply>
+	    <m:plus/>
+	    <m:apply>
+	      <m:times/>
+	      <m:cn>2</m:cn>
+	      <m:ci>N</m:ci>
+	    </m:apply>
+	    <m:cn>2</m:cn>
+	  </m:apply>
+	</m:math> real multiplies and
+	<m:math>
+	  <m:apply>
+	    <m:minus/>
+	    <m:apply>
+	      <m:times/>
+	      <m:cn>4</m:cn>
+	      <m:ci>N</m:ci>
+	    </m:apply>
+	    <m:cn>2</m:cn>
+	  </m:apply>
+	</m:math> real adds, a reduction of almost a factor of two in the number of real multiplies relative
+        to direct computation via the DFT equation.
+        If the data are real-valued, this cost is almost halved again.</note>
+    </para>
+    <para id="para10">For certain frequencies, additional simplifications requiring even fewer multiplications are possible.
+      (For example, for the DC
+      (<m:math>
+        <m:apply>
+          <m:eq/>
+            <m:ci>k</m:ci>
+            <m:cn>0</m:cn>
+        </m:apply>
+      </m:math>)
+      frequency, all the multipliers equal 1 and only additions are needed.)
+      A correspondence by <cite target-id="Boncelet"><cite-title>C.G. Boncelet, Jr.</cite-title></cite> describes some of these additional
+      simplifications.
+      Once again, Goertzel's and Boncelet's algorithms are efficient for a few DFT frequency samples; if more
+      than
+      <m:math>
+	<m:apply>
+	  <m:log/>
+	  <m:ci>N</m:ci>
+	</m:apply>
+      </m:math>
+      frequencies are needed,
+      <m:math>
+   <m:apply>
+     <m:ci type="fn">O</m:ci>
+     <m:apply>
+       <m:times/>
+         <m:ci>N</m:ci>
+         <m:apply>
+           <m:log/>
+           <m:ci>N</m:ci>          
+         </m:apply>
+     </m:apply>
+   </m:apply> 
+ </m:math>
+      <link document="m12026">FFT algorithms</link> that compute all frequencies simultaneously will be more
+      efficient.</para>
+  </content>
+  <bib:file>
+    <bib:entry id="Goertzel">
+      <bib:article>
+	<bib:author>G Goertzel</bib:author> 
+
+	<bib:title>An Algorithm for the Evaluation of Finite Trigonomentric
+	Series</bib:title>
+
+	<bib:journal>The American Mathematical Monthly</bib:journal>
+
+	<bib:year>1958</bib:year>
+
+      </bib:article>
+    </bib:entry>
+    <bib:entry id="Boncelet">
+      <bib:article>
+	<bib:author>C.G. Boncelet, Jr.</bib:author> 
+
+	<bib:title>A Rearranged DFT Algorithm Requiring N^2/6
+	Multiplications</bib:title>
+
+	<bib:journal>IEEE Trans. on Acoustics, Speech, and Signal
+	Processing</bib:journal>
+
+	<bib:year>1986</bib:year>
+	
+	<bib:volume>ASSP-34</bib:volume>
+
+	<bib:number>6</bib:number>
+
+	<bib:pages>1658-1659</bib:pages>
+
+	<bib:month>Dec</bib:month>
+      </bib:article>
+    </bib:entry>
+  </bib:file>
+    
+      
+  
+</document>

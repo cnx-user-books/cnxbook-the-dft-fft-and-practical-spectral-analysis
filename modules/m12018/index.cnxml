@@ -1,0 +1,1250 @@
+<document xmlns="http://cnx.rice.edu/cnxml" xmlns:m="http://www.w3.org/1998/Math/MathML" xmlns:md="http://cnx.rice.edu/mdml">
+  <title>Decimation-in-Frequency (DIF) Radix-2 FFT</title>
+  <metadata><md:content-id>undefined</md:content-id><md:title/><md:uuid>5da60355-4012-498b-8431-8594615552f5</md:uuid>
+</metadata>
+
+  <content>
+    <para id="element-888">The radix-2 decimation-in-frequency and <link document="m12016">decimation-in-time</link> fast Fourier transforms
+(FFTs) are the simplest <link document="m12026">FFT algorithms</link>.
+Like all FFTs, they compute the <link document="m12019">discrete Fourier transform (DFT)</link>
+     <equation id="eq.dft">
+      <m:math display="block">
+	<m:apply>
+	  <m:eq/>
+	  <m:apply>
+	    <m:ci type="fn">X</m:ci>
+	    <m:ci>k</m:ci>
+	  </m:apply>
+	  <m:apply>
+	    <m:sum/>
+	    <m:bvar>
+	      <m:ci>n</m:ci>
+	    </m:bvar>
+	    <m:uplimit>
+	      <m:apply>
+		<m:minus/>
+		<m:ci>N</m:ci>
+		<m:cn>1</m:cn>
+	      </m:apply>
+	    </m:uplimit>
+	    <m:lowlimit>
+	      <m:cn>0</m:cn>
+	      </m:lowlimit>
+	    <m:apply>
+	      <m:times/>
+	      <m:apply>
+		<m:ci type="fn">x</m:ci>
+		<m:ci>n</m:ci>
+	      </m:apply>
+	      <m:apply>
+		<m:exp/>
+		<m:apply>
+		  <m:minus/>
+		  <m:apply>
+		    <m:times/>
+		    <m:imaginaryi/>
+		    <m:apply>
+		      <m:divide/>
+		      <m:apply>
+			<m:times/>
+			<m:cn>2</m:cn>
+			<m:pi/>
+			<m:ci>n</m:ci>
+			<m:ci>k</m:ci>
+		      </m:apply>
+		      <m:ci>N</m:ci>
+		    </m:apply>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+	    </m:apply>
+	  </m:apply>
+	  <m:apply>
+	    <m:sum/>
+	    <m:bvar>
+	      <m:ci>n</m:ci>
+	    </m:bvar>
+	    <m:uplimit>
+	      <m:apply>
+		<m:minus/>
+		<m:ci>N</m:ci>
+		<m:cn>1</m:cn>
+	      </m:apply>
+	    </m:uplimit>
+	    <m:lowlimit>
+	      <m:cn>0</m:cn>
+	    </m:lowlimit>
+	    <m:apply>
+	      <m:times/>
+	      <m:apply>
+		<m:ci type="fn">x</m:ci>
+		<m:ci>n</m:ci>
+	      </m:apply>
+	      <m:ci>
+		<m:msubsup>
+		  <m:mi>W</m:mi>
+		  <m:mi>N</m:mi>
+		  <m:mrow>
+		    <m:mi>n</m:mi>
+		    <m:mi>k</m:mi>
+		  </m:mrow>
+		</m:msubsup>
+	      </m:ci>
+	    </m:apply>
+	  </m:apply>
+	</m:apply>
+      </m:math>
+     </equation>
+where for notational convenience
+<m:math>
+  <m:apply>
+    <m:eq/>
+      <m:ci>
+	<m:msubsup>
+	  <m:mi>W</m:mi>
+	  <m:mi>N</m:mi>
+	  <m:mi>k</m:mi>
+	</m:msubsup>
+      </m:ci>
+      <m:apply>
+	<m:exp/>
+	  <m:apply>
+	    <m:minus/>
+              <m:apply>
+	        <m:times/>
+		  <m:imaginaryi/>
+		    <m:apply>
+		      <m:divide/>
+		       <m:apply>
+			<m:times/>
+			<m:cn>2</m:cn>
+			<m:pi/>
+			<m:ci>k</m:ci>
+		       </m:apply>
+		     <m:ci>N</m:ci>
+		    </m:apply>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+        </m:apply>
+	</m:math>.
+FFT algorithms gain their speed by reusing the results of smaller,
+intermediate computations to compute multiple DFT frequency outputs.
+</para>
+<section id="idm2433264">
+<title>Decimation in frequency</title>
+<para id="para1">The radix-2 decimation-in-frequency algorithm rearranges the
+<link target-id="eq.dft">discrete Fourier transform (DFT) equation</link>
+into two parts: computation of the even-numbered discrete-frequency indices
+<m:math>
+  <m:apply>
+    <m:ci type="fn">X</m:ci>
+    <m:ci>k</m:ci>
+  </m:apply>
+</m:math>
+for
+<m:math>
+  <m:apply>
+    <m:eq/>
+      <m:ci>k</m:ci>
+      <m:list>
+        <m:cn>0</m:cn>
+        <m:cn>2</m:cn>
+        <m:cn>4</m:cn>
+        <m:ci>…</m:ci>
+        <m:apply>
+          <m:minus/>
+            <m:ci>N</m:ci>
+            <m:cn>2</m:cn>
+        </m:apply>
+      </m:list>
+  </m:apply>
+</m:math>
+(or
+<m:math>
+            <m:apply>
+              <m:ci type="fn">X</m:ci>
+	      <m:apply>
+		<m:times/>
+		<m:cn>2</m:cn>
+		<m:ci>r</m:ci>
+	      </m:apply>
+            </m:apply>
+</m:math>
+as in <link target-id="eq.evens"/>)
+and computation of the odd-numbered indices
+<m:math>
+  <m:apply>
+    <m:eq/>
+      <m:ci>k</m:ci>
+      <m:list>
+        <m:cn>1</m:cn>
+        <m:cn>3</m:cn>
+        <m:cn>5</m:cn>
+        <m:ci>…</m:ci>
+        <m:apply>
+          <m:minus/>
+            <m:ci>N</m:ci>
+            <m:cn>1</m:cn>
+        </m:apply>
+      </m:list>
+  </m:apply>
+</m:math>
+(or
+<m:math>
+  <m:apply>
+    <m:ci type="fn">X</m:ci>
+    <m:apply>
+      <m:plus/>
+	 <m:apply>
+	   <m:times/>
+	     <m:cn>2</m:cn>
+	     <m:ci>r</m:ci>
+	 </m:apply>
+         <m:cn>1</m:cn>
+    </m:apply>
+  </m:apply>
+</m:math>
+as in <link target-id="eq.odds"/>)
+
+      <equation id="eq.evens"><m:math>
+	  <m:apply>
+	    <m:eq/>
+	    <m:apply>
+	      <m:ci type="fn">X</m:ci>
+	      <m:apply>
+		<m:times/>
+		<m:cn>2</m:cn>
+		<m:ci>r</m:ci>
+	      </m:apply>
+	    </m:apply>
+	    <m:apply>
+	      <m:sum/>
+	      <m:bvar>
+		<m:ci>n</m:ci>
+	      </m:bvar>
+	      <m:uplimit>
+		<m:apply>
+		  <m:minus/>
+		  <m:ci>N</m:ci>
+		  <m:cn>1</m:cn>
+		</m:apply>
+	      </m:uplimit>
+	      <m:lowlimit>
+		<m:cn>0</m:cn>
+	      </m:lowlimit>
+	      <m:apply>
+		<m:times/>
+		<m:apply>
+		  <m:ci type="fn">x</m:ci>
+		  <m:ci>n</m:ci>
+		</m:apply>
+		<m:ci>
+		  <m:msubsup>
+		    <m:mi>W</m:mi>
+		    <m:mi>N</m:mi>
+		    <m:mrow>
+		      <m:mn>2</m:mn>
+		      <m:mi>r</m:mi>
+		      <m:mi>n</m:mi>
+		    </m:mrow>
+		  </m:msubsup>
+		</m:ci>
+	      </m:apply>
+	    </m:apply>
+	    <m:apply>
+	      <m:plus/>
+	      <m:apply>
+		<m:sum/>
+		<m:bvar>
+		  <m:ci>n</m:ci>
+		</m:bvar>
+		<m:uplimit>
+		  <m:apply>
+		    <m:minus/>
+		    <m:apply>
+		      <m:divide/>
+		      <m:ci>N</m:ci>
+		      <m:cn>2</m:cn>
+		    </m:apply>
+		    <m:cn>1</m:cn>
+		  </m:apply>
+		</m:uplimit>
+		<m:lowlimit>
+		  <m:cn>0</m:cn>
+		</m:lowlimit>
+		<m:apply>
+		  <m:times/>
+		  <m:apply>
+		    <m:ci type="fn">x</m:ci>
+		    <m:ci>n</m:ci>
+		  </m:apply>
+		  <m:ci>
+		    <m:msubsup>
+		      <m:mi>W</m:mi>
+		      <m:mi>N</m:mi>
+		      <m:mrow>
+			<m:mn>2</m:mn>
+			<m:mi>r</m:mi>
+			<m:mi>n</m:mi>
+		      </m:mrow>
+		    </m:msubsup>
+		  </m:ci>
+		</m:apply>
+	      </m:apply>
+	      <m:apply>
+		<m:sum/>
+		<m:bvar>
+		  <m:ci>n</m:ci>
+		</m:bvar>
+		<m:uplimit>
+		  <m:apply>
+		    <m:minus/>
+		    <m:apply>
+		      <m:divide/>
+		      <m:ci>N</m:ci>
+		      <m:cn>2</m:cn>
+		    </m:apply>
+		    <m:cn>1</m:cn>
+		  </m:apply>
+		</m:uplimit>
+		<m:lowlimit>
+		  <m:cn>0</m:cn>
+		</m:lowlimit>
+		<m:apply>
+		  <m:times/>
+		  <m:apply>
+		    <m:ci type="fn">x</m:ci>
+		    <m:apply>
+		      <m:plus/>
+		      <m:ci>n</m:ci>
+		      <m:apply>
+			<m:divide/>
+			<m:ci>N</m:ci>
+			<m:cn>2</m:cn>
+		      </m:apply>
+		    </m:apply>
+		  </m:apply>
+		  <m:ci>
+		    <m:msubsup>
+		      <m:mi>W</m:mi>
+		      <m:mi>N</m:mi>
+		      <m:mrow>
+			<m:mn>2</m:mn>
+			<m:mi>r</m:mi>
+			<m:mo>(</m:mo>
+			<m:mi>n</m:mi>
+			<m:mo>+</m:mo>
+			<m:mfrac>
+			  <m:mi>N</m:mi>
+			  <m:mn>2</m:mn>
+			</m:mfrac>
+			<m:mo>)</m:mo>
+		      </m:mrow>
+		    </m:msubsup>
+		  </m:ci>
+		</m:apply>
+	      </m:apply>
+	    </m:apply>
+	    <m:apply>
+	      <m:plus/>
+	      <m:apply>
+		<m:sum/>
+		<m:bvar>
+		  <m:ci>n</m:ci>
+		</m:bvar>
+		<m:uplimit>
+		  <m:apply>
+		    <m:minus/>
+		    <m:apply>
+		      <m:divide/>
+		      <m:ci>N</m:ci>
+		      <m:cn>2</m:cn>
+		    </m:apply>
+		    <m:cn>1</m:cn>
+		  </m:apply>
+		</m:uplimit>
+		<m:lowlimit>
+		  <m:cn>0</m:cn>
+		</m:lowlimit>
+		<m:apply>
+		  <m:times/>
+		  <m:apply>
+		    <m:ci type="fn">x</m:ci>
+		    <m:ci>n</m:ci>
+		  </m:apply>
+		  <m:ci>
+		    <m:msubsup>
+		      <m:mi>W</m:mi>
+		      <m:mi>N</m:mi>
+		      <m:mrow>
+			<m:mn>2</m:mn>
+			<m:mi>r</m:mi>
+			<m:mi>n</m:mi>
+		      </m:mrow>
+		    </m:msubsup>
+		  </m:ci>
+		</m:apply>
+	      </m:apply>
+	      <m:apply>
+		<m:sum/>
+		<m:bvar>
+		  <m:ci>n</m:ci>
+		</m:bvar>
+		<m:uplimit>
+		  <m:apply>
+		    <m:minus/>
+		    <m:apply>
+		      <m:divide/>
+		      <m:ci>N</m:ci>
+		      <m:cn>2</m:cn>
+		    </m:apply>
+		    <m:cn>1</m:cn>
+		  </m:apply>
+		</m:uplimit>
+		<m:lowlimit>
+		  <m:cn>0</m:cn>
+		</m:lowlimit>
+		<m:apply>
+		  <m:times/>
+		  <m:apply>
+		    <m:ci type="fn">x</m:ci>
+		    <m:apply>
+		      <m:plus/>
+		      <m:ci>n</m:ci>
+		      <m:apply>
+			<m:divide/>
+			<m:ci>N</m:ci>
+			<m:cn>2</m:cn>
+		      </m:apply>
+		    </m:apply>
+		  </m:apply>
+		  <m:ci>
+		    <m:msubsup>
+		      <m:mi>W</m:mi>
+		      <m:mi>N</m:mi>
+		      <m:mrow>
+			<m:mn>2</m:mn>
+			<m:mi>r</m:mi>
+			<m:mi>n</m:mi>
+		      </m:mrow>
+		    </m:msubsup>
+		  </m:ci>
+		  <m:cn>1</m:cn>
+		</m:apply>
+	      </m:apply>
+	    </m:apply>  
+	    <m:apply>
+	      <m:sum/>
+	      <m:bvar>
+		<m:ci>n</m:ci>
+	      </m:bvar>
+	      <m:uplimit>
+		<m:apply>
+		  <m:minus/>
+		  <m:apply>
+		    <m:divide/>
+		    <m:ci>N</m:ci>
+		    <m:cn>2</m:cn>
+		  </m:apply>
+		  <m:cn>1</m:cn>
+		</m:apply>
+	      </m:uplimit>
+	      <m:lowlimit>
+		<m:cn>0</m:cn>
+	      </m:lowlimit>
+	      <m:apply>
+		<m:times/>
+		<m:apply>
+		  <m:plus/>
+		  <m:apply>
+		    <m:ci type="fn">x</m:ci>
+		    <m:ci>n</m:ci>
+		  </m:apply>
+		  <m:apply>
+		    <m:ci type="fn">x</m:ci>
+		    <m:apply>
+		      <m:plus/>
+		      <m:ci>n</m:ci>
+		      <m:apply>
+			<m:divide/>
+			<m:ci>N</m:ci>
+			<m:cn>2</m:cn>
+		      </m:apply>
+		    </m:apply>
+		  </m:apply>
+		</m:apply>
+		<m:ci>
+		  <m:msubsup>
+		    <m:mi>W</m:mi>
+		    <m:mfrac>
+		      <m:mi>N</m:mi>
+		      <m:mn>2</m:mn>
+		    </m:mfrac>
+		    <m:mrow>
+		      <m:mi>r</m:mi>
+		      <m:mi>n</m:mi>
+		    </m:mrow>
+		  </m:msubsup>
+		</m:ci>
+	      </m:apply>
+	    </m:apply>
+	    <m:apply>
+	      <m:ci type="fn" class="discrete">
+		<m:msub>
+		  <m:mi>DFT</m:mi>
+		  <m:mfrac>
+		    <m:mi>N</m:mi>
+		    <m:mn>2</m:mn>
+		  </m:mfrac>
+		</m:msub>
+	      </m:ci>
+	      <m:apply>
+		<m:plus/>
+		<m:apply>
+		  <m:ci type="fn">x</m:ci>
+		  <m:ci>n</m:ci>
+		</m:apply>
+		<m:apply>
+		  <m:ci type="fn">x</m:ci>
+		  <m:apply>
+		    <m:plus/>
+		    <m:ci>n</m:ci>
+		    <m:apply>
+		      <m:divide/>
+		      <m:ci>N</m:ci>
+		      <m:cn>2</m:cn>
+		    </m:apply>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+	    </m:apply>
+	  </m:apply>
+	</m:math>
+      </equation>
+      <equation id="eq.odds"><m:math>
+	  <m:apply>
+	    <m:eq/>
+	    <m:apply>
+	      <m:ci type="fn">X</m:ci>
+	      <m:apply>
+		<m:plus/>
+		<m:apply>
+		  <m:times/>
+		  <m:cn>2</m:cn>
+		  <m:ci>r</m:ci>
+		</m:apply>
+		<m:cn>1</m:cn>
+	      </m:apply>
+	    </m:apply>
+	    <m:apply>
+	      <m:sum/>
+	      <m:bvar>
+		<m:ci>n</m:ci>
+	      </m:bvar>
+	      <m:uplimit>
+		<m:apply>
+		  <m:minus/>
+		  <m:ci>N</m:ci>
+		  <m:cn>1</m:cn>
+		</m:apply>
+	      </m:uplimit>
+	      <m:lowlimit>
+		<m:cn>0</m:cn>
+	      </m:lowlimit>
+	      <m:apply>
+		<m:times/>
+		<m:apply>
+		  <m:ci type="fn">x</m:ci>
+		  <m:ci>n</m:ci>
+		</m:apply>
+		<m:ci>
+		  <m:msubsup>
+		    <m:mi>W</m:mi>
+		    <m:mi>N</m:mi>
+		    <m:mrow>
+		      <m:mo>(</m:mo>
+		      <m:mn>2</m:mn>
+		      <m:mi>r</m:mi>
+		      <m:mo>+</m:mo>
+		      <m:mn>1</m:mn>
+		      <m:mo>)</m:mo>
+		      <m:mi>n</m:mi>
+		    </m:mrow>
+		  </m:msubsup>
+		</m:ci>
+	      </m:apply>
+	    </m:apply>
+	    <m:apply>
+	      <m:sum/>
+	      <m:bvar>
+		<m:ci>n</m:ci>
+	      </m:bvar>
+	      <m:uplimit>
+		<m:apply>
+		  <m:minus/>
+		  <m:apply>
+		    <m:divide/>
+		    <m:ci>N</m:ci>
+		    <m:cn>2</m:cn>
+		  </m:apply>
+		  <m:ci>1</m:ci>
+		</m:apply>
+	      </m:uplimit>
+	      <m:lowlimit>
+		<m:cn>0</m:cn>
+	      </m:lowlimit>
+	      <m:apply>
+		<m:times/>
+		<m:apply>
+		  <m:plus/>
+		  <m:apply>
+		    <m:ci type="fn">x</m:ci>
+		    <m:ci>n</m:ci>
+		  </m:apply>
+		  <m:apply>
+		    <m:times/>
+		    <m:ci>
+		      <m:msubsup>
+			<m:mi>W</m:mi>
+			<m:mi>N</m:mi>
+			<m:mfrac>
+			  <m:mi>N</m:mi>
+			  <m:mn>2</m:mn>
+			</m:mfrac>
+		      </m:msubsup>
+		    </m:ci>
+		    <m:apply>
+		      <m:ci type="fn">x</m:ci>
+		      <m:apply>
+			<m:plus/>
+			<m:ci>n</m:ci>
+			<m:apply>
+			  <m:divide/>
+			  <m:ci>N</m:ci>
+			  <m:cn>2</m:cn>
+			</m:apply>
+		      </m:apply>
+		    </m:apply>
+		  </m:apply>
+		</m:apply>
+		<m:ci>
+		  <m:msubsup>
+		    <m:mi>W</m:mi>
+		    <m:mi>N</m:mi>
+		    <m:mrow>
+		      <m:mo>(</m:mo>
+                      <m:mn>2</m:mn>
+		      <m:mi>r</m:mi>
+		      <m:mo>+</m:mo>
+		      <m:mn>1</m:mn>
+		      <m:mo>)</m:mo>
+		      <m:mi>n</m:mi>
+		    </m:mrow>
+		  </m:msubsup>
+		</m:ci>
+	      </m:apply>
+	    </m:apply>
+	    <m:apply>
+	      <m:sum/>
+	      <m:bvar>
+		<m:ci>n</m:ci>
+	      </m:bvar>
+	      <m:uplimit>
+		<m:apply>
+		  <m:minus/>
+		  <m:apply>
+		    <m:divide/>
+		    <m:ci>N</m:ci>
+		    <m:cn>2</m:cn>
+		  </m:apply>
+		  <m:cn>1</m:cn>
+		</m:apply>
+	      </m:uplimit>
+	      <m:lowlimit>
+		<m:cn>0</m:cn>
+	      </m:lowlimit>
+	      <m:apply>
+		<m:times/>
+		<m:apply>
+		  <m:times/>
+		  <m:apply>
+		    <m:minus/>
+		    <m:apply>
+		      <m:ci type="fn">x</m:ci>
+		      <m:ci>n</m:ci>
+		    </m:apply>
+		    <m:apply>
+		      <m:ci type="fn">x</m:ci>
+		      <m:apply>
+			<m:plus/>
+			<m:ci>n</m:ci>
+			<m:apply>
+			  <m:divide/>
+			  <m:ci>N</m:ci>
+			  <m:cn>2</m:cn>
+			</m:apply>
+		      </m:apply>
+		    </m:apply>
+		  </m:apply>
+		  <m:ci>
+		    <m:msubsup>
+		      <m:mi>W</m:mi>
+		      <m:mi>N</m:mi>
+		      <m:mi>n</m:mi>
+		    </m:msubsup>
+		  </m:ci>
+		</m:apply>
+		<m:ci>
+		  <m:msubsup>
+		    <m:mi>W</m:mi>
+		    <m:mfrac>
+		      <m:mi>N</m:mi>
+		      <m:mn>2</m:mn>
+		    </m:mfrac>
+		    <m:mrow>
+		      <m:mi>r</m:mi>
+		      <m:mi>n</m:mi>
+		    </m:mrow>
+		  </m:msubsup>
+		</m:ci>
+	      </m:apply>
+	    </m:apply>
+	    <m:apply>
+	      <m:ci type="fn" class="discrete">
+		<m:msub>
+		  <m:mi>DFT</m:mi>
+		  <m:mfrac>
+		    <m:mi>N</m:mi>
+		    <m:mn>2</m:mn>
+		  </m:mfrac>
+		</m:msub>
+	      </m:ci>
+	      <m:apply>
+		<m:times/>
+		<m:apply>
+		  <m:minus/>
+		  <m:apply>
+		    <m:ci type="fn">x</m:ci>
+		    <m:ci>n</m:ci>
+		  </m:apply>
+		  <m:apply>
+		    <m:ci type="fn">x</m:ci>
+		    <m:apply>
+		      <m:plus/>
+		      <m:ci>n</m:ci>
+		      <m:apply>
+			<m:divide/>
+			<m:ci>N</m:ci>
+			<m:cn>2</m:cn>
+		      </m:apply>
+		    </m:apply>
+		  </m:apply>
+		</m:apply>
+		<m:ci>
+		  <m:msubsup>
+		    <m:mi>W</m:mi>
+		    <m:mi>N</m:mi>
+		    <m:mi>n</m:mi>
+		  </m:msubsup>
+		</m:ci>
+	      </m:apply>
+	    </m:apply>
+	  </m:apply>
+	</m:math>
+      </equation>
+</para><para id="element-799">The mathematical simplifications in
+<link target-id="eq.evens"/> and <link target-id="eq.odds"/>
+reveal that both the even-indexed and odd-indexed frequency outputs
+<m:math>
+  <m:apply>
+    <m:ci type="fn">X</m:ci>
+    <m:ci>k</m:ci>
+  </m:apply>
+</m:math>
+can each be computed by a
+length-<m:math>
+         <m:apply>
+           <m:divide/>
+             <m:ci>N</m:ci>
+             <m:cn>2</m:cn>
+         </m:apply>
+       </m:math>
+DFT.
+The inputs to these DFTs are sums or differences of the first and second halves of the input signal,
+respectively,
+where the input to the short DFT producing the odd-indexed frequencies is multiplied by a so-called <term>twiddle factor</term>
+term
+<m:math>
+  <m:apply>
+    <m:eq/>
+      <m:ci>
+	<m:msubsup>
+	  <m:mi>W</m:mi>
+	  <m:mi>N</m:mi>
+	  <m:mi>k</m:mi>
+	</m:msubsup>
+      </m:ci>
+      <m:apply>
+	<m:exp/>
+	  <m:apply>
+	    <m:minus/>
+              <m:apply>
+	        <m:times/>
+		  <m:imaginaryi/>
+		    <m:apply>
+		      <m:divide/>
+		       <m:apply>
+			<m:times/>
+			<m:cn>2</m:cn>
+			<m:pi/>
+			<m:ci>k</m:ci>
+		       </m:apply>
+		     <m:ci>N</m:ci>
+		    </m:apply>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+        </m:apply>
+	</m:math>.
+This is called a <term>decimation in frequency</term> because the
+frequency samples are computed separately in alternating groups,
+and a <term>radix-2</term> algorithm because there
+are two groups.
+<link target-id="fig1"/> graphically illustrates this form of the DFT computation.
+This conversion of the full DFT into a series of shorter DFTs with a simple
+preprocessing step
+gives the decimation-in-frequency FFT its computational savings.
+      <figure id="fig1" orient="vertical"><media id="idm4369984" alt=""><image src="../../media/image1-cd08.png" mime-type="image/png"/><image for="pdf" src="../../media/DIFfig1.eps" mime-type="application/postscript"/></media>
+       <caption>Decimation in frequency of a length-<m:math><m:ci>N</m:ci></m:math> DFT
+          into two length-<m:math><m:apply><m:divide/><m:ci>N</m:ci><m:cn>2</m:cn></m:apply></m:math>
+          DFTs preceded by a preprocessing stage.
+        </caption></figure>
+    </para>
+    <para id="element-823">Whereas direct computation of all <m:math><m:ci>N</m:ci></m:math> DFT frequencies
+according to the <link document="m12019">DFT equation</link> would require
+<m:math>
+  <m:apply>
+    <m:power/>
+      <m:ci>N</m:ci>
+      <m:cn>2</m:cn>
+  </m:apply>
+</m:math>
+complex multiplies and
+<m:math>
+  <m:apply>
+    <m:minus/>
+      <m:apply>
+        <m:power/>
+          <m:ci>N</m:ci>
+          <m:cn>2</m:cn>
+      </m:apply>
+      <m:ci>N</m:ci>
+  </m:apply>
+</m:math>
+complex additions (for complex-valued data),
+by breaking the computation into two short-length DFTs
+with some preliminary combining of the data,
+as illustrated in <link target-id="fig1"/>,
+the computational cost is now
+<list id="stage1costs"><title>New Operation Counts</title>
+      <item>
+	<m:math>
+	  <m:apply>
+	    <m:eq/>
+	    <m:apply>
+	      <m:plus/>
+	      <m:apply>
+		<m:times/>
+		<m:cn>2</m:cn>
+		<m:apply>
+		  <m:power/>
+		  <m:apply>
+		    <m:divide/>
+		    <m:ci>N</m:ci>
+		    <m:cn>2</m:cn>
+		  </m:apply>
+		  <m:cn>2</m:cn>
+		</m:apply>
+	      </m:apply>
+	      <m:ci>N</m:ci>
+	    </m:apply>
+	    <m:apply>
+	      <m:plus/>
+	      <m:apply>
+		<m:divide/>
+		<m:apply>
+		  <m:power/>
+		  <m:ci>N</m:ci>
+		  <m:cn>2</m:cn>
+		</m:apply>
+		<m:cn>2</m:cn>
+	      </m:apply>
+              <m:apply>
+                <m:divide/>
+	          <m:ci>N</m:ci>
+                  <m:cn>2</m:cn>
+              </m:apply>
+	    </m:apply>
+	  </m:apply>
+	</m:math>
+	complex multiplies
+      </item>
+      <item>
+	<m:math>
+	  <m:apply>
+	    <m:eq/>
+	    <m:apply>
+	      <m:plus/>
+	      <m:apply>
+		<m:times/>
+		<m:cn>2</m:cn>
+		<m:apply>
+		  <m:divide/>
+		  <m:ci>N</m:ci>
+		  <m:cn>2</m:cn>
+		</m:apply>
+		<m:apply>
+		  <m:minus/>
+		  <m:apply>
+		    <m:divide/>
+		    <m:ci>N</m:ci>
+		    <m:cn>2</m:cn>
+		  </m:apply>
+		  <m:cn>1</m:cn>
+		</m:apply>
+	      </m:apply>
+	      <m:ci>N</m:ci>
+	    </m:apply>
+	    <m:apply>
+	      <m:divide/>
+	      <m:apply>
+		<m:power/>
+		<m:ci>N</m:ci>
+		<m:cn>2</m:cn>
+	      </m:apply>
+	      <m:cn>2</m:cn>
+	    </m:apply>
+	  </m:apply>
+	</m:math>
+        complex additions
+      </item>
+</list>
+This simple manipulation has reduced the total computational cost of the DFT by almost a factor of two!</para><para id="p.DIFbutterfly">The initial combining operations for both short-length DFTs involve parallel groups of two time samples,
+<m:math>
+  <m:apply>
+    <m:ci type="fn">x</m:ci>
+    <m:ci>n</m:ci>
+  </m:apply>
+</m:math>
+and
+<m:math>
+  <m:apply>
+    <m:ci type="fn">x</m:ci>
+    <m:apply>
+      <m:plus/>
+        <m:ci>n</m:ci>
+        <m:apply>
+          <m:divide/>
+            <m:ci>N</m:ci>
+            <m:cn>2</m:cn>
+        </m:apply>
+    </m:apply>
+  </m:apply>
+</m:math>.
+One of these so-called
+ <term>butterfly</term> operations is illustrated in <link target-id="DIFbutterfly"/>.
+There are
+	<m:math>
+	  <m:apply>
+	    <m:divide/>
+	    <m:ci>N</m:ci>
+	    <m:cn>2</m:cn>
+	  </m:apply>
+	</m:math>
+butterflies per <term>stage</term>, each requiring a complex addition and subtraction followed
+by one <term>twiddle-factor</term> multiplication by
+<m:math>
+  <m:apply>
+    <m:eq/>
+      <m:ci>
+	<m:msubsup>
+	  <m:mi>W</m:mi>
+	  <m:mi>N</m:mi>
+	  <m:mi>n</m:mi>
+	</m:msubsup>
+      </m:ci>
+      <m:apply>
+	<m:exp/>
+	  <m:apply>
+	    <m:minus/>
+              <m:apply>
+	        <m:times/>
+		  <m:imaginaryi/>
+		    <m:apply>
+		      <m:divide/>
+		       <m:apply>
+			<m:times/>
+			<m:cn>2</m:cn>
+			<m:pi/>
+			<m:ci>n</m:ci>
+		       </m:apply>
+		     <m:ci>N</m:ci>
+		    </m:apply>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+        </m:apply>
+	</m:math>
+ on the lower output branch.
+
+	<figure id="DIFbutterfly">
+          <media id="idm12289616" alt=""><image src="../../media/image2-3319.png" mime-type="image/png"/><image for="pdf" src="../../media/DIFfig2.eps" mime-type="application/postscript"/></media>
+	  <caption>DIF butterfly: twiddle factor after length-2 DFT</caption>
+	</figure>
+          It is worthwhile to note that the initial add/subtract part of the
+      DIF butterfly is actually a length-2 DFT!
+      The theory of <link document="m12025">multi-dimensional index maps</link>
+      shows that this must be the case, and that FFTs of any factorable
+      length may consist of successive stages of shorter-length FFTs
+      with twiddle-factor multiplications in between.
+      It is also worth noting that this butterfly differs from the
+      <link document="m12016" target-id="fig2">decimation-in-time radix-2 butterfly</link>
+      in that the twiddle factor multiplication occurs <emphasis>after</emphasis> the combining.</para>
+</section>
+<section id="idm13396816">
+<title>Radix-2 decimation-in-frequency algorithm</title>
+    <para id="element-978">The same radix-2 decimation in frequency can be applied recursively to the two
+length-<m:math>
+	  <m:apply>
+	    <m:divide/>
+	    <m:ci>N</m:ci>
+	    <m:cn>2</m:cn>
+	  </m:apply>
+	</m:math> <link document="m12019">DFT</link>s to save additional computation.
+        When successively applied until
+        the shorter and shorter DFTs reach length-2, the result is the
+        <link target-id="r2dif">radix-2 decimation-in-frequency FFT algorithm</link>.</para><para id="whatever">
+        <figure id="r2dif"><media id="idm12215936" alt=""><image src="../../media/image3-b5ad.png" mime-type="image/png"/><image for="pdf" src="../../media/DIFfig3.eps" mime-type="application/postscript"/></media>
+	  <caption>Radix-2 decimation-in-frequency FFT for a length-8 signal</caption>
+      </figure>
+    </para>
+    <para id="e833">The full radix-2 decimation-in-frequency decomposition illustrated in <link target-id="r2dif"/>
+requires
+	  <m:math>
+	    <m:apply>
+	      <m:eq/>
+	      <m:ci>M</m:ci>
+	      <m:apply>
+		<m:log/>
+		<m:logbase>
+		  <m:cn>2</m:cn>
+		</m:logbase>
+		<m:ci>N</m:ci>
+	      </m:apply>
+	    </m:apply>
+	  </m:math>
+          stages, each with
+	  <m:math>
+	    <m:apply>
+	      <m:divide/>
+	      <m:ci>N</m:ci>
+	      <m:cn>2</m:cn>
+	    </m:apply>
+	  </m:math>
+          butterflies per stage.
+          Each butterfly requires
+          <m:math><m:cn>1</m:cn></m:math>
+	  complex multiply and
+          <m:math><m:cn>2</m:cn></m:math>
+	  adds per butterfly.
+The total cost of the algorithm is thus
+<list id="list2" list-type="bulleted"><title>Computational cost of radix-2 DIF FFT</title>
+
+	<item>
+	  <m:math>
+	    <m:apply>
+	      <m:times/>
+	      <m:apply>
+		<m:divide/>
+		<m:ci>N</m:ci>
+		<m:cn>2</m:cn>
+	      </m:apply>
+	      <m:apply>
+		<m:log/>
+		<m:logbase>
+		  <m:cn>2</m:cn>
+		</m:logbase>
+		<m:ci>N</m:ci>
+	      </m:apply>
+	    </m:apply>
+	  </m:math> complex multiplies
+	</item>
+	<item>
+	  <m:math>
+	    <m:apply>
+	      <m:times/>
+	      <m:ci>N</m:ci>
+	      <m:apply>
+		<m:log/>
+		<m:logbase>
+		  <m:cn>2</m:cn>
+		</m:logbase>
+		<m:cn>N</m:cn>
+	      </m:apply>
+	    </m:apply>
+	  </m:math> complex adds
+	</item>
+
+</list>
+</para>
+    <para id="element-477">This is a remarkable savings over direct computation of the DFT.
+For example, a length-1024 DFT would require <m:math><m:cn>1048576</m:cn></m:math>
+complex multiplications and <m:math><m:cn>1047552</m:cn></m:math> complex additions
+with direct computation, but only <m:math><m:cn>5120</m:cn></m:math> complex multiplications and <m:math><m:cn>10240</m:cn></m:math> complex
+additions using the radix-2 FFT, a savings by a factor of 100 or more.
+The relative savings increase with longer FFT lengths, and are less for shorter lengths.
+Modest additional reductions in computation can be achieved by noting that certain twiddle factors,
+namely
+	<m:math>
+	  <m:ci>
+	    <m:msubsup>
+	      <m:mi>W</m:mi>
+	      <m:mi>N</m:mi>
+	      <m:mn>0</m:mn>
+	    </m:msubsup>
+	  </m:ci>
+	</m:math>,
+	<m:math>
+	  <m:ci>
+	    <m:msubsup>
+	      <m:mi>W</m:mi>
+	      <m:mi>N</m:mi>
+	      <m:mfrac>
+		<m:mi>N</m:mi>
+		<m:mn>2</m:mn>
+	      </m:mfrac>
+	    </m:msubsup>
+	  </m:ci>
+	</m:math>,
+	<m:math>
+	  <m:ci>
+	    <m:msubsup>
+	      <m:mi>W</m:mi>
+	      <m:mi>N</m:mi>
+	      <m:mfrac>
+		<m:mi>N</m:mi>
+		<m:mn>4</m:mn>
+	      </m:mfrac>
+	    </m:msubsup>
+	  </m:ci>
+	</m:math>,
+	<m:math>
+	  <m:ci>
+	    <m:msubsup>
+	      <m:mi>W</m:mi>
+	      <m:mi>N</m:mi>
+	      <m:mfrac>
+		<m:mi>N</m:mi>
+		<m:mn>8</m:mn>
+	      </m:mfrac>
+	    </m:msubsup>
+	  </m:ci>
+	</m:math>,
+	<m:math>
+	  <m:ci>
+	    <m:msubsup>
+	      <m:mi>W</m:mi>
+	      <m:mi>N</m:mi>
+	      <m:mfrac>
+		<m:mrow>
+		  <m:mn>3</m:mn>
+		  <m:mi>N</m:mi>
+		</m:mrow>
+		<m:mn>8</m:mn>
+	      </m:mfrac>
+	    </m:msubsup>
+	  </m:ci>
+	</m:math>,
+        require no multiplications, or fewer real multiplies than other ones.
+        By implementing special butterflies for these twiddle factors
+        as discussed in <link document="m12021">FFT algorithm and programming tricks</link>,
+        the computational cost of the radix-2 decimation-in-frequency FFT can be reduced to
+	<list id="list3" list-type="bulleted">
+	  <item>
+	    <m:math>
+	      <m:apply>
+		<m:plus/>
+		<m:apply>
+		  <m:minus/>
+		  <m:apply>
+		    <m:times/>
+		    <m:cn>2</m:cn>
+		    <m:ci>N</m:ci>
+		    <m:apply>
+		      <m:log/>
+		      <m:logbase>
+			<m:cn>2</m:cn>
+		      </m:logbase>
+		      <m:ci>N</m:ci>
+		    </m:apply>
+		  </m:apply>
+		  <m:apply>
+		    <m:times/>
+		    <m:cn>7</m:cn>
+		    <m:ci>N</m:ci>
+		  </m:apply>
+		</m:apply>
+		<m:cn>12</m:cn>
+	      </m:apply>
+	    </m:math> real multiplies
+	  </item>
+	  <item>
+	    <m:math>
+	      <m:apply>
+		<m:plus/>
+		<m:apply>
+		  <m:minus/>
+		  <m:apply>
+		    <m:times/>
+		    <m:cn>3</m:cn>
+		    <m:ci>N</m:ci>
+		    <m:apply>
+		      <m:log/>
+		      <m:logbase>
+			<m:cn>2</m:cn>
+		      </m:logbase>
+		      <m:ci>N</m:ci>
+		    </m:apply>
+		  </m:apply>
+		  <m:apply>
+		    <m:times/>
+		    <m:cn>3</m:cn>
+		    <m:ci>N</m:ci>
+		  </m:apply>
+		</m:apply>
+		<m:cn>4</m:cn>
+	      </m:apply>
+	    </m:math> real additions
+	  </item>
+	</list>
+
+The decimation-in-frequency FFT is a flow-graph
+reversal of the <link document="m12016">decimation-in-time</link> FFT:
+it has the same twiddle factors (in reverse pattern) and the same operation counts.</para><note id="idm13091808">In a decimation-in-frequency radix-2 FFT as illustrated in <link target-id="r2dif"/>,
+the output is in <term>bit-reversed</term> order (hence
+      "decimation-in-frequency").
+That is, if the frequency-sample index <m:math><m:ci>n</m:ci>
+      </m:math> is written as a binary number, the order is that
+      binary number reversed.
+The bit-reversal process is illustrated <link document="m12016" target-id="ex1">here</link>.</note><para id="element-319">It is important to note that, if the input data are in order
+before beginning the FFT computations, the outputs of each butterfly throughout the
+computation can be placed in the same memory locations from which the inputs were fetched,
+resulting in an <term>in-place algorithm</term> that requires no extra memory to perform
+the FFT.
+Most FFT implementations are in-place, and overwrite the input data with the intermediate
+values and finally the output.</para>
+   </section>
+  </content>
+  
+</document>

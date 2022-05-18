@@ -1,0 +1,698 @@
+<document xmlns="http://cnx.rice.edu/cnxml" xmlns:m="http://www.w3.org/1998/Math/MathML" xmlns:md="http://cnx.rice.edu/mdml">
+  <title>Fast Convolution</title>
+  <metadata><md:content-id>undefined</md:content-id><md:title/><md:uuid>b0f522e0-3184-41ae-854b-3c31714b65fa</md:uuid>
+</metadata>
+
+  <content>
+    <section id="sec_A">
+      <title>Fast Circular Convolution</title>
+      <para id="intro">
+	Since, 
+	<m:math display="block">
+          
+
+	  <m:apply>
+	    <m:eq/>
+	    <m:apply>
+	      <m:sum/>
+	      <m:bvar><m:ci>m</m:ci></m:bvar>
+	      <m:lowlimit><m:cn>0</m:cn></m:lowlimit>
+	      <m:uplimit>
+                <m:apply>
+		  <m:minus/>
+                  <m:ci>N</m:ci>
+                  <m:cn>1</m:cn>
+		</m:apply>
+              </m:uplimit>
+	      <m:apply>
+		<m:times/>
+		<m:apply>
+		  <m:ci type="fn">x</m:ci>
+		  <m:ci>m</m:ci>
+		</m:apply>
+                <m:apply> 
+                  <m:rem/>
+		  <m:apply>
+		    <m:ci type="fn">h</m:ci>
+		    
+                    <m:apply> 
+		      <m:minus/>
+		      <m:ci>n</m:ci>
+		      <m:ci>m</m:ci> 
+                    </m:apply>    
+		    
+		  </m:apply>
+		  <m:ci>N</m:ci>
+                </m:apply> 
+	      </m:apply>
+	    </m:apply>
+            <m:apply>
+              <m:ci type="fn">y</m:ci>
+	      <m:ci>n</m:ci>
+            </m:apply>
+	  </m:apply> 
+          <m:ci> is equivalent to </m:ci>
+
+	  <m:apply>
+	    <m:eq/>
+	    <m:apply>
+              <m:ci type="fn">Y</m:ci>
+	      <m:ci>k</m:ci>
+	    </m:apply>
+	    <m:apply>
+	      <m:times/>
+	      <m:apply>
+		<m:ci type="fn">X</m:ci>
+		<m:ci>k</m:ci>
+	      </m:apply>
+	      <m:apply>
+		<m:ci type="fn">H</m:ci>
+		<m:ci>k</m:ci>
+	      </m:apply>  
+	    </m:apply>
+	  </m:apply> 
+	  
+	</m:math>
+	
+	<m:math> 
+	  <m:apply>
+	    <m:ci type="fn">y</m:ci>
+	    <m:ci>n</m:ci>
+	  </m:apply>  
+	</m:math> 
+	can be computed as 
+	<m:math> 
+	  <m:apply>
+	    <m:eq/>
+	    <m:apply>
+	      <m:ci type="fn">y</m:ci>
+	      <m:ci>n</m:ci>
+	    </m:apply> 
+	    <m:apply>
+	      <m:ci type="fn" class="discrete">IDFT</m:ci>
+	      <m:apply>
+		<m:times/>
+		<m:apply>
+		  <m:ci type="fn" class="discrete">DFT</m:ci>
+		  <m:apply>
+		    <m:ci type="fn">x</m:ci>
+		    <m:ci>n</m:ci>
+		  </m:apply>
+		</m:apply>
+		<m:apply>
+		  <m:ci type="fn" class="discrete">DFT</m:ci>
+		  <m:apply>
+		    <m:ci type="fn">h</m:ci>
+		    <m:ci>n</m:ci>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+	    </m:apply>
+	  </m:apply>
+	</m:math>
+	
+
+	<list id="cost" list-type="bulleted">
+	  <title>Cost</title>
+	  <item> <list id="cost1">
+	      <title>Direct</title>
+	      <item><m:math>
+		  <m:apply>
+		    <m:power/>
+		    <m:ci>N</m:ci>
+		    <m:ci>2</m:ci>  
+		  </m:apply>
+		</m:math> complex multiplies. 
+	      </item>  
+	      <item><m:math>
+		  <m:apply>
+		    <m:times/>
+		    <m:ci>N</m:ci>
+		    <m:apply>
+		      <m:minus/>
+		      <m:ci>N</m:ci> 
+		      <m:ci>1</m:ci>  
+		    </m:apply>
+		  </m:apply>
+		</m:math> complex adds.
+	      </item>
+	    </list>
+	  </item>
+	  <item><list id="cost2">
+	      <title>Via FFTs</title>
+	      <item>3 FFTs + <m:math><m:ci>N</m:ci></m:math> multipies.</item> 
+	      <item><m:math>
+		  <m:apply>
+		    <m:plus/>
+		    <m:ci>N</m:ci>   
+		    <m:apply>
+		      <m:times/>
+		      <m:apply>
+			<m:divide/>  
+			<m:apply>
+			  <m:times/>
+			  <m:cn>3</m:cn>
+			  <m:ci>N</m:ci>
+			</m:apply> 
+			<m:cn>2</m:cn>
+		      </m:apply>     
+		      <m:apply>
+			<m:log/> 
+			<m:logbase><m:cn>2</m:cn></m:logbase> 
+			<m:ci>N</m:ci> 
+		      </m:apply> 
+		    </m:apply>
+		  </m:apply>
+		</m:math> complex multiplies.</item>  
+	      <item><m:math>
+		  <m:apply>
+		    <m:times/>
+		    <m:cn>3</m:cn>
+		    <m:apply>
+		      <m:times/>
+		      <m:ci>N</m:ci> 
+		      <m:apply>
+			<m:log/> 
+			<m:logbase><m:cn>2</m:cn></m:logbase>  
+			<m:ci>N</m:ci>
+		      </m:apply>
+		    </m:apply>
+		  </m:apply>
+		</m:math> complex adds.</item>
+	    </list></item>
+	</list>
+	If <m:math><m:apply>
+	    <m:ci type="fn">H</m:ci>
+	    <m:ci>k</m:ci>
+	  </m:apply>
+	</m:math> can be precomputed, cost is only 2 FFts +
+	<m:math><m:ci>N</m:ci></m:math> multiplies.
+      </para>
+    </section> 
+
+
+    <section id="idm1576544">
+      <title>Fast Linear Convolution</title> 
+      <para id="sec2_1">
+	<link document="m12032" target-id="DFTequation">DFT</link> produces cicular convolution. For linear convolution, we
+	must zero-pad sequences so that circular wrap-around always
+	wraps over zeros.  </para>
+
+      <figure id="fig1001" orient="horizontal">
+	<media id="idp731184" alt=""><image src="../../media/figure6.png" mime-type="image/png"/></media>
+      </figure> 
+      <para id="sec2_2">
+	To achieve linear convolution using fast circular convolution,
+	we must use zero-padded DFTs of length
+	<m:math>
+	  <m:apply>
+	    <m:geq/>
+	    <m:ci>N</m:ci>
+	    <m:apply>
+	      <m:minus/>
+	      <m:apply>
+		<m:plus/>
+		<m:ci>L</m:ci>
+		<m:ci>M</m:ci>
+	      </m:apply>
+	      <m:cn>1</m:cn> 
+	    </m:apply>
+	  </m:apply>
+	</m:math> 
+      </para>
+
+      <figure id="fig1002" orient="horizontal">
+	<media id="idp10256" alt=""><image src="../../media/Figure7.png" mime-type="image/png"/></media> 
+      </figure> 
+
+      <para id="sec2_3">
+	Choose shortest convenient 
+	<m:math>
+	  <m:apply>
+	    <m:ci>N</m:ci>
+	  </m:apply>
+	</m:math>
+	(usually smallest power-of-two greater than or equal to 
+	<m:math>
+	  <m:apply>
+	    <m:minus/>
+	    <m:apply>
+	      <m:plus/>
+	      <m:ci>L</m:ci>
+	      <m:ci>M</m:ci>
+	    </m:apply>
+	    <m:cn>1</m:cn>
+	  </m:apply>
+	  
+	</m:math>)
+
+	<m:math display="block">
+	  <m:apply>
+	    <m:eq/>
+	    <m:apply>
+	      <m:ci type="fn">y</m:ci>
+	      <m:ci>n</m:ci>
+	    </m:apply>
+	    <m:apply>
+	      <m:ci type="fn" class="discrete"><m:msub>
+		  <m:mi>IDFT</m:mi>
+		  <m:mi>N</m:mi>
+		</m:msub></m:ci>
+	      <m:apply>
+		<m:times/>
+		<m:apply>
+		  <m:ci type="fn" class="discrete">
+		    <m:msub><m:mi>DFT</m:mi>
+		      <m:mi>N</m:mi>
+		    </m:msub></m:ci>
+		  <m:apply>
+		    <m:ci type="fn">x</m:ci>     
+		    <m:ci>n</m:ci>     
+		  </m:apply> 
+		</m:apply>
+		<m:apply>
+		  <m:ci type="fn" class="discrete"><m:msub>
+		      <m:mi>DFT</m:mi>
+		      <m:mi>N</m:mi>
+		    </m:msub></m:ci>
+		  <m:apply>
+		    <m:ci type="fn">h</m:ci>     
+		    <m:ci>n</m:ci>     
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+	      
+	    </m:apply>      
+
+	  </m:apply>
+	</m:math>
+	<note type="note" id="idm2294464">There is some inefficiency when compared to circular convolution due to longer zero-padded <link document="m12032" target-id="DFTequation">DFTs</link>. Still, 
+	  <m:math>
+	    <m:apply>
+	      <m:ci type="fn">O</m:ci>
+	      <m:apply>
+		<m:divide/>
+		<m:ci>N</m:ci>
+		<m:apply>
+		  <m:log/>
+		  <m:logbase><m:cn>2</m:cn></m:logbase>
+		  <m:ci>N</m:ci>          
+		</m:apply>
+	      </m:apply>
+	    </m:apply> 
+	  </m:math>
+	  savings over direct computation.</note>
+      </para> 
+    </section>
+
+
+    <section id="idm8907600">
+      <title>Running Convolution</title>
+      <para id="sec3_1"> Suppose 
+	<m:math>
+	  <m:apply>
+	    <m:eq/>
+	    <m:ci>L</m:ci>
+	    <m:infinity/>
+	  </m:apply>
+	</m:math>, as in a real time filter application, or 
+
+	<m:math>
+	  <m:apply>   
+	    <m:mo>≫</m:mo>
+	    <m:ci>L</m:ci>
+	    <m:ci>M</m:ci>
+	  </m:apply>
+	</m:math>. There are efficient block methods for computing fast convolution.
+      </para>
+      
+      <section id="idp785312">
+	<title>Overlap-Save (OLS) Method</title>
+	<para id="subsec_1.1">
+	  Note that if a length-<m:math><m:ci>M</m:ci></m:math> filter
+	  <m:math>
+	    <m:apply>
+	      <m:ci type="fn">h</m:ci>
+	      <m:ci>n</m:ci>
+	    </m:apply>
+	  </m:math>
+	  is circularly convulved with a
+	  length-<m:math><m:ci>N</m:ci></m:math> segment of a signal
+	  <m:math>
+	    <m:apply>
+	      <m:ci type="fn">x</m:ci>
+	      <m:ci>n</m:ci>
+	    </m:apply>
+	  </m:math>,
+	  
+	  <figure id="fig_sec3_1">
+	    <media id="idm8321696" alt=""><image src="../../media/figure4.png" mime-type="image/png"/></media>
+	  </figure>
+	  
+	  the first 
+	  <m:math>
+	    <m:apply>
+	      <m:minus/>
+	      <m:ci>M</m:ci>
+	      <m:cn>1</m:cn>
+	    </m:apply>
+	  </m:math>
+	  samples are wrapped around and thus is
+	  <emphasis>incorrect</emphasis>. However, for
+	  <m:math>
+	    <m:apply>
+	      <m:leq/> 
+	      <m:apply>
+		<m:minus/>
+		<m:ci>M</m:ci>
+		<m:cn>1</m:cn>
+	      </m:apply>
+	      <m:apply>
+		<m:leq/>
+		<m:ci>n</m:ci>
+		<m:apply>
+		  <m:minus/>
+		  <m:ci>N</m:ci>
+		  <m:cn>1</m:cn>
+		</m:apply>
+	      </m:apply>
+	    </m:apply> </m:math>,the convolution is linear
+	  convolution, so these samples are correct. Thus
+	  <m:math>
+	    <m:apply>
+	      <m:plus/>
+	      <m:apply>
+		<m:minus/>
+		<m:ci>N</m:ci> 
+		<m:ci>M</m:ci>
+	      </m:apply>
+	      <m:cn>1</m:cn>  
+	    </m:apply>
+	  </m:math> good outputs are produced for each
+	  length-<m:math><m:ci>N</m:ci></m:math> circular convolution.
+	</para>
+
+	<para id="subsec_1.2">
+	  The Overlap-Save Method: Break long signal into successive
+	  blocks of
+	  <m:math>
+	    <m:ci>N</m:ci>  
+	  </m:math>
+	  samples, each block overlapping the previous block by 
+	  <m:math>
+	    <m:apply>
+	      <m:minus/>
+	      <m:ci>M</m:ci>
+	      <m:cn>1</m:cn>
+	    </m:apply>
+	  </m:math> samples. Perform circular convolution of each
+	  block with filter
+	  <m:math>
+	    <m:apply>
+	      <m:ci type="fn">h</m:ci>
+	      <m:ci>m</m:ci>
+	    </m:apply>
+	  </m:math>. Discard first 
+	  <m:math>
+	    <m:apply>
+	      <m:minus/>
+	      <m:ci>M</m:ci>
+	      <m:cn>1</m:cn>
+	    </m:apply>
+	  </m:math>
+	  points in each output block, and concatenate the remaining
+	  points to create <m:math>
+	    <m:apply>
+	      <m:ci type="fn">y</m:ci>
+	      <m:ci>n</m:ci>
+	    </m:apply>
+	  </m:math>.   
+	  
+	  <figure id="fig_sec3_2">
+	    <media id="idm932096" alt=""><image src="../../media/Figure1.png" mime-type="image/png"/></media>
+	  </figure>
+	</para>
+	
+	<para id="subsec_1.3">
+	  Computation cost for a length-<m:math><m:ci>N</m:ci></m:math> equals
+
+	  <m:math>
+	    <m:apply>
+	      <m:power/>
+	      <m:cn>2</m:cn>
+	      <m:ci>n</m:ci> 
+	    </m:apply>
+	  </m:math> FFT per output sample is (assuming precomputed
+	  <m:math>
+	    <m:apply>
+	      <m:ci type="fn">H</m:ci>
+	      <m:ci>k</m:ci> 
+	    </m:apply>
+	  </m:math>) 2 FFTs and <m:math><m:ci>N</m:ci></m:math> multiplies
+
+	  <m:math display="block">
+	    <m:apply>
+	      <m:eq/>
+	      
+	      <m:apply>
+		<m:divide/>
+		<m:apply>
+		  <m:plus/>
+		  <m:apply>      
+		    <m:times/>
+		    <m:cn>2</m:cn>
+		    <m:apply> 
+		      <m:times/>
+		      <m:apply>
+			<m:divide/>
+		        <m:ci>N</m:ci>    
+                        <m:cn>2</m:cn>
+		      </m:apply> 
+		      <m:apply>
+			<m:log/> 
+		        <m:logbase><m:cn>2</m:cn></m:logbase> 
+		        <m:ci>N</m:ci> 
+		      </m:apply> 
+		    </m:apply>
+		  </m:apply>
+		  <m:ci>N</m:ci>
+		</m:apply>
+		<m:apply>
+		  <m:plus/>
+		  <m:apply>	
+		    <m:minus/>
+		    <m:ci>N</m:ci> 
+		    <m:ci>M</m:ci>
+		  </m:apply>
+		  <m:cn>1</m:cn>    
+		</m:apply>
+	      </m:apply>
+	      
+	      <m:apply>
+		<m:divide/>
+		<m:apply>
+		  <m:times/>
+		  <m:ci>N</m:ci>
+		  <m:apply>
+		    <m:plus/>
+		    <m:apply>
+		      <m:log/>
+		      <m:logbase><m:cn>2</m:cn></m:logbase> 
+		      <m:ci>N</m:ci> 
+		    </m:apply>
+		    <m:cn>1</m:cn>
+		  </m:apply>  
+		</m:apply>
+		
+		<m:apply>
+		  <m:plus/>
+		  <m:apply>	
+		    <m:minus/>
+		    <m:ci>N</m:ci> 
+		    <m:ci>M</m:ci>
+		  </m:apply>
+		  <m:cn>1</m:cn>  
+		</m:apply>
+		
+	      </m:apply>    
+
+
+	    </m:apply>
+	    <m:ci>complex multiplies</m:ci>
+	  </m:math> 
+
+	  <m:math display="block">
+	    <m:apply>
+	      <m:eq/>
+	      
+	      <m:apply>
+		<m:divide/>
+		<m:apply>      
+		  <m:times/>
+		  <m:cn>2</m:cn>
+		  <m:apply> 
+		    <m:times/>
+                    <m:ci>N</m:ci>
+                    <m:apply>
+		      <m:log/> 
+		      <m:logbase><m:cn>2</m:cn></m:logbase> 
+		      <m:ci>N</m:ci> 
+		    </m:apply> 
+		  </m:apply>
+		</m:apply>
+		
+		<m:apply>
+		  <m:plus/>
+		  <m:apply>	
+		    <m:minus/>
+		    <m:ci>N</m:ci> 
+		    <m:ci>M</m:ci>
+		  </m:apply>
+		  <m:cn>1</m:cn>    
+		</m:apply>
+	      </m:apply>
+	      
+	      <m:apply>
+		<m:divide/>
+		<m:apply>
+		  <m:times/>
+		  <m:cn>2</m:cn>
+		  <m:ci>N</m:ci>
+		  <m:apply>
+		    <m:log/>
+		    <m:logbase><m:cn>2</m:cn></m:logbase> 
+		    <m:ci>N</m:ci> 
+		  </m:apply>
+		</m:apply>
+		
+		<m:apply>
+		  <m:plus/>
+		  <m:apply>	
+		    <m:minus/>
+		    <m:ci>N</m:ci> 
+		    <m:ci>M</m:ci>
+		  </m:apply>
+		  <m:cn>1</m:cn>  
+		</m:apply>
+		
+	      </m:apply>    
+
+
+	    </m:apply>
+	    <m:ci>    complex adds</m:ci>
+	  </m:math> 
+	</para> 
+
+	<para id="subsec_1.4">
+	  Compare to  
+	  <m:math>
+	    <m:ci>M</m:ci>
+	  </m:math> mults, 
+
+	  <m:math>
+	    <m:apply>
+	      <m:minus/>
+	      <m:ci>M</m:ci>
+	      <m:cn>1</m:cn>
+	    </m:apply>
+	  </m:math> adds per output point for direct method. For a given
+	  <m:math>
+	    <m:ci>M</m:ci>
+	  </m:math>, optimal 
+	  <m:math>
+	    <m:ci>N</m:ci>
+	  </m:math> can be determined by finding 
+	  <m:math>
+	    <m:ci>N</m:ci>
+	  </m:math> minimizing operation counts. Usualy, optimal 
+	  <m:math>
+	    <m:ci>N</m:ci>
+	  </m:math> is 
+
+	  <m:math>
+	    <m:apply>
+	      <m:leq/> 
+	      <m:apply>
+		<m:times/>
+		<m:cn>4</m:cn>
+		<m:ci>M</m:ci>
+	      </m:apply>
+	      <m:ci><m:msub><m:mi>N</m:mi><m:mi>opt</m:mi></m:msub></m:ci>
+	      <m:apply>
+		<m:times/>
+		<m:cn>8</m:cn>
+		<m:ci>M</m:ci>
+	      </m:apply>
+	    </m:apply>
+	  </m:math>.
+	</para> 
+      </section>
+
+      <section id="idm8692992">
+	<title>Overlap-Add (OLA) Method</title>
+	<para id="subsec_2.1">
+	  Zero-pad length-<m:math><m:ci>L</m:ci></m:math> blocks by 
+	  <m:math>
+	    <m:apply>
+	      <m:minus/>
+	      <m:ci>M</m:ci>
+	      <m:cn>1</m:cn>
+	    </m:apply>
+	  </m:math> samples.
+	  <figure id="fig_006">
+	    <media id="idm9205792" alt=""><image src="../../media/figure5.png" mime-type="image/png"/></media>
+	  </figure>
+
+	</para>
+
+	<para id="subsec_2.2">
+	  Add successive blocks, overlapped by 
+	  <m:math>
+	    <m:apply>
+	      <m:minus/>
+	      <m:ci>M</m:ci>
+	      <m:cn>1</m:cn>
+	    </m:apply>
+	  </m:math> samples, so that the tails sum to produce the
+	  complete linear convolution.
+	  <figure id="fig_007">
+	    <media id="idm8477264" alt=""><image src="../../media/Figure2.png" mime-type="image/png"/></media>
+	  </figure>
+	  Computational Cost: Two length 
+	  <m:math>
+	    <m:apply>
+	      <m:eq/>
+	      <m:ci>N</m:ci>
+	      <m:apply>
+		<m:minus/>
+		<m:apply>
+		  <m:plus/>
+		  <m:ci>L</m:ci> 
+		  <m:ci>M</m:ci>
+		</m:apply>
+		<m:cn>1</m:cn>  
+	      </m:apply>
+	    </m:apply>
+	  </m:math> FFTs and
+	  <m:math>
+	    <m:ci>M</m:ci>
+	  </m:math>  mults and
+	  <m:math>
+	    <m:apply>
+	      <m:minus/>
+	      <m:ci>M</m:ci>
+	      <m:cn>1</m:cn>
+	    </m:apply>
+	  </m:math> adds per 
+	  <m:math>
+	    <m:ci>L</m:ci>
+	  </m:math> output points; essentially the sames as OLS method.
+
+	</para>
+      </section>
+
+    </section>
+
+  </content>
+  
+</document>

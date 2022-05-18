@@ -1,0 +1,102 @@
+<document xmlns="http://cnx.rice.edu/cnxml" xmlns:m="http://www.w3.org/1998/Math/MathML" xmlns:md="http://cnx.rice.edu/mdml">
+  <title>Power-of-two FFTs</title>
+  <metadata><md:content-id>undefined</md:content-id><md:title/><md:uuid>0c0b100a-39d4-401a-8df8-2644c53665de</md:uuid>
+</metadata>
+
+  <content>
+    <para id="para1">FFTs of length
+      <m:math>
+	<m:apply>
+	  <m:eq/>
+	  <m:ci>N</m:ci>
+	  <m:apply>
+	    <m:power/>
+	    <m:cn>2</m:cn>
+	    <m:ci>M</m:ci>
+	  </m:apply>
+	</m:apply>
+      </m:math>
+  equal to a power of two are, by far, the most commonly used.
+  These algorithms are very efficient, relatively simple, and a single program can compute
+  power-of-two FFTs of different lengths.
+  As with most FFT algorithms, they gain their efficiency by computing
+  <emphasis>all</emphasis> <link document="m12019">DFT</link> points
+  simultaneously through extensive reuse of intermediate computations; they are thus efficient
+  when many DFT frequency samples are needed.
+  The simplest power-of-two FFTs are the <link document="m12016">decimation-in-time radix-2 FFT</link>
+  and the <link document="m12018">decimation-in-frequency radix-2 FFT</link>; they reduce the
+  length-<m:math>
+	<m:apply>
+	  <m:eq/>
+	  <m:ci>N</m:ci>
+	  <m:apply>
+	    <m:power/>
+	    <m:cn>2</m:cn>
+	    <m:ci>M</m:ci>
+	  </m:apply>
+	</m:apply>
+      </m:math>
+  DFT to a series of length-2 DFT computations with <term>twiddle-factor</term> complex multiplications
+  between them.
+  The <link document="m12027">radix-4 FFT algorithm</link>
+  similarly reduces a length-<m:math>
+	<m:apply>
+	  <m:eq/>
+	  <m:ci>N</m:ci>
+	  <m:apply>
+	    <m:power/>
+	    <m:cn>4</m:cn>
+	    <m:ci>M</m:ci>
+	  </m:apply>
+	</m:apply>
+      </m:math>
+  DFT to a series of length-4 DFT computations with twiddle-factor multiplies
+  in between.
+  Radix-4 FFTs require only 75% as many complex multiplications as the radix-2
+  algorithms, although the number of complex additions remains the same.
+  Radix-8 and higher-radix FFT algorithms can be derived using
+  <link document="m12025">multi-dimensional index maps</link> to reduce the
+  computational complexity a bit more.
+  However, the <link document="m12031">split-radix algorithm</link> and its recent extensions combine
+  the best elements of the radix-2 and radix-4 algorithms to obtain lower
+  complexity than either or than any higher radix, requiring only two-thirds
+  as many complex multiplies as the radix-2 algorithms.
+  All of these algorithms obtain huge savings over direct computation of the DFT, reducing the complexity from 
+<m:math>
+   <m:apply>
+     <m:ci type="fn">O</m:ci>
+     <m:apply>
+       <m:power/>
+         <m:ci>N</m:ci>
+         <m:cn>2</m:cn>
+     </m:apply>
+   </m:apply> 
+ </m:math>
+to
+<m:math>
+   <m:apply>
+     <m:ci type="fn">O</m:ci>
+     <m:apply>
+       <m:times/>
+         <m:ci>N</m:ci>
+         <m:apply>
+           <m:log/>
+           <m:ci>N</m:ci>          
+         </m:apply>
+     </m:apply>
+   </m:apply> 
+ </m:math>.</para>   
+
+    <para id="para2">The efficiency of an FFT implementation depends on more than just the
+      number of computations.
+      <link document="m12021">Efficient FFT programming tricks</link> can make
+      up to a several-fold difference in the run-time of FFT programs.
+      <link document="m12012">Alternate FFT structures</link> can lead to
+      a more convenient data flow for certain hardware.
+      As discussed in <link document="m12060">choosing the best FFT algorithm</link>,
+      certain hardware is designed for, and thus most efficient for, FFTs of specific lengths or radices.
+
+    </para>
+  </content>
+  
+</document>

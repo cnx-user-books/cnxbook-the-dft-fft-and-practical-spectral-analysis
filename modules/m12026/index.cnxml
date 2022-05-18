@@ -1,0 +1,282 @@
+<document xmlns="http://cnx.rice.edu/cnxml" xmlns:m="http://www.w3.org/1998/Math/MathML" xmlns:md="http://cnx.rice.edu/mdml">
+  <title>Overview of Fast Fourier Transform (FFT) Algorithms</title>
+  <metadata><md:content-id>undefined</md:content-id><md:title/><md:uuid>26aa0672-1bf7-4237-850e-81c825504116</md:uuid>
+</metadata>
+
+  <content>
+    <para id="para1">A <link document="col10281">fast Fourier transform</link>,
+       or <link document="col10281">FFT</link>, is not a new transform,
+       but is a computationally efficient algorithm for the computing
+       the <link document="m12019">DFT</link>.
+       The length-<m:math><m:ci>N</m:ci></m:math> DFT, defined as
+    <equation id="eq.DFT"><m:math>
+	<m:apply>
+	  <m:eq/>
+	  <m:apply>
+	    <m:ci type="fn">X</m:ci>
+	    <m:ci>k</m:ci>
+	  </m:apply>
+	  <m:apply>
+	    <m:sum/>
+	    <m:bvar>
+	      <m:ci>n</m:ci>
+	    </m:bvar>
+	    <m:uplimit>
+	      <m:apply>
+		<m:minus/>
+		<m:ci>N</m:ci>
+		<m:cn>1</m:cn>
+	      </m:apply>
+	    </m:uplimit>
+	    <m:lowlimit>
+	      <m:cn>0</m:cn>
+	    </m:lowlimit>
+	    <m:apply>
+	      <m:times/>
+	      <m:apply>
+		<m:ci type="fn">x</m:ci>
+		<m:ci>n</m:ci>
+	      </m:apply>
+	      <m:apply>
+		<m:exp/>
+		<m:apply>
+		  <m:minus/>
+		  <m:apply>
+		    <m:times/>
+		    <m:imaginaryi/>
+		    <m:apply>
+		      <m:divide/>
+		      <m:apply>
+			<m:times/>
+			<m:cn>2</m:cn>
+			<m:pi/>
+			<m:ci>n</m:ci>
+			<m:ci>k</m:ci>
+		      </m:apply>
+		      <m:apply>
+			<m:ci>N</m:ci>
+		      </m:apply>
+		    </m:apply>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+	    </m:apply>
+	  </m:apply>
+	</m:apply>
+      </m:math>
+    </equation>
+    where 
+      <m:math>
+	<m:apply>
+	  <m:ci type="fn">X</m:ci>
+	  <m:ci>k</m:ci>
+	</m:apply>
+      </m:math> and
+      <m:math>
+	<m:apply>
+	  <m:ci type="fn">x</m:ci>
+	  <m:ci>n</m:ci>
+	</m:apply>
+      </m:math> are in general complex-valued and
+      <m:math>
+	<m:apply>
+	  <m:leq/>
+	  <m:cn>0</m:cn>
+	  <m:ci>k</m:ci>
+	</m:apply>
+      </m:math>,
+      <m:math>
+	<m:apply>
+	  <m:leq/>
+	  <m:ci>n</m:ci>
+	  <m:apply>
+	    <m:minus/>
+	    <m:ci>N</m:ci>
+	    <m:cn>1</m:cn>
+	  </m:apply>
+	</m:apply>
+      </m:math>,
+      requires <m:math><m:ci>N</m:ci></m:math> complex multiplies to compute each
+      <m:math>
+	<m:apply>
+	  <m:ci type="fn">X</m:ci>
+	  <m:ci>k</m:ci>
+	</m:apply>
+      </m:math>.
+      Direct computation of all
+      <m:math><m:ci>N</m:ci></m:math> frequency samples thus requires
+      <m:math>
+	<m:apply>
+	  <m:power/>
+	  <m:ci>N</m:ci>
+	  <m:cn>2</m:cn>
+	</m:apply>
+      </m:math> complex multiplies and
+      <m:math>
+	<m:apply>
+	  <m:times/>
+	  <m:ci>N</m:ci>
+	  <m:apply>
+	    <m:minus/>
+	    <m:ci>N</m:ci>
+	    <m:cn>1</m:cn>
+	  </m:apply>
+	</m:apply>
+      </m:math>
+      complex additions.
+     (This assumes precomputation of the DFT coefficients
+      <m:math>
+	<m:apply>
+	  <m:mo>≐</m:mo>
+	  <m:ci>
+	    <m:msubsup>
+	      <m:mi>W</m:mi>
+	      <m:mi>N</m:mi>
+	      <m:mrow>
+		<m:mi>n</m:mi>
+		<m:mi>k</m:mi>
+	      </m:mrow>
+	    </m:msubsup>
+	  </m:ci>
+	  <m:apply>
+	    <m:exp/>
+	    <m:apply>
+	      <m:minus/>
+	      <m:apply>
+		<m:times/>
+		<m:imaginaryi/>
+		<m:apply>
+		  <m:divide/>
+		  <m:apply>
+		    <m:times/>
+		    <m:cn>2</m:cn>
+		    <m:pi/>
+		    <m:ci>n</m:ci>
+		    <m:ci>k</m:ci>
+		  </m:apply>
+		  <m:ci>N</m:ci>
+		</m:apply>
+	      </m:apply>
+	    </m:apply>
+	  </m:apply>
+	</m:apply>
+      </m:math>; otherwise, the cost is even higher.)
+       For the large DFT lengths used in many applications,
+       <m:math>
+         <m:apply>
+           <m:power/>
+            <m:ci>N</m:ci>
+            <m:cn>2</m:cn>
+         </m:apply>
+       </m:math>
+       operations may be prohibitive.
+       (For example, digital terrestrial television broadcast
+       in Europe uses <m:math><m:ci>N</m:ci></m:math> = 2048 or 8192 OFDM channels, and the <link url="http://en.wikipedia.org/wiki/SETI">SETI</link> project uses
+       up to length-4194304 DFTs.)
+
+       DFTs are thus almost always computed in practice by an
+       <link document="col10281">FFT algorithm</link>.
+       FFTs are very widely used in signal processing, for applications
+       such as <link document="m12032">spectrum analysis</link> and
+       digital filtering via <link document="m12022">fast convolution</link>.
+    </para>
+   <section id="idm3391536">
+   <title>History of the FFT</title>
+    <para id="history">It is now known that <link url="http://en.wikipedia.org/wiki/Carl_Friedrich_Gauss">C.F. Gauss</link> invented an FFT in 1805 or so
+       to assist the computation of planetary orbits via 
+       <link document="m12032" target-id="DFTandDFTsect">discrete Fourier series</link>.
+       Various FFT algorithms were independently invented over the next two
+       centuries, but FFTs achieved widespread awareness and impact only
+       with the Cooley and Tukey algorithm published in 1965, which came
+       at a time of increasing use of digital computers and when the vast
+       range of applications of numerical Fourier techniques was becoming apparent.
+       Cooley and Tukey's algorithm spawned a surge of research in FFTs
+       and was also partly responsible for the emergence of Digital Signal Processing (DSP) as a
+       distinct, recognized discipline.
+       Since then, many different algorithms have been rediscovered or developed,
+       and efficient FFTs now exist for all DFT lengths.
+    </para>
+    </section>
+    <section id="idm2298752">
+    <title>Summary of FFT algorithms</title>
+    <para id="strategy">The main strategy behind most FFT algorithms is to factor a
+       length-<m:math><m:ci>N</m:ci></m:math> DFT into a number of
+       shorter-length DFTs, the outputs of which are reused multiple
+       times (usually in additional short-length DFTs!) to compute the
+       final results.
+       The lengths of the short DFTs correspond to integer factors of the
+       DFT length, <m:math><m:ci>N</m:ci></m:math>, leading to different
+       algorithms for different lengths and factors.
+       By far the most commonly used FFTs select
+       <m:math>
+         <m:apply>
+           <m:eq/>
+             <m:ci>N</m:ci>
+             <m:apply>
+               <m:power/>
+                 <m:cn>2</m:cn>
+                 <m:ci>M</m:ci>
+             </m:apply>
+         </m:apply>
+       </m:math>
+     to be a power of two, leading to the very efficient
+     <link document="m12059">power-of-two FFT algorithms</link>,
+     including the <link document="m12016">decimation-in-time radix-2 FFT</link>
+     and the <link document="m12018">decimation-in-frequency radix-2 FFT</link> algorithms,
+     the <link document="m12027">radix-4 FFT</link>
+     (<m:math>
+         <m:apply>
+           <m:eq/>
+             <m:ci>N</m:ci>
+             <m:apply>
+               <m:power/>
+                 <m:cn>4</m:cn>
+                 <m:ci>M</m:ci>
+             </m:apply>
+         </m:apply>
+       </m:math>),
+       and the <link document="m12031">split-radix FFT</link>.
+       Power-of-two algorithms gain their high efficiency
+       from extensive reuse of intermediate results and
+       from the low complexity of length-2 and length-4
+       DFTs, which require no multiplications.
+       Algorithms for lengths with repeated <link document="m12025">common factors</link>
+       (such as 2 or 4 in the radix-2 and radix-4 algorithms, respectively)
+       require extra <term>twiddle factor</term> multiplications
+       between the short-length DFTs, which together lead
+       to a computational complexity of
+<m:math>
+   <m:apply>
+     <m:ci type="fn">O</m:ci>
+     <m:apply>
+       <m:times/>
+         <m:ci>N</m:ci>
+         <m:apply>
+           <m:log/>
+           <m:ci>N</m:ci>          
+         </m:apply>
+     </m:apply>
+   </m:apply> 
+ </m:math>,
+a very considerable savings over direct computation of the DFT.</para><para id="element-532">The other major class of algorithms is the
+<link document="m12033">Prime-Factor Algorithms (PFA)</link>.
+In PFAs, the short-length DFTs must be of relatively prime lengths.
+These algorithms gain efficiency by reuse of intermediate
+computations and by eliminating twiddle-factor multiplies,
+but require more operations than the power-of-two algorithms to compute the short DFTs of various prime lengths.
+In the end, the computational costs of the prime-factor
+and the power-of-two algorithms are comparable for similar
+lengths, as illustrated in <link document="m12060">Choosing the Best FFT Algorithm</link>.
+Prime-length DFTs cannot be factored into shorter DFTs,
+but in different ways both <link document="m12023">Rader's conversion</link>
+and the <link document="m12013">chirp z-transform</link>
+convert prime-length DFTs into convolutions of other
+lengths that can be computed efficiently using FFTs
+via <link document="m12022">fast convolution</link>.</para><para id="element-361">Some applications require only a few DFT frequency samples, in which case <link document="m12024">Goertzel's algorithm</link> halves the number of computations relative to the DFT sum.
+Other applications involve successive DFTs of overlapped
+blocks of samples, for which the <link document="m12029">running FFT</link>
+can be more efficient than separate FFTs of each block.</para>
+    </section>
+  </content>
+  
+</document>

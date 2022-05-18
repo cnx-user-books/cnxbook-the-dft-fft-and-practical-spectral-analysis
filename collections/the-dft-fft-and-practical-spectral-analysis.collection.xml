@@ -1,0 +1,57 @@
+<col:collection xmlns="http://cnx.rice.edu/collxml" xmlns:md="http://cnx.rice.edu/mdml" xmlns:col="http://cnx.rice.edu/collxml" xml:lang="en">
+  <metadata xmlns:md="http://cnx.rice.edu/mdml" mdml-version="0.5">
+    <md:content-id>col10281</md:content-id>
+    <md:title>The DFT, FFT, and Practical Spectral Analysis</md:title>
+    <md:language>en</md:language>
+    <md:license url="http://creativecommons.org/licenses/by/1.0">Creative Commons Attribution License</md:license>
+    <md:uuid>d2c6d393-3590-403d-8a18-c892055b046b</md:uuid>
+<md:slug>the-dft-fft-and-practical-spectral-analysis</md:slug>
+</metadata>
+  <col:content>
+    <col:subcollection>
+      <md:title>The Discrete Fourier Transform</md:title>
+      <col:content>
+        <col:module document="m12019"/>
+      </col:content>
+    </col:subcollection>
+    <col:subcollection>
+      <md:title>Spectrum Analysis</md:title>
+      <col:content>
+        <col:module document="m12032"/>
+        <col:module document="m12014"/>
+        <col:module document="m10570"/>
+      </col:content>
+    </col:subcollection>
+    <col:subcollection>
+      <md:title>Fast Fourier Transform Algorithms</md:title>
+      <col:content>
+        <col:module document="m12026"/>
+        <col:module document="m12029"/>
+        <col:module document="m12024"/>
+        <col:subcollection>
+          <md:title>Power-of-Two FFTs</md:title>
+          <col:content>
+            <col:module document="m12059"/>
+            <col:subcollection>
+              <md:title>Radix-2 Algorithms</md:title>
+              <col:content>
+                <col:module document="m12016"/>
+                <col:module document="m12018"/>
+                <col:module document="m12012"/>
+              </col:content>
+            </col:subcollection>
+            <col:module document="m12027"/>
+            <col:module document="m12031"/>
+          </col:content>
+        </col:subcollection>
+        <col:module document="m12025"/>
+        <col:module document="m12033"/>
+      </col:content>
+    </col:subcollection>
+    <col:module document="m12022"/>
+    <col:module document="m12013"/>
+    <col:module document="m12023"/>
+    <col:module document="m12021"/>
+    <col:module document="m12060"/>
+  </col:content>
+</col:collection>

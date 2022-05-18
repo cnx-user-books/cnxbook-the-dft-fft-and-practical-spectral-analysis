@@ -1,0 +1,175 @@
+<document xmlns="http://cnx.rice.edu/cnxml" xmlns:m="http://www.w3.org/1998/Math/MathML" xmlns:md="http://cnx.rice.edu/mdml" xmlns:bib="http://bibtexml.sf.net/">
+  <title>Choosing the Best FFT Algorithm</title>
+  <metadata><md:content-id>undefined</md:content-id><md:title/><md:uuid>dc114bac-2a44-448b-aaa9-0e5524de6abf</md:uuid>
+</metadata>
+
+<content>
+<section id="FFTlength">
+<title>Choosing an FFT length</title>
+ <para id="para_1">The most commonly used FFT algorithms <emphasis>by far</emphasis> are the
+<link document="m12059">power-of-two-length FFT</link> algorithms. 
+The <link document="m12033">Prime Factor Algorithm (PFA)</link> and <link document="m12023" target-id="WFTA">Winograd Fourier Transform Algorithm (WFTA)</link> require somewhat fewer multiplies, but the overall difference 
+usually isn't sufficient to warrant the extra difficulty.
+This is particularly true now that most processors have single-cycle pipelined hardware multipliers,
+so the total operation count is more relevant.
+As can be seen from the following table, for similar lengths the split-radix algorithm is comparable
+in total operations to the Prime Factor Algorithm, and is considerably better than the WFTA, although the
+PFA and WTFA require fewer multiplications and more additions.
+Many processors now support single cycle multiply-accumulate (MAC) operations; in the power-of-two algorithms all multiplies can be combined with adds in MACs, so the number of additions is the most
+relevant indicator of computational cost.
+
+<table id="table1" summary="">
+<title>Representative FFT Operation Counts</title>
+<tgroup cols="5"><thead>
+   <row>
+     <entry> </entry>   
+     <entry>FFT length</entry>
+     <entry>Multiplies (real)</entry>
+     <entry>Adds(real)</entry>
+     <entry>Mults + Adds</entry>
+   </row>
+ </thead>
+ <tbody>
+ <row>
+  <entry>Radix 2</entry>
+  <entry>1024</entry>
+  <entry>10248</entry>
+  <entry>30728</entry>
+  <entry>40976</entry>
+ </row> 
+ <row>
+   <entry>Split Radix</entry>
+   <entry>1024</entry>
+   <entry>7172</entry>
+   <entry>27652</entry>
+   <entry>34824</entry>
+ </row> 
+ <row>
+   <entry>Prime Factor Alg</entry>
+   <entry>1008</entry>
+   <entry>5804</entry>
+   <entry>29100</entry>
+   <entry>34904</entry>
+ </row> 
+ <row>
+  <entry>Winograd FT Alg</entry> 
+  <entry>1008</entry>
+  <entry>3548</entry>
+  <entry>34416</entry>
+  <entry>37964</entry>
+ </row> 
+ </tbody>
+ 
+</tgroup>
+</table>
+
+The <link document="m12023" target-id="WFTA">Winograd Fourier Transform Algorithm</link> is particularly  difficult to program and is rarely used in practice. 
+For applications in which the transform length is somewhat arbitrary (such
+as fast convolution or general spectrum analysis), the length is usually chosen to be a power of two.
+When a particular length is required (for example, in the USA each carrier has exactly 416 frequency channels in each band in the <link url="http://en.wikipedia.org/wiki/AMPS">AMPS</link> cellular telephone standard), a <link document="m12033">Prime Factor Algorithm</link> for all the relatively prime 
+terms is preferred, with a <link document="m12025">Common Factor Algorithm</link> for other non-prime lengths.
+<link document="m12023">Winograd's short-length modules</link> 
+should be used for the prime-length factors that are not powers of two.
+The <link document="m12013">chirp z-transform</link> offers a universal way to compute
+any length <link document="m12032">DFT</link> (for example, <link url="http://www.mathworks.com/products/matlab/">Matlab</link> reportedly uses this method for lengths other than a power of two), at a few times higher cost than that of a CFA or PFA optimized for that specific length.
+The <link document="m12013">chirp z-transform</link>, along with <link document="m12023" target-id="Radersconv">Rader's conversion</link>, assure us that algorithms of
+<m:math>
+   <m:apply>
+     <m:ci type="fn">O</m:ci>
+     <m:apply>
+       <m:times/>
+         <m:ci>N</m:ci>
+         <m:apply>
+           <m:log/>
+           <m:ci>N</m:ci>          
+         </m:apply>
+     </m:apply>
+   </m:apply> 
+ </m:math> complexity
+exist for <emphasis>any</emphasis> DFT length
+<m:math>
+ <m:ci>N</m:ci>
+</m:math>.
+</para>
+</section>
+<section id="poweroftwo">
+<title>Selecting a power-of-two-length algorithm</title>
+<para id="element-292">The choice of a power-of-two algorithm may not just depend on computational complexity.
+The latest extensions of the <link document="m12031">split-radix algorithm</link> offer the lowest known power-of-two FFT operation counts, but the 10%-30% difference may not make up for other factors such as regularity of structure or data flow, <link document="m12021">FFT programming tricks</link>, or special hardware features.
+For example, the <link document="m12016">decimation-in-time radix-2 FFT</link> is the fastest FFT on <link url="http://www.ti.com/">Texas Instruments'</link> TMS320C54x DSP microprocessors, because this processor family has special assembly-language instructions that accelerate this particular algorithm.
+On other hardware, <link document="m12027">radix-4 algorithms</link> may be more efficient.
+Some devices, such as <link url="http://www.amis.com">AMI Semiconductor's</link> <link url="http://www.amis.com/products/dsp/toccata_plus.html">Toccata</link> ultra-low-power DSP microprocessor family, have on-chip FFT accelerators; it is always faster and more power-efficient to use these accelerators and whatever radix they prefer.
+For <link document="m12022">fast convolution</link>, the <link document="m12018">decimation-in-frequency</link> algorithms may be preferred because the bit-reversing can be bypassed; however, most DSP microprocessors provide zero-overhead bit-reversed indexing hardware and prefer decimation-in-time algorithms, so this may not be true for such machines.
+Good, compiler- or hardware-friendly programming always matters more than modest differences in raw operation counts, so manufacturers' or good third-party FFT libraries are often the best choice.
+The module <link document="m12021">FFT programming tricks</link> references some good, free FFT software (including the <link url="http://www.fftw.org/">FFTW</link> package) that is carefully coded to be compiler-friendly; such codes are likely to be considerably faster than codes written by the casual programmer.</para>
+</section>
+<section id="multidFFTs">
+<title>Multi-dimensional FFTs</title>
+<para id="element-666">Multi-dimensional FFTs pose additional possibilities and problems.
+The orthogonality and separability of multi-dimensional DFTs allows them to be efficiently computed by a series of one-dimensional FFTs along each dimension.
+(For example, a two-dimensional DFT can quickly be computed by performing FFTs of each row of the data matrix
+followed by FFTs of all columns, or vice-versa.)
+<term>Vector-radix FFTs</term> have been developed with higher efficiency per sample than row-column algorithms.
+Multi-dimensional datasets, however, are often large and frequently exceed the cache size of the processor, and excessive cache misses may increase the computational time greatly, thus overwhelming any minor complexity reduction from a vector-radix algorithm.
+Either vector-radix FFTs must be carefully programmed to match the cache limitations of a specific processor, or a row-column approach should be used with matrix transposition in between to ensure data locality for high cache utilization throughout the computation.</para>
+</section>
+<section id="fewPoints">
+<title>Few time or frequency samples</title>
+<para id="element-162">FFT algorithms gain their efficiency through intermediate computations that can be reused to compute many DFT frequency samples at once.
+Some applications require only a handful of frequency samples to be computed; when that number is of order less than <m:math>
+   <m:apply>
+     <m:ci type="fn">O</m:ci>
+         <m:apply>
+           <m:log/>
+           <m:ci>N</m:ci>          
+         </m:apply>
+   </m:apply> 
+ </m:math>,
+direct computation of those values via <link document="m12024">Goertzel's algorithm</link> is faster.
+This has the additional advantage that any frequency, not just the equally-spaced DFT frequency samples,
+can be selected.
+<cite target-id="Sorensen"><cite-title>Sorensen and Burrus</cite-title></cite> developed algorithms for when most input samples are zero or only a block of DFT frequencies are needed, but the computational cost is of the same order.
+</para>
+<para id="element-968">Some applications, such as time-frequency analysis via the <link document="m10570">short-time Fourier transform</link> or <link document="m10570">spectrogram</link>, require DFTs of overlapped blocks of discrete-time samples.
+When the step-size between blocks is less than
+ <m:math>
+   <m:apply>
+     <m:ci type="fn">O</m:ci>
+         <m:apply>
+           <m:log/>
+           <m:ci>N</m:ci>          
+         </m:apply>
+   </m:apply> 
+ </m:math>,
+the <link document="m12029">running FFT</link> will be most efficient.
+(Note that any <link document="12032">window</link> must be applied via frequency-domain convolution,
+which is quite efficient for sinusoidal windows such as the <link document="12032">Hamming window</link>.)
+For step-sizes of 
+ <m:math>
+   <m:apply>
+     <m:ci type="fn">O</m:ci>
+         <m:apply>
+           <m:log/>
+           <m:ci>N</m:ci>          
+         </m:apply>
+   </m:apply> 
+ </m:math> or greater,
+computation of the DFT of each successive block via an FFT is faster.</para>
+</section>
+
+
+</content>
+    <bib:file>
+    <bib:entry id="Sorensen">
+      <bib:article>
+	<bib:author>H.V. Sorensen and C.S. Burrus</bib:author>
+	<bib:title>Efficient computation of the DFT with only a subset of input or output points</bib:title>
+	<bib:journal>IEEE Transactions on Signal Processing</bib:journal>
+	<bib:year>1993</bib:year>
+	<bib:volume>41</bib:volume>
+	<bib:number>3</bib:number>
+	<bib:pages>1184-1200</bib:pages>
+      </bib:article>
+    </bib:entry>
+  </bib:file>
+</document>

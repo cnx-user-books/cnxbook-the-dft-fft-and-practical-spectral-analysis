@@ -1,0 +1,74 @@
+<document xmlns="http://cnx.rice.edu/cnxml" xmlns:md="http://cnx.rice.edu/mdml">
+  <title>Alternate FFT Structures</title>
+  <metadata><md:content-id>undefined</md:content-id><md:title/><md:uuid>d5a89353-c8ac-428e-8fe3-e7ebf72881b8</md:uuid>
+</metadata>
+
+  <content>
+    <para id="para1"><link document="m12016">Bit-reversing</link> the input in <link document="m12016">decimation-in-time (DIT) FFTs</link> or the output in
+       <link document="m12018">decimation-in-frequency (DIF)
+       FFTs</link> can sometimes be inconvenient or inefficient.
+       For such situations, alternate FFT structures have been developed.
+       Such structures involve the same mathematical computations as the
+       standard algorithms, but alter the memory locations in which
+       intermediate values are stored or the order of computation of the
+       <link document="m12016">FFT butterflies</link>.
+    </para>
+    <para id="brdif">The structure in <link target-id="fig.brdif"/> computes a
+       <link document="m12018">decimation-in-frequency FFT</link>,
+       but remaps the memory usage so that the <emphasis>input</emphasis>
+       is <link document="m12016">bit-reversed</link>,
+       and the output is in-order as in the conventional
+       <link document="m12016">decimation-in-time FFT</link>.
+       This alternate structure is still considered a DIF FFT because
+       the <link document="m12016">twiddle factors</link> are applied as in the <link document="m12018">DIF FFT</link>.
+       This structure is useful if for some reason the DIF
+       butterfly is preferred but it is easier to bit-reverse
+       the input.
+    </para>
+    <figure id="fig.brdif" orient="vertical">
+	<media id="idm6301648" alt=""><image src="../../media/image1-6873.png" mime-type="image/png"/></media> 
+	<caption><link document="m12018">Decimation-in-frequency radix-2   FFT</link> with bit-reversed
+	<emphasis>input</emphasis>.
+        This is an <link document="m12016">in-place</link> algorithm
+        in which the same memory can be reused throughout the computation.</caption>
+    </figure>
+    <para id="brdit">
+         There is a similar structure for the
+         <link document="m12016">decimation-in-time FFT</link> with
+         in-order inputs and bit-reversed frequencies.
+         This structure can be useful for
+         <link document="m12022">fast convolution</link> on machines
+         that favor decimation-in-time algorithms because the
+         filter can be stored in bit-reverse order, and then the inverse FFT
+         returns an in-order result without ever bit-reversing any data.
+         As discussed in <link document="m12021">Efficient FFT Programming Tricks</link>,
+         this may save several percent of the execution time.
+    </para>
+    <para id="element-477">The structure in <link target-id="fig.inplace"/> implements a
+    <link document="m12018">decimation-in-frequency FFT</link>
+    that has both input and output in order.
+    It thus avoids the need for bit-reversing altogether.
+    Unfortunately, it destroys the <link document="m12016">in-place</link> structure somewhat,
+    making an FFT program more complicated and requiring more memory;
+    on most machines the resulting cost exceeds the benefits.
+    This structure can be computed in place if <emphasis>two</emphasis>
+    butterflies are computed simultaneously.</para><figure id="fig.inplace"><media id="idm5838400" alt=""><image src="../../media/image2-fa7f.png" mime-type="image/png"/></media> 
+	<caption>Decimation-in-frequency radix-2 FFT with in-order input and output. It can be computed in-place
+	if two butterflies are computed simultaneously.</caption>
+    </figure>
+    <para id="element-7">The structure in <link target-id="fig.constantgeometry"/> has a constant
+    geometry; the connections between memory locations are identical in each
+    <link document="m12016">FFT stage</link>.
+    Since it is not in-place and requires bit-reversal, it is inconvenient for
+    software implementation, but can be attractive for a highly parallel
+    hardware implementation because the connections between stages can be
+    hardwired.
+    An analogous structure exists that has bit-reversed inputs and in-order
+    outputs.</para><figure id="fig.constantgeometry"><media id="idp2888816" alt=""><image src="../../media/image3-20d5.png" mime-type="image/png"/></media>
+	<caption>This constant-geometry structure has the same interconnect
+        pattern from stage to stage.
+        This structure is sometimes useful for special hardware.</caption>
+    </figure>
+  </content>
+  
+</document>

@@ -1,0 +1,1229 @@
+<document xmlns="http://cnx.rice.edu/cnxml" xmlns:m="http://www.w3.org/1998/Math/MathML" xmlns:md="http://cnx.rice.edu/mdml" xmlns:bib="http://bibtexml.sf.net/">
+  <title>FFTs of prime length and Rader's conversion</title>
+  <metadata><md:content-id>undefined</md:content-id><md:title/><md:uuid>b4fff82b-6d18-4866-8a8f-eb63dbd07319</md:uuid>
+</metadata>
+
+  <content>
+    <para id="element-953">The <link document="m12059">power-of-two FFT algorithms</link>, such as the <link document="m12016">radix-2</link>
+and <link document="m12027">radix-4</link> FFTs, and the <link document="m12025">common-factor</link>
+and <link document="m12033">prime-factor</link> FFTs, achieve great reductions in computational complexity
+of the <link document="m12019">DFT</link> when the length, <m:math><m:ci>N</m:ci></m:math>,
+is a composite number.
+DFTs of prime length are sometimes needed, however, particularly for the short-length DFTs in
+common-factor or prime-factor algorithms.
+The methods described here, along with the composite-length algorithms, allow fast computation
+of DFTs of <emphasis>any</emphasis> length.</para><para id="element-326">There are two main ways of performing DFTs of prime length:
+	<list id="listq" list-type="enumerated">
+          <item>Rader's conversion, which is most efficient, and the</item>
+	  <item><link document="m12013">Chirp-z transform</link>, which is simpler and more general.</item>
+	</list>
+Oddly enough, both work by turning prime-length DFTs into convolution!
+The resulting convolutions can then be computed efficiently by either
+	<list id="listN" list-type="enumerated">
+	  <item><link document="m12022">fast convolution</link> via composite-length FFTs (simpler) or by</item>
+	  <item>Winograd techniques (more efficient)</item>
+	</list></para>
+    
+    <section id="Radersconv">
+      <title>Rader's Conversion</title>
+      <para id="para4"><term>Rader's conversion</term> is a one-dimensional <link document="m12025">index-mapping</link> scheme that turns a
+	length-<m:math><m:ci>N</m:ci></m:math> <link document="m12032" target-id="DFTequation">DFT</link>
+	(<m:math><m:ci>N</m:ci></m:math> prime) into a
+	length-(
+	<m:math>
+	  <m:apply>
+	    <m:minus/>
+	    <m:ci>N</m:ci>
+	    <m:cn>1</m:cn>
+	  </m:apply>
+	</m:math>) convolution and a few additions.
+        Rader's conversion works <emphasis>only</emphasis> for prime-length <m:math><m:ci>N</m:ci></m:math>.
+      </para>
+      <para id="para5">An <term>index map</term> simply rearranges the order of the sum operation in the
+        <link document="m12019">DFT definition</link>.
+        Because addition is a commutative operation, the same mathematical result is produced
+        from any order, as long as all of the same terms are added once and only once.  (This is
+        the condition that defines an index map.)
+	Unlike the <link document="m12025">multi-dimensional index maps</link> used in deriving
+        <link document="m12025">common factor</link> and <link document="m12033">prime-factor FFTs</link>,
+        Rader's conversion uses a one-dimensional index map in a finite group of
+        <m:math><m:ci>N</m:ci></m:math> integers:
+	<m:math>
+	  <m:apply>
+	    <m:eq/>
+	    <m:ci>k</m:ci>
+	    <m:apply>
+	      <m:rem/>
+	      <m:apply>
+		<m:power/>
+		<m:ci>r</m:ci>
+		<m:ci>m</m:ci>
+	      </m:apply>
+	      <m:ci>N</m:ci>
+	    </m:apply>
+	  </m:apply>
+	</m:math>
+      </para>
+      <section id="idp8653376">
+	<title>Fact from number theory</title>
+	<para id="para6">
+	  If <m:math><m:ci>N</m:ci></m:math> is prime, there exists an
+	  integer "<m:math><m:ci>r</m:ci></m:math>" called a
+	  <term>primitive root</term>, such that the index map
+	  <m:math>
+	    <m:apply>
+	      <m:eq/>
+	      <m:ci>k</m:ci>
+	      <m:apply>
+		<m:rem/>
+		<m:apply>
+		  <m:power/>
+		  <m:ci>r</m:ci>
+		  <m:ci>m</m:ci>
+		</m:apply>
+		<m:ci>N</m:ci>
+	      </m:apply>
+	    </m:apply>
+	  </m:math>, 
+	  <m:math>
+	    <m:apply>
+	      <m:eq/>
+	      <m:ci>m</m:ci>
+	      <m:list>
+		<m:cn>0</m:cn>
+		<m:cn>1</m:cn>
+		<m:cn>2</m:cn>
+		<m:ci>…</m:ci>
+		<m:apply>
+		  <m:minus/>
+		  <m:ci>N</m:ci>
+		  <m:cn>2</m:cn>
+		</m:apply>
+	      </m:list>
+	    </m:apply>
+	  </m:math>, uniquely generates all elements 
+	  <m:math>
+	    <m:apply>
+	      <m:eq/>
+	      <m:ci>k</m:ci>
+	      <m:list>
+		<m:cn>1</m:cn>
+		<m:cn>2</m:cn>
+		<m:cn>3</m:cn>
+		<m:ci>…</m:ci>
+		<m:apply>
+		  <m:minus/>
+		  <m:ci>N</m:ci>
+		  <m:cn>1</m:cn>
+		</m:apply>
+	      </m:list>
+	    </m:apply>
+	  </m:math>
+	</para>
+	<example id="exam1">
+	  <para id="para7">
+	    <m:math>
+	      <m:apply>
+		<m:eq/>
+		<m:ci>N</m:ci>
+		<m:cn>5</m:cn>
+	      </m:apply>
+	    </m:math>, 
+	    <m:math>
+	      <m:apply>
+		<m:eq/>
+		<m:ci>r</m:ci>
+		<m:cn>2</m:cn>
+	      </m:apply>
+	    </m:math>
+	    <m:math display="block">
+	      <m:apply>
+		<m:eq/>
+		<m:apply>
+		  <m:rem/>
+		  <m:apply>
+		    <m:power/>
+		    <m:cn>2</m:cn>
+		    <m:cn>0</m:cn>
+		  </m:apply>
+		  <m:cn>5</m:cn>
+		</m:apply>
+		<m:cn>1</m:cn>
+	      </m:apply>
+	    </m:math>
+	    <m:math display="block">
+	      <m:apply>
+		<m:eq/>
+		<m:apply>
+		  <m:rem/>
+		  <m:apply>
+		    <m:power/>
+		    <m:cn>2</m:cn>
+		    <m:cn>1</m:cn>
+		  </m:apply>
+		  <m:cn>5</m:cn>
+		</m:apply>
+		<m:cn>2</m:cn>
+	      </m:apply>
+	    </m:math> 
+	    <m:math display="block">
+	      <m:apply>
+		<m:eq/>
+		<m:apply>
+		  <m:rem/>
+		  <m:apply>
+		    <m:power/>
+		    <m:cn>2</m:cn>
+		    <m:cn>2</m:cn>
+		  </m:apply>
+		  <m:cn>5</m:cn>
+		</m:apply>
+		<m:cn>4</m:cn>
+	      </m:apply>
+	    </m:math>
+	    <m:math display="block">
+	      <m:apply>
+		<m:eq/>
+		<m:apply>
+		  <m:rem/>
+		  <m:apply>
+		    <m:power/>
+		    <m:cn>2</m:cn>
+		    <m:cn>3</m:cn>
+		  </m:apply>
+		  <m:cn>5</m:cn>
+		</m:apply>
+		<m:cn>3</m:cn>
+	      </m:apply>
+	    </m:math>
+	  </para>
+	</example>
+      </section>
+      <section id="idp14022736">
+	<title>Another fact from number theory</title>
+	<para id="para8">
+	  For <m:math><m:ci>N</m:ci></m:math> prime, the inverse of
+	  <m:math><m:ci>r</m:ci></m:math> (i.e.
+	  <m:math>
+	    <m:apply>
+	      <m:eq/>
+	      <m:apply>
+		<m:rem/>
+		<m:apply>
+		  <m:times/>
+		  <m:apply>
+		    <m:inverse/>
+		    <m:ci>r</m:ci>
+		  </m:apply>
+		  <m:ci>r</m:ci>
+		</m:apply>
+		<m:ci>N</m:ci>
+	      </m:apply>
+	      <m:cn>1</m:cn>
+	    </m:apply>
+	  </m:math> is also a primitive root (call it
+	  <m:math>
+	    <m:apply>
+	      <m:inverse/>
+	      <m:ci>r</m:ci>
+	    </m:apply>
+	  </m:math>).
+	</para>
+	<example id="exam2">
+	  <para id="para9"><m:math>
+	      <m:apply>
+		<m:eq/>
+		<m:ci>N</m:ci>
+		<m:cn>5</m:cn>
+	      </m:apply>
+	    </m:math>,
+	    <m:math>
+	      <m:apply>
+		<m:eq/>
+		<m:ci>r</m:ci>
+		<m:cn>2</m:cn>
+	      </m:apply>
+	    </m:math>
+	    <m:math>
+	      <m:apply>
+		<m:eq/>
+		<m:apply>
+		  <m:inverse/>
+		  <m:ci>r</m:ci>
+		</m:apply>
+		<m:cn>3</m:cn>
+	      </m:apply>
+	    </m:math>
+	    <m:math display="block">
+	      <m:apply>
+		<m:eq/>
+		<m:apply>
+		  <m:rem/>
+		  <m:apply>
+		    <m:times/>
+		    <m:cn>2</m:cn>
+		    <m:cn>3</m:cn>
+		  </m:apply>
+		  <m:cn>5</m:cn>
+		</m:apply>
+		<m:cn>1</m:cn>
+	      </m:apply>
+	    </m:math>
+	    <m:math display="block">
+	      <m:apply>
+		<m:eq/>
+		<m:apply>
+		  <m:rem/>
+		  <m:apply>
+		    <m:power/>
+		    <m:cn>3</m:cn>
+		    <m:cn>0</m:cn>
+		  </m:apply>
+		  <m:cn>5</m:cn>
+		</m:apply>
+		<m:cn>1</m:cn>
+	      </m:apply>
+	    </m:math>
+	    <m:math display="block">
+	      <m:apply>
+		<m:eq/>
+		<m:apply>
+		  <m:rem/>
+		  <m:apply>
+		    <m:power/>
+		    <m:cn>3</m:cn>
+		    <m:cn>1</m:cn>
+		  </m:apply>
+		  <m:cn>5</m:cn>
+		</m:apply>
+		<m:cn>3</m:cn>
+	      </m:apply>
+	    </m:math>
+	    <m:math display="block">
+	      <m:apply>
+		<m:eq/>
+		<m:apply>
+		  <m:rem/>
+		  <m:apply>
+		    <m:power/>
+		    <m:cn>3</m:cn>
+		    <m:cn>2</m:cn>
+		  </m:apply>
+		  <m:cn>5</m:cn>
+		</m:apply>
+		<m:cn>4</m:cn>
+	      </m:apply>
+	    </m:math>
+	    <m:math display="block">
+	      <m:apply>
+		<m:eq/>
+		<m:apply>
+		  <m:rem/>
+		  <m:apply>
+		    <m:power/>
+		    <m:cn>3</m:cn>
+		    <m:cn>3</m:cn>
+		  </m:apply>
+		  <m:cn>5</m:cn>
+		</m:apply>
+		<m:cn>2</m:cn>
+	      </m:apply>
+	    </m:math>
+	  </para>
+	</example>
+	<para id="para9a">So why do we care?  Because we can use these facts to turn a
+	  <link document="m12032" target-id="DFTequation">DFT</link> into a convolution!
+	</para>
+      </section>
+      <section id="idp13451472">
+	<title>Rader's Conversion</title>
+	<para id="para10">Let
+	  <m:math>
+	    <m:apply>
+	      <m:forall/>
+	      <m:bvar>
+		<m:ci>m</m:ci>
+		<m:ci>n</m:ci>
+	      </m:bvar>
+	      <m:condition>
+		<m:apply>
+		  <m:and/>
+		  <m:apply>
+		    <m:eq/>
+		    <m:ci>m</m:ci>
+		    <m:list>
+		      <m:cn>0</m:cn>
+		      <m:cn>1</m:cn>
+		      <m:ci>…</m:ci>
+		      <m:apply>
+			<m:minus/>
+			<m:ci>N</m:ci>
+			<m:cn>2</m:cn>
+		      </m:apply>
+		    </m:list>
+		  </m:apply>
+		  <m:apply>
+		    <m:in/>
+		    <m:ci>n</m:ci>
+		    <m:list>
+		      <m:cn>1</m:cn>
+		      <m:cn>2</m:cn>
+		      <m:ci>…</m:ci>
+		      <m:apply>
+			<m:minus/>
+			<m:ci>N</m:ci>
+			<m:cn>1</m:cn>
+		      </m:apply>
+		    </m:list>
+		  </m:apply>
+		</m:apply>
+	      </m:condition>
+	      <m:apply>
+		<m:eq/>
+		<m:ci>n</m:ci>
+		<m:apply>
+		  <m:rem/>
+		  <m:apply>
+		    <m:power/>
+		    <m:ci>r</m:ci>
+		    <m:apply>
+		      <m:minus/>
+		      <m:ci>m</m:ci>
+		    </m:apply>
+		  </m:apply>
+		  <m:ci>N</m:ci>
+		</m:apply>
+	      </m:apply>
+	    </m:apply>
+	  </m:math>,
+	  <m:math>
+	    <m:apply>
+	      <m:forall/>
+	      <m:bvar>
+		<m:ci>p</m:ci>
+		<m:ci>k</m:ci>
+	      </m:bvar>
+	      <m:condition>
+		<m:apply>
+		  <m:and/>
+		  <m:apply>
+		    <m:eq/>
+		    <m:ci>p</m:ci>
+		    <m:list>
+		      <m:cn>0</m:cn>
+		      <m:cn>1</m:cn>
+		      <m:ci>…</m:ci>
+		      <m:apply>
+			<m:minus/>
+			<m:ci>N</m:ci>
+			<m:cn>2</m:cn>
+		      </m:apply>
+		    </m:list>
+		  </m:apply>
+		  <m:apply>
+		    <m:in/>
+		    <m:ci>k</m:ci>
+		    <m:list>
+		      <m:cn>1</m:cn>
+		      <m:cn>2</m:cn>
+		      <m:ci>…</m:ci>
+		      <m:apply>
+			<m:minus/>
+			<m:ci>N</m:ci>
+			<m:cn>1</m:cn>
+		      </m:apply>
+		    </m:list>
+		  </m:apply>
+		</m:apply>
+	      </m:condition>
+	      <m:apply>
+		<m:eq/>
+		<m:ci>k</m:ci>
+		<m:apply>
+		  <m:rem/>
+		  <m:apply>
+		    <m:power/>
+		    <m:ci>r</m:ci>
+		    <m:ci>p</m:ci>
+		  </m:apply>
+		  <m:ci>N</m:ci>
+		</m:apply>
+	      </m:apply>
+	    </m:apply>
+	  </m:math>
+	  <m:math display="block">
+	    <m:apply>
+	      <m:eq/>
+	      <m:apply>
+		<m:ci type="fn">X</m:ci>
+		<m:ci>k</m:ci>
+	      </m:apply>
+	      <m:apply>
+		<m:sum/>
+		<m:bvar>
+		  <m:ci>n</m:ci>
+		</m:bvar>
+		<m:uplimit>
+		  <m:apply>
+		    <m:minus/>
+		    <m:ci>N</m:ci>
+		    <m:cn>1</m:cn>
+		  </m:apply>
+		</m:uplimit>
+		<m:lowlimit>
+		  <m:cn>0</m:cn>
+		</m:lowlimit>
+		<m:apply>
+		  <m:times/>
+		  <m:apply>
+		    <m:ci type="fn">x</m:ci>
+		    <m:cn>n</m:cn>
+		  </m:apply>
+		  <m:ci>
+		    <m:msubsup>
+		      <m:mi>W</m:mi>
+		      <m:mi>N</m:mi>
+		      <m:mrow>
+			<m:mi>n</m:mi>
+			<m:mi>k</m:mi>
+		      </m:mrow>
+		    </m:msubsup>
+		  </m:ci>
+		</m:apply>
+	      </m:apply>
+	      <m:apply>
+		<m:piecewise>
+		  <m:piece>
+		    <m:apply>
+		      <m:plus/>
+		      <m:apply>
+			<m:ci type="fn">x</m:ci>
+			<m:cn>0</m:cn>
+		      </m:apply>
+		      <m:apply>
+			<m:sum/>
+			<m:bvar>
+			  <m:ci>n</m:ci>
+			</m:bvar>
+			<m:uplimit>
+			  <m:apply>
+			    <m:minus/>
+			    <m:ci>N</m:ci>
+			    <m:cn>1</m:cn>
+			  </m:apply>
+			</m:uplimit>
+			<m:lowlimit>
+			  <m:cn>1</m:cn>
+			</m:lowlimit>
+			<m:apply>
+			  <m:times/>
+			  <m:apply>
+			    <m:ci type="fn">x</m:ci>
+			    <m:ci>n</m:ci>
+			  </m:apply>
+			  <m:ci>
+			    <m:msubsup>
+			      <m:mi>W</m:mi>
+			      <m:mi>N</m:mi>
+			      <m:mrow>
+				<m:mi>n</m:mi>
+				<m:mi>k</m:mi>
+			      </m:mrow>
+			    </m:msubsup>
+			  </m:ci>
+			</m:apply>
+		      </m:apply>
+		    </m:apply>
+		    <m:apply>
+		      <m:neq/>
+		      <m:ci>k</m:ci>
+		      <m:cn>0</m:cn>
+		    </m:apply>
+		  </m:piece>
+		  <m:piece>
+		    <m:apply>
+		      <m:sum/>
+		      <m:bvar>
+			<m:ci>n</m:ci>
+		      </m:bvar>
+		      <m:uplimit>
+			<m:apply>
+			  <m:minus/>
+			  <m:ci>N</m:ci>
+			  <m:cn>1</m:cn>
+			</m:apply>
+		      </m:uplimit>
+		      <m:lowlimit>
+			<m:cn>0</m:cn>
+		      </m:lowlimit>
+		      <m:apply>
+			<m:ci type="fn">x</m:ci>
+			<m:ci>n</m:ci>
+		      </m:apply>
+		    </m:apply>
+		    <m:apply>
+		      <m:eq/>
+		      <m:ci>k</m:ci>
+		      <m:cn>0</m:cn>
+		    </m:apply>
+		  </m:piece>
+		</m:piecewise>
+	      </m:apply>
+	    </m:apply>
+	  </m:math>
+          where for convenience
+<m:math>
+  <m:apply>
+    <m:eq/>
+      <m:ci>
+	<m:msubsup>
+	  <m:mi>W</m:mi>
+	  <m:mi>N</m:mi>
+          <m:apply>
+          <m:times/>
+            <m:mi>n</m:mi>
+	    <m:mi>k</m:mi>
+          </m:apply>
+	</m:msubsup>
+      </m:ci>
+      <m:apply>
+	<m:exp/>
+	  <m:apply>
+	    <m:minus/>
+              <m:apply>
+	        <m:times/>
+		  <m:imaginaryi/>
+		    <m:apply>
+		      <m:divide/>
+		       <m:apply>
+			<m:times/>
+			<m:cn>2</m:cn>
+			<m:pi/>
+                        <m:ci>n</m:ci>
+			<m:ci>k</m:ci>
+		       </m:apply>
+		     <m:ci>N</m:ci>
+		    </m:apply>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+        </m:apply>
+	</m:math>
+        in the DFT equation.
+	  For
+	  <m:math>
+	    <m:apply>
+	      <m:neq/>
+	      <m:ci>k</m:ci>
+	      <m:cn>0</m:cn>
+	    </m:apply>
+	  </m:math>
+	  <equation id="eq2">
+	    <m:math>
+	      <m:apply>
+		<m:eq/>
+		<m:apply>
+		  <m:ci type="fn">X</m:ci>
+		  <m:apply>
+		    <m:rem/>
+		    <m:apply>
+		      <m:power/>
+		      <m:ci>r</m:ci>
+		      <m:ci>p</m:ci>
+		    </m:apply>
+		    <m:ci>N</m:ci>
+		  </m:apply>
+		</m:apply>
+		<m:apply>
+		  <m:plus/>
+		  <m:apply>
+		    <m:sum/>
+		    <m:bvar>
+		      <m:ci>m</m:ci>
+		    </m:bvar>
+		    <m:uplimit>
+		      <m:apply>
+			<m:minus/>
+			<m:ci>N</m:ci>
+			<m:cn>2</m:cn>
+		      </m:apply>
+		    </m:uplimit>
+		    <m:lowlimit>
+		      <m:cn>0</m:cn>
+		    </m:lowlimit>
+		    <m:apply>
+		      <m:times/>
+		      <m:apply>
+			<m:ci type="fn">x</m:ci>
+			<m:apply>
+			  <m:rem/>
+			  <m:apply>
+			    <m:power/>
+			    <m:ci>r</m:ci>
+			    <m:apply>
+			      <m:minus/>
+			      <m:ci>m</m:ci>
+			    </m:apply>
+			  </m:apply>
+			  <m:ci>N</m:ci>
+			</m:apply>
+		      </m:apply>
+		      <m:ci>
+			<m:msup>
+			  <m:mi>W</m:mi>
+			  <m:mrow>
+			    <m:msup>
+			      <m:mi>r</m:mi>
+			      <m:mi>p</m:mi>
+			    </m:msup>
+			    <m:msup>
+			      <m:mi>r</m:mi>
+			      <m:mrow>
+				<m:mo>-</m:mo>
+				<m:mi>m</m:mi>
+			      </m:mrow>
+			    </m:msup>
+			  </m:mrow>
+			</m:msup>
+		      </m:ci>
+		    </m:apply>
+		  </m:apply>
+		  <m:apply>
+		    <m:ci type="fn">x</m:ci>
+		    <m:cn>0</m:cn>
+		  </m:apply>
+		</m:apply>
+		<m:apply>
+		  <m:plus/>
+		  <m:apply>
+		    <m:sum/>
+		    <m:bvar>
+		      <m:ci>m</m:ci>
+		    </m:bvar>
+		    <m:uplimit>
+		      <m:apply>
+			<m:minus/>
+			<m:ci>N</m:ci>
+			<m:cn>2</m:cn>
+		      </m:apply>
+		    </m:uplimit>
+		    <m:lowlimit>
+		      <m:cn>0</m:cn>
+		    </m:lowlimit>
+		    <m:apply>
+		      <m:times/>
+		      <m:apply>
+			<m:ci type="fn">x</m:ci>
+			<m:apply>
+			  <m:rem/>
+			  <m:apply>
+			    <m:power/>
+			    <m:ci>r</m:ci>
+			    <m:apply>
+			      <m:minus/>
+			      <m:ci>m</m:ci>
+			    </m:apply>
+			  </m:apply>
+			  <m:ci>N</m:ci>
+			</m:apply>
+		      </m:apply>
+		      <m:ci>
+			<m:msup>
+			  <m:mi>W</m:mi>
+			  <m:msup>
+			    <m:mi>r</m:mi>
+			    <m:mrow>
+			      <m:mi>p</m:mi>
+			      <m:mo>-</m:mo>
+			      <m:mi>m</m:mi>
+			    </m:mrow>
+			  </m:msup>
+			</m:msup>
+		      </m:ci>
+		    </m:apply>
+		  </m:apply>
+		  <m:apply>
+		    <m:ci type="fn">x</m:ci>
+		    <m:cn>0</m:cn>
+		  </m:apply>
+		</m:apply>
+		<m:apply>
+		  <m:plus/>
+		  <m:apply>
+		    <m:ci type="fn">x</m:ci>
+		    <m:cn>0</m:cn>
+		  </m:apply>
+		  <m:apply>
+		    <m:csymbol definitionURL="http://cnx.rice.edu/cd/cnxmath.ocd#convolve"/>
+		    <m:apply>
+		      <m:ci type="fn">x</m:ci>
+		      <m:apply>
+			<m:rem/>
+			<m:apply>
+			  <m:power/>
+			  <m:ci>r</m:ci>
+			  <m:apply>
+			    <m:minus/>
+			    <m:ci>l</m:ci>
+			  </m:apply>
+			</m:apply>
+			<m:ci>N</m:ci>
+		      </m:apply>
+		    </m:apply>
+		    <m:ci>
+		      <m:msup>
+			<m:mi>W</m:mi>
+			<m:msup>
+			  <m:mi>r</m:mi>
+			  <m:mi>l</m:mi>
+			</m:msup>
+		      </m:msup>
+		    </m:ci>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+	    </m:math>
+	  </equation>
+	  where 
+	  <m:math>
+	    <m:apply>
+	      <m:eq/>
+	      <m:ci>l</m:ci>
+	      <m:list>
+		<m:cn>0</m:cn>
+		<m:cn>1</m:cn>
+		<m:ci>…</m:ci>
+		<m:apply>
+		  <m:minus/>
+		  <m:ci>N</m:ci>
+		  <m:cn>2</m:cn>
+		</m:apply>
+	      </m:list>
+	    </m:apply>
+	  </m:math>  
+	</para>
+	<example id="exam4">
+	  <para id="para77"><m:math>
+	      <m:apply>
+		<m:eq/>
+		<m:ci>N</m:ci>
+		<m:cn>5</m:cn>
+	      </m:apply>
+	    </m:math>,
+	    <m:math>
+	      <m:apply>
+		<m:eq/>
+		<m:ci>r</m:ci>
+		<m:cn>2</m:cn>
+	      </m:apply>
+	    </m:math>,
+	    <m:math>
+	      <m:apply>
+		<m:eq/>
+		<m:apply>
+		  <m:inverse/>
+		  <m:ci>r</m:ci>
+		</m:apply>
+		<m:cn>3</m:cn>
+	      </m:apply>
+	    </m:math>
+	    <m:math display="block">
+	      <m:apply>
+		<m:eq/>
+		<m:matrix>
+		  <m:matrixrow>
+		    <m:apply>
+		      <m:ci type="fn">X</m:ci>
+		      <m:cn>0</m:cn>
+		    </m:apply>
+		  </m:matrixrow>
+		  <m:matrixrow>
+		    <m:apply>
+		      <m:ci type="fn">X</m:ci>
+		      <m:cn>1</m:cn>
+		    </m:apply>
+		  </m:matrixrow>
+		  <m:matrixrow>
+		    <m:apply>
+		      <m:ci type="fn">X</m:ci>
+		      <m:cn>2</m:cn>
+		    </m:apply>
+		  </m:matrixrow>
+		  <m:matrixrow>
+		    <m:apply>
+		      <m:ci type="fn">X</m:ci>
+		      <m:cn>3</m:cn>
+		    </m:apply>
+		  </m:matrixrow>
+		  <m:matrixrow>
+		    <m:apply>
+		      <m:ci type="fn">X</m:ci>
+		      <m:cn>4</m:cn>
+		    </m:apply>
+		  </m:matrixrow>
+		</m:matrix>
+		<m:apply>
+		  <m:times/>
+		  <m:matrix>
+		    <m:matrixrow>
+		      <m:cn>0</m:cn>
+		      <m:cn>0</m:cn>
+		      <m:cn>0</m:cn>
+		      <m:cn>0</m:cn>
+		      <m:cn>0</m:cn>
+		    </m:matrixrow>
+		    <m:matrixrow>
+		      <m:cn>0</m:cn>
+		      <m:cn>1</m:cn>
+		      <m:cn>2</m:cn>
+		      <m:cn>3</m:cn>
+		      <m:cn>4</m:cn>
+		    </m:matrixrow>
+		    <m:matrixrow>
+		      <m:cn>0</m:cn>
+		      <m:cn>2</m:cn>
+		      <m:cn>4</m:cn>
+		      <m:cn>1</m:cn>
+		      <m:cn>3</m:cn>
+		    </m:matrixrow>
+		    <m:matrixrow>
+		      <m:cn>0</m:cn>
+		      <m:cn>3</m:cn>
+		      <m:cn>1</m:cn>
+		      <m:cn>4</m:cn>
+		      <m:cn>2</m:cn>
+		    </m:matrixrow>
+		    <m:matrixrow>
+		      <m:cn>0</m:cn>
+		      <m:cn>4</m:cn>
+		      <m:cn>3</m:cn>
+		      <m:cn>2</m:cn>
+		      <m:cn>1</m:cn>
+		    </m:matrixrow>
+		  </m:matrix>
+		  <m:matrix>
+		    <m:matrixrow>
+		      <m:apply>
+			<m:ci type="fn">x</m:ci>
+			<m:cn>0</m:cn>
+		      </m:apply>
+		    </m:matrixrow>
+		    <m:matrixrow>
+		      <m:apply>
+			<m:ci type="fn">x</m:ci>
+			<m:cn>1</m:cn>
+		      </m:apply>
+		    </m:matrixrow>
+		    <m:matrixrow>
+		      <m:apply>
+			<m:ci type="fn">x</m:ci>
+			<m:cn>2</m:cn>
+		      </m:apply>
+		    </m:matrixrow>
+		    <m:matrixrow>
+		      <m:apply>
+			<m:ci type="fn">x</m:ci>
+			<m:cn>3</m:cn>
+		      </m:apply>
+		    </m:matrixrow>
+		    <m:matrixrow>
+		      <m:apply>
+			<m:ci type="fn">x</m:ci>
+			<m:cn>4</m:cn>
+		      </m:apply>
+		    </m:matrixrow>
+		  </m:matrix>
+		</m:apply>
+	      </m:apply>
+	    </m:math>
+	    <m:math display="block">
+	      <m:apply>
+		<m:eq/>
+		<m:matrix>
+		  <m:matrixrow>
+		    <m:apply>
+		      <m:ci type="fn">X</m:ci>
+		      <m:cn>0</m:cn>
+		    </m:apply>
+		  </m:matrixrow>
+		  <m:matrixrow>
+		    <m:apply>
+		      <m:ci type="fn">X</m:ci>
+		      <m:cn>1</m:cn>
+		    </m:apply>
+		  </m:matrixrow>
+		  <m:matrixrow>
+		    <m:apply>
+		      <m:ci type="fn">X</m:ci>
+		      <m:cn>2</m:cn>
+		    </m:apply>
+		  </m:matrixrow>
+		  <m:matrixrow>
+		    <m:apply>
+		      <m:ci type="fn">X</m:ci>
+		      <m:cn>4</m:cn>
+		    </m:apply>
+		  </m:matrixrow>
+		  <m:matrixrow>
+		    <m:apply>
+		      <m:ci type="fn">X</m:ci>
+		      <m:cn>3</m:cn>
+		    </m:apply>
+		  </m:matrixrow>
+		</m:matrix>
+		<m:apply>
+		  <m:times/>
+		  <m:matrix>
+		    <m:matrixrow>
+		      <m:cn>0</m:cn>
+		      <m:cn>0</m:cn>
+		      <m:cn>0</m:cn>
+		      <m:cn>0</m:cn>
+		      <m:cn>0</m:cn>
+		    </m:matrixrow>
+		    <m:matrixrow>
+		      <m:cn>0</m:cn>
+		      <m:cn>1</m:cn>
+		      <m:cn>3</m:cn>
+		      <m:cn>4</m:cn>
+		      <m:cn>2</m:cn>
+		    </m:matrixrow>
+		    <m:matrixrow>
+		      <m:cn>0</m:cn>
+		      <m:cn>2</m:cn>
+		      <m:cn>1</m:cn>
+		      <m:cn>3</m:cn>
+		      <m:cn>4</m:cn>
+		    </m:matrixrow>
+		    <m:matrixrow>
+		      <m:cn>0</m:cn>
+		      <m:cn>4</m:cn>
+		      <m:cn>2</m:cn>
+		      <m:cn>1</m:cn>
+		      <m:cn>1</m:cn>
+		    </m:matrixrow>
+		    <m:matrixrow>
+		      <m:cn>0</m:cn>
+		      <m:cn>3</m:cn>
+		      <m:cn>4</m:cn>
+		      <m:cn>2</m:cn>
+		      <m:cn>3</m:cn>
+		    </m:matrixrow>
+		  </m:matrix>
+		  <m:matrix>
+		    <m:matrixrow>
+		      <m:apply>
+			<m:ci type="fn">x</m:ci>
+			<m:cn>0</m:cn>
+		      </m:apply>
+		    </m:matrixrow>
+		    <m:matrixrow>
+		      <m:apply>
+			<m:ci type="fn">x</m:ci>
+			<m:cn>1</m:cn>
+		      </m:apply>
+		    </m:matrixrow>
+		    <m:matrixrow>
+		      <m:apply>
+			<m:ci type="fn">x</m:ci>
+			<m:cn>3</m:cn>
+		      </m:apply>
+		    </m:matrixrow>
+		    <m:matrixrow>
+		      <m:apply>
+			<m:ci type="fn">x</m:ci>
+			<m:cn>4</m:cn>
+		      </m:apply>
+		    </m:matrixrow>
+		    <m:matrixrow>
+		      <m:apply>
+			<m:ci type="fn">x</m:ci>
+			<m:cn>2</m:cn>
+		      </m:apply>
+		    </m:matrixrow>
+		  </m:matrix>
+		</m:apply>
+	      </m:apply>
+	    </m:math>
+            where for visibility the matrix entries represent only the <emphasis>power</emphasis>, <m:math><m:ci>m</m:ci></m:math> of the corresponding
+            DFT term
+    <m:math>
+      <m:ci>
+	<m:msubsup>
+	  <m:mi>W</m:mi>
+	  <m:mi>N</m:mi>
+	  <m:mi>m</m:mi>
+	</m:msubsup>
+      </m:ci>
+    </m:math>
+	    Note that the 4-by-4 <link url="http://en.wikipedia.org/wiki/Circulant_matrix">circulant matrix</link>
+	    <m:math display="block">
+	      <m:matrix>
+		<m:matrixrow>
+		  <m:cn>1</m:cn>
+		  <m:cn>3</m:cn>
+		  <m:cn>4</m:cn>
+		  <m:cn>2</m:cn>
+		</m:matrixrow>
+		<m:matrixrow>
+		  <m:cn>2</m:cn>
+		  <m:cn>1</m:cn>
+		  <m:cn>3</m:cn>
+		  <m:cn>4</m:cn>
+		</m:matrixrow>
+		<m:matrixrow>
+		  <m:cn>4</m:cn>
+		  <m:cn>2</m:cn>
+		  <m:cn>1</m:cn>
+		  <m:cn>1</m:cn>
+		</m:matrixrow>
+		<m:matrixrow>
+		  <m:cn>3</m:cn>
+		  <m:cn>4</m:cn>
+		  <m:cn>2</m:cn>
+		  <m:cn>3</m:cn>
+		</m:matrixrow>
+	      </m:matrix>
+	    </m:math>
+            corresponds to a length-4 circular convolution.
+	  </para>
+	</example>
+	<para id="para78">Rader's conversion turns a prime-length <link document="m12032" target-id="DFTequation">DFT</link> into a few adds
+	  and a <emphasis>composite-length</emphasis>
+	  (<m:math>
+	    <m:apply>
+	      <m:minus/>
+	      <m:ci>N</m:ci>
+	      <m:cn>1</m:cn>
+	    </m:apply>
+	  </m:math>) circular convolution, which can be computed
+	  efficiently using either
+	  <list id="list78" list-type="enumerated"><item><link document="m12022">fast convolution</link> via FFT and IFFT</item>
+	    <item>index-mapped convolution algorithms and short
+	    Winograd convolution alogrithms. (Rather complicated, and trades fewer multiplies
+            for many more adds, which may not be worthwile on most modern processors.) See <cite target-id="Agarwal"><cite-title>R.C. Agarwal and J.W. Cooley</cite-title></cite></item>
+	  </list>
+	</para>
+      </section>
+    </section>
+      <section id="Winograd">
+	<title>Winograd minimum-multiply convolution and DFT algorithms</title>
+	<para id="para79">S. Winograd has proved that a
+	  length-<m:math><m:ci>N</m:ci></m:math> circular or linear
+	  convolution or <link document="m12032" target-id="DFTequation">DFT</link> requires less than
+	  <m:math>
+	    <m:apply>
+	      <m:times/>
+	      <m:cn>2</m:cn>
+	      <m:ci>N</m:ci>
+	    </m:apply>
+	  </m:math> multiplies (for real data), or
+	  <m:math>
+	    <m:apply>
+	      <m:times/>
+	      <m:cn>4</m:cn>
+	      <m:ci>N</m:ci>
+	    </m:apply>
+	  </m:math> real multiplies for complex data. (This doesn't
+	  count multiplies by rational fractions, like
+	  <m:math><m:cn>3</m:cn></m:math> or
+	  <m:math>
+	    <m:apply>
+	      <m:divide/>
+	      <m:cn>1</m:cn>
+	      <m:ci>N</m:ci>
+	    </m:apply>
+	  </m:math> or 
+	  <m:math>
+	    <m:apply> 
+	      <m:divide/>
+	      <m:cn>5</m:cn>
+	      <m:cn>17</m:cn>
+	    </m:apply>
+	  </m:math>, which can be computed with additions and one
+	  overall scaling factor.) Furthermore, Winograd showed how to
+	  construct algorithms achieving these counts. Winograd
+	  prime-length DFTs and convolutions have the following
+	  characteristics:
+	  <list id="list79" list-type="enumerated">
+	    <item>Extremely efficient for small
+	      <m:math><m:ci>N</m:ci></m:math>
+	      (<m:math>
+		<m:apply>
+		  <m:lt/>
+		  <m:ci>N</m:ci>
+		  <m:cn>20</m:cn>
+		</m:apply>
+	      </m:math>)
+	    </item>
+	    <item>The number of adds becomes <emphasis>huge</emphasis>
+	    for large <m:math><m:ci>N</m:ci></m:math>.
+	    </item>
+	  </list>
+	  Thus Winograd's minimum-multiply FFT's are useful only for
+	  small <m:math><m:ci>N</m:ci></m:math>. They are
+	  very important for <link document="m12033">Prime-Factor
+	  Algorithms</link>, which generally use Winograd modules to
+	  implement the short-length DFTs.  Tables giving the
+	  multiplies and adds necessary to compute Winograd FFTs for
+	  various lengths can be found in <cite target-id="Burrus"><cite-title>C.S. Burrus (1988)</cite-title></cite>. Tables and FORTRAN
+	  and TMS32010 programs for these short-length transforms can
+	  be found in <cite target-id="BurrusandParks"><cite-title>C.S. Burrus and
+	  T.W. Parks (1985)</cite-title></cite>. The theory and derivation of these
+	  algorithms is quite elegant but requires substantial
+	  background in number theory and abstract algebra.
+	  Fortunately for the practitioner, all of the short
+	  algorithms one is likely to need have already been derived
+	  and can simply be looked up without mastering the
+	  details of their derivation.
+      </para>
+    </section>
+    <section id="WFTA">
+      <title>Winograd Fourier Transform Algorithm (WFTA)</title>
+      <para id="para80">
+        The Winograd Fourier Transform Algorithm (WFTA) is
+	a technique that recombines the short Winograd modules in a
+	<link document="m12033">prime-factor FFT</link> into a composite-<m:math><m:ci>N</m:ci></m:math> structure with
+	fewer multiplies but more adds. While theoretically interesting,
+        WFTAs are complicated and different for every length, and on modern
+        processors with hardware multipliers the trade of multiplies for many
+        more adds is very rarely useful in practice today.
+      </para>
+    </section>
+  </content>
+  <bib:file>
+    <bib:entry id="Agarwal">
+      <bib:article>
+	<bib:author>R.C. Agarwal and J.W. Cooley</bib:author>
+	<bib:title>New Algorithms for Digital Convolution</bib:title>
+	<bib:journal>IEEE Trans. on Acoustics, Speech, and Signal Processing</bib:journal>
+	<bib:year>1977</bib:year>
+	<bib:volume>25</bib:volume>
+	<bib:pages>392-410</bib:pages>
+	<bib:month>Oct</bib:month>
+      </bib:article>
+    </bib:entry>
+    <bib:entry id="Burrus">
+      <bib:incollection>
+	<bib:author>C.S. Burrus</bib:author>
+	<bib:title>Efficient Fourier Transform and Convolution
+	Algorithms</bib:title>
+	<bib:booktitle>Advanced Topics in Signal Processing</bib:booktitle>
+	<bib:publisher>Prentice-Hall</bib:publisher>
+	<bib:year>1988</bib:year>
+	<bib:editor>J.S. Lin and A.V. Oppenheim</bib:editor>
+	<bib:chapter>Chapter 4</bib:chapter>
+      </bib:incollection>
+    </bib:entry>
+    <bib:entry id="BurrusandParks">
+      <bib:book>
+	<bib:author>C.S. Burrus and T.W. Parks</bib:author>
+	<bib:title>DFT/FFT and Convolution Algorithms</bib:title>
+	<bib:publisher>Wiley-Interscience</bib:publisher>
+	<bib:year>1985</bib:year>
+      </bib:book>
+    </bib:entry>
+	
+	  
+  </bib:file>
+</document>

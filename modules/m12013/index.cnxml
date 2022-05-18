@@ -1,0 +1,674 @@
+<document xmlns="http://cnx.rice.edu/cnxml" xmlns:m="http://www.w3.org/1998/Math/MathML" xmlns:md="http://cnx.rice.edu/mdml">
+  <title>Chirp-z Transform</title>
+  <metadata><md:content-id>undefined</md:content-id><md:title/><md:uuid>2c87e2f4-1c94-4687-a47b-efc8d4ea7903</md:uuid>
+</metadata>
+
+  <content>
+    <para id="intro">
+      Let
+      <m:math>
+	<m:apply>
+	  <m:eq/>
+	  <m:apply>
+	    <m:power/>
+	    <m:ci>z</m:ci>
+	    <m:ci>k</m:ci>
+	  </m:apply>
+	  <m:apply>
+	    <m:times/>
+	    <m:ci>A</m:ci>
+	    <m:apply>
+	      <m:power/>
+	      <m:ci>W</m:ci>
+	      <m:apply>
+		<m:minus/>
+		<m:ci>k</m:ci>
+	      </m:apply>  
+	    </m:apply>  
+	  </m:apply>
+	</m:apply>
+      </m:math>, where
+
+      <m:math>
+	<m:apply>
+	  <m:eq/>
+	  <m:ci>A</m:ci>
+	  <m:apply>
+	    <m:times/>
+	    <m:ci><m:msub><m:mi>A</m:mi><m:mi>o</m:mi></m:msub></m:ci>
+	    <m:apply>
+	      <m:exp/>
+	      <m:apply>
+		<m:times/>
+		<m:imaginaryi/>
+		<m:ci><m:msub><m:mi>θ</m:mi><m:mi>o</m:mi></m:msub></m:ci>
+	      </m:apply>  
+	    </m:apply>  
+	  </m:apply>
+	</m:apply>
+      </m:math>, 
+      <m:math>
+	<m:apply>
+	  <m:eq/>
+	  <m:ci>W</m:ci>
+	  
+	  <m:apply>
+	    <m:times/>
+	    <m:ci><m:msub><m:mi>W</m:mi><m:mi>o</m:mi></m:msub></m:ci>
+	    <m:apply>
+	      <m:exp/>
+	      <m:apply>
+		<m:minus/>
+		<m:apply>
+		  <m:times/>
+		  <m:imaginaryi/>
+		  <m:ci><m:msub><m:mi>φ</m:mi><m:mi>o</m:mi></m:msub></m:ci>
+		</m:apply>  
+	      </m:apply>
+	    </m:apply>  
+	  </m:apply>
+	</m:apply>
+      </m:math>.
+
+    </para>  
+
+    <para id="para_2">
+      We wish to compute <m:math><m:ci>M</m:ci></m:math> samples, 
+      <m:math>
+	<m:apply>
+	  <m:eq/>
+	  <m:ci>k</m:ci>
+	  <m:list>
+	    <m:cn>0</m:cn>
+	    <m:cn>1</m:cn>
+	    <m:cn>2</m:cn>
+	    <m:ci>…</m:ci>
+	    <m:apply>
+	      <m:minus/>
+	      <m:ci>M</m:ci>
+	      <m:cn>1</m:cn>
+	    </m:apply>
+	  </m:list>
+	</m:apply>
+      </m:math>
+      of
+
+      <m:math display="block">
+	<m:apply> 
+	  <m:eq/>
+	  
+	  <m:apply>
+	    <m:eq/>
+	    <m:apply>
+	      <m:ci type="fn">X</m:ci>
+	      <m:ci><m:msub><m:mi>z</m:mi><m:mi>k</m:mi></m:msub></m:ci>
+	    </m:apply>
+
+	    <m:apply>
+	      <m:sum/>
+	      <m:bvar><m:ci>n</m:ci></m:bvar>
+	      <m:uplimit>
+		<m:apply>
+		  <m:minus/>
+		  <m:ci>N</m:ci>
+		  <m:cn>1</m:cn>
+		</m:apply>
+	      </m:uplimit>
+	      <m:lowlimit><m:cn>0</m:cn></m:lowlimit>
+	      <m:apply>
+		<m:times/>
+		<m:apply>
+		  <m:ci type="fn">x</m:ci>
+		  <m:ci>n</m:ci>
+		</m:apply>
+		<m:apply>
+		  <m:power/>
+		  <m:ci><m:msub><m:mi>z</m:mi><m:mi>k</m:mi></m:msub></m:ci>
+		  <m:apply>
+		    <m:minus/>
+		    <m:ci>n</m:ci>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+	    </m:apply>  
+	  </m:apply> 
+	  
+	  <m:apply>
+	    <m:sum/>
+	    <m:bvar><m:ci>n</m:ci></m:bvar>
+	    <m:uplimit>
+	      <m:apply>
+		<m:minus/>
+		<m:ci>N</m:ci>
+		<m:cn>1</m:cn>
+	      </m:apply>
+	    </m:uplimit>
+	    <m:lowlimit><m:cn>0</m:cn></m:lowlimit>
+	    <m:apply>
+	      <m:times/>
+	      <m:apply>
+		<m:ci type="fn">x</m:ci>
+		<m:ci>n</m:ci>
+	      </m:apply>
+	      <m:apply>
+		<m:power/>
+		<m:ci>A</m:ci>
+		<m:apply>
+		  <m:minus/>
+		  <m:ci>n</m:ci>
+		</m:apply>
+	      </m:apply>
+	      <m:apply>
+		<m:power/>
+		<m:ci>W</m:ci>
+		<m:ci>nk</m:ci>
+	      </m:apply>
+	    </m:apply>
+	  </m:apply>
+	  
+	</m:apply>
+      </m:math>
+
+      <figure id="fig1001" orient="horizontal">
+	<media id="idm674304" alt=""><image src="../../media/figure3.png" mime-type="image/png"/></media> 
+      </figure> 
+
+    </para>
+
+    <para id="para_3">
+      Note that 
+      <m:math>
+	<m:apply>
+	  <m:implies/>
+
+	  <m:apply>
+	    <m:eq/>
+	    <m:apply>
+	      <m:power/>
+	      <m:apply>
+		<m:minus/>
+		<m:ci>k</m:ci>
+		<m:ci>n</m:ci>
+	      </m:apply>
+	      <m:cn>2</m:cn>
+	    </m:apply>
+	    
+	    <m:apply>
+	      <m:plus/>
+	      <m:apply>
+		<m:minus/>
+		<m:apply>
+		  <m:power/>
+		  <m:ci>n</m:ci>
+		  <m:cn>2</m:cn>
+		</m:apply>
+		<m:apply>
+		  <m:times/>
+		  <m:cn>2</m:cn>
+		  <m:ci>n</m:ci>
+		  <m:ci>k</m:ci>
+		</m:apply>
+	      </m:apply>
+	      <m:apply>
+		<m:power/>
+		<m:ci>k</m:ci>
+		<m:cn>2</m:cn>
+	      </m:apply>
+	      
+	    </m:apply>
+	  </m:apply>
+
+
+
+	  <m:apply>
+	    <m:eq/>
+	    <m:apply>
+	      <m:times/>
+	      <m:ci>n</m:ci>
+	      <m:ci>k</m:ci>
+	    </m:apply>
+	    
+	    <m:apply>
+	      <m:times/>
+	      <m:apply>
+		<m:divide/>
+		<m:cn>1</m:cn>
+		<m:cn>2</m:cn>
+	      </m:apply>
+	      <m:apply>
+		<m:plus/>
+		<m:apply>
+		  <m:power/>
+		  <m:ci>n</m:ci>
+		  <m:cn>2</m:cn>
+		</m:apply>
+		
+		<m:apply>
+		  <m:minus/>
+		  <m:apply>
+		    <m:power/>
+		    <m:ci>k</m:ci>
+		    <m:cn>2</m:cn>
+		  </m:apply>
+		  <m:apply>
+		    <m:power/>
+		    <m:apply>
+		      <m:minus/>
+		      <m:ci>k</m:ci>
+		      <m:ci>n</m:ci>
+		    </m:apply>
+		    <m:cn>2</m:cn>
+		  </m:apply>
+		</m:apply>
+		
+	      </m:apply>  
+	    </m:apply>
+	  </m:apply>
+	</m:apply>
+      </m:math>, So
+
+      <m:math display="block">
+	<m:apply>
+	  <m:eq/>
+	  <m:apply>
+	    <m:ci type="fn">X</m:ci>
+	    <m:ci><m:msub><m:mi>z</m:mi><m:mi>k</m:mi></m:msub></m:ci>
+	  </m:apply>
+	  
+	  <m:apply>
+	    <m:sum/>
+	    <m:bvar><m:ci>n</m:ci></m:bvar>
+	    <m:uplimit>
+	      <m:apply>
+		<m:minus/>
+		<m:ci>N</m:ci>
+		<m:cn>1</m:cn>
+	      </m:apply>
+	    </m:uplimit>
+	    <m:lowlimit><m:cn>0</m:cn></m:lowlimit>
+	    <m:apply>
+	      <m:times/>
+	      <m:apply>
+		<m:ci type="fn">x</m:ci>
+		<m:ci>n</m:ci>
+	      </m:apply>
+	      <m:apply>
+		<m:power/>
+		<m:ci>A</m:ci>
+		<m:apply>
+		  <m:minus/>
+		  <m:ci>n</m:ci>
+		</m:apply>
+	      </m:apply>
+	      
+	      <m:apply>
+		<m:power/>
+		<m:ci>W</m:ci>
+		<m:apply>
+		  <m:divide/>
+		  <m:apply>
+		    <m:power/>
+		    <m:ci>n</m:ci>
+		    <m:cn>2</m:cn>
+		  </m:apply>
+		  <m:cn>2</m:cn>
+		</m:apply>
+	      </m:apply>  
+	      
+	      <m:apply>
+		<m:power/>
+		<m:ci>W</m:ci>
+		<m:apply>
+		  <m:divide/>
+		  <m:apply>
+		    <m:power/>
+		    <m:ci>k</m:ci>
+		    <m:cn>2</m:cn>
+		  </m:apply>
+		  <m:cn>2</m:cn>
+		</m:apply>
+	      </m:apply>    		   
+	      
+	      
+	      <m:apply>
+		<m:power/>
+		<m:ci>W</m:ci>
+		<m:apply>
+		  <m:divide/>
+		  <m:apply>
+		    <m:minus/>
+		    <m:apply>
+		      <m:power/>
+		      <m:apply>
+			<m:minus/>
+			<m:ci>k</m:ci>
+			<m:ci>n</m:ci>
+		      </m:apply>
+		      <m:cn>2</m:cn>
+		    </m:apply>
+		  </m:apply>
+		  <m:cn>2</m:cn>
+		</m:apply>
+	      </m:apply> 		   
+	      
+	    </m:apply>
+	  </m:apply>  
+	  
+	</m:apply>
+      </m:math>
+
+
+      <m:math display="block">
+	<m:apply>
+	  <m:eq/>
+	  <m:apply>
+	    <m:times/>
+	    <m:apply>
+	      <m:power/>
+	      <m:ci>W</m:ci>
+	      <m:apply>
+		<m:divide/>
+		<m:apply>
+		  <m:power/>
+		  <m:ci>k</m:ci>
+		  <m:cn>2</m:cn>
+		</m:apply>
+		<m:cn>2</m:cn>
+	      </m:apply>
+	    </m:apply>    	     
+	    
+	    <m:apply>
+   	      <m:sum/>
+	      <m:bvar><m:ci>n</m:ci></m:bvar>
+	      <m:uplimit>
+		<m:apply>
+		  <m:minus/>
+		  <m:ci>N</m:ci>
+		  <m:cn>1</m:cn>
+		</m:apply>
+	      </m:uplimit>
+	      <m:lowlimit><m:cn>0</m:cn></m:lowlimit>
+	      <m:apply>
+		<m:times/>
+		<m:apply>
+		  <m:ci type="fn">x</m:ci>
+		  <m:ci>n</m:ci>
+		</m:apply>
+		<m:apply>
+		  <m:power/>
+		  <m:ci>A</m:ci>
+		  <m:apply>
+		    <m:minus/>
+		    <m:ci>n</m:ci>
+		  </m:apply>
+		</m:apply>
+		
+		<m:apply>
+		  <m:power/>
+		  <m:ci>W</m:ci>
+		  <m:apply>
+		    <m:divide/>
+		    <m:apply>
+		      <m:power/>
+		      <m:ci>n</m:ci>
+		      <m:cn>2</m:cn>
+		    </m:apply>
+		    <m:cn>2</m:cn>
+		  </m:apply>
+		</m:apply>  
+		
+		
+		
+		
+		<m:apply>
+		  <m:power/>
+		  <m:ci>W</m:ci>
+		  <m:apply>
+		    <m:divide/>
+		    <m:apply>
+		      <m:minus/>
+		      <m:apply>
+			<m:power/>
+			<m:apply>
+			  <m:minus/>
+			  <m:ci>k</m:ci>
+			  <m:ci>n</m:ci>
+			</m:apply>
+			<m:cn>2</m:cn>
+		      </m:apply>
+		    </m:apply>
+		    <m:cn>2</m:cn>
+		  </m:apply>
+		</m:apply> 		   
+		
+	      </m:apply>
+	    </m:apply>  
+	  </m:apply>
+	</m:apply>
+      </m:math>
+
+
+    </para>
+
+    <para id="para_4">
+      Thus, 
+      <m:math>
+	<m:apply>
+	  <m:ci type="fn">X</m:ci>
+	  <m:ci><m:msub><m:mi>z</m:mi><m:mi>k</m:mi></m:msub></m:ci>                 
+	</m:apply>
+      </m:math>
+      can be compared by
+      <list id="list_2" list-type="enumerated">
+	<item id="item1">Premultiply 
+	  <m:math>
+	    <m:apply>
+	      <m:ci type="fn">x</m:ci>
+	      <m:ci>n</m:ci>
+	    </m:apply> 
+	  </m:math> by 
+
+	  <m:math>
+	    <m:apply>
+	      <m:times/>
+	      <m:apply>
+		<m:power/>
+		<m:ci>A</m:ci>
+		<m:ci>n</m:ci>
+	      </m:apply>
+
+	      <m:apply>
+		<m:power/>
+		<m:ci>W</m:ci>
+		<m:apply>
+		  <m:divide/>
+		  <m:apply>
+		    <m:power/>
+		    <m:ci>n</m:ci>
+		    <m:cn>2</m:cn>
+		  </m:apply>
+		  <m:cn>2</m:cn>
+		</m:apply>
+	      </m:apply>  
+	    </m:apply>
+	  </m:math>, 
+
+	  <m:math>
+	    <m:apply>
+	      <m:eq/>
+	      <m:ci>n</m:ci>
+	      <m:list> 
+		<m:cn> 0 </m:cn> 
+		<m:cn> 1</m:cn> 
+		<m:ci> …</m:ci> 
+		<m:apply>
+		  <m:minus/>
+		  <m:ci>N</m:ci>
+		  <m:cn>1</m:cn>
+		</m:apply>
+	      </m:list> 
+	    </m:apply>
+	  </m:math> to make
+
+	  <m:math>
+	    <m:apply>
+	      <m:ci type="fn">y</m:ci>
+	      <m:ci>n</m:ci>
+	    </m:apply> 
+	  </m:math>
+	  
+	</item>
+	<item id="item2">Linearly convolve with 
+	  <m:math>
+	    <m:apply>
+	      <m:power/>
+	      <m:ci>W</m:ci>
+	      <m:apply>
+		<m:divide/>
+		<m:apply>
+		  <m:minus/>
+		  <m:apply>
+		    <m:power/>
+		    <m:apply>
+		      <m:minus/>
+		      <m:ci>k</m:ci>
+		      <m:ci>n</m:ci>
+		    </m:apply>
+		    <m:cn>2</m:cn>
+		  </m:apply>
+		</m:apply>
+		<m:cn>2</m:cn>
+	      </m:apply>
+	    </m:apply> 
+	    
+	  </m:math>
+	  
+	</item>
+	<item id="item3">Post multiply by to get 
+	  <m:math>
+	    <m:apply>
+	      <m:power/>
+	      <m:ci>W</m:ci>
+	      <m:apply>
+		<m:divide/>
+		<m:apply>
+		  <m:power/>
+		  <m:ci>k</m:ci>
+		  <m:cn>2</m:cn>
+		</m:apply>
+		<m:cn>2</m:cn>
+	      </m:apply>
+	    </m:apply>  
+	  </m:math> to get 
+	  <m:math>
+	    <m:apply>
+	      <m:ci type="fn">X</m:ci>
+	      <m:ci><m:msub><m:mi>z</m:mi><m:mi>k</m:mi></m:msub></m:ci>                 
+	    </m:apply>
+	  </m:math>.
+	</item>
+      </list>
+    </para>
+
+    <para id="para_5">
+      <link target-id="item1">1.</link> and <link target-id="item3">3.</link> require <m:math><m:ci>N</m:ci></m:math>
+      and <m:math><m:ci>M</m:ci></m:math> operations respectively.
+      <link target-id="item2">2.</link> can be performed efficiently
+      using fast convolution.
+
+      <figure id="fig1002" orient="horizontal">
+	<media id="idm1046720" alt=""><image src="../../media/figure8.png" mime-type="image/png"/></media> 
+      </figure>
+    </para>
+
+    <para id="para_6">
+      <m:math>
+	<m:apply>
+	  <m:power/>
+	  <m:ci>W</m:ci>
+	  <m:apply>
+	    <m:minus/>
+	    <m:apply>
+	      <m:divide/>
+	      <m:apply>
+		<m:power/>
+		<m:ci>n</m:ci>
+		<m:cn>2</m:cn>
+	      </m:apply>
+	      <m:cn>2</m:cn>
+	    </m:apply>
+	  </m:apply>
+	</m:apply>  
+      </m:math> 
+      is required only for
+      <m:math>
+	<m:apply>
+	  <m:leq/> 
+	  <m:apply>
+	    <m:minus/>
+	    <m:apply>
+	      <m:minus/>  
+	      <m:ci>N</m:ci>
+	      <m:cn>1</m:cn>
+	    </m:apply>
+	  </m:apply>
+	  <m:apply>
+	    <m:leq/>
+	    <m:ci>n</m:ci>
+	    <m:apply>
+	      <m:minus/>
+              <m:ci>M</m:ci>
+              <m:cn>1</m:cn>
+	    </m:apply>
+	  </m:apply>
+	</m:apply> 
+      </m:math>, so this linear convolution can be implemented with 
+      <m:math>
+	<m:apply>
+	  <m:geq/> 
+	  <m:ci>L</m:ci>
+	  <m:apply>
+	    <m:plus/>
+	    <m:ci>N</m:ci>
+	    <m:apply>
+	      <m:minus/>
+              <m:ci>M</m:ci>
+              <m:cn>1</m:cn>
+	    </m:apply>
+	  </m:apply>
+	</m:apply> 
+      </m:math> FFTs.
+
+      <note type="note" id="idp5022544">
+	Wrap 
+	<m:math>
+	  <m:apply>
+	    <m:power/>
+	    <m:ci>W</m:ci>
+	    <m:apply>
+	      <m:minus/>
+	      <m:apply>
+		<m:divide/>
+		<m:apply>
+		  <m:power/>
+		  <m:ci>n</m:ci>
+		  <m:cn>2</m:cn>
+		</m:apply>
+		<m:cn>2</m:cn>
+	      </m:apply>
+	    </m:apply>
+	  </m:apply>  
+	</m:math> around L
+	when implementing with circular convolution.
+      </note>
+      So, a weird-length <link document="12032" target-id="DFTequation">DFT</link> can be implemented relatively efficiently
+      using power-of-two algorithms via the chirp-z transform.
+    </para>
+
+    <para id="para_7">
+      Also useful for "zoom-FFTs".
+    </para>
+    
+  </content>
+  
+</document>

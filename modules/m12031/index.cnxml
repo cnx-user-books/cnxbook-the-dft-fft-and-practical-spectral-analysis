@@ -1,0 +1,643 @@
+<document xmlns="http://cnx.rice.edu/cnxml" xmlns:m="http://www.w3.org/1998/Math/MathML" xmlns:md="http://cnx.rice.edu/mdml" xmlns:bib="http://bibtexml.sf.net/">
+  <title>Split-radix FFT Algorithms</title>
+  <metadata><md:content-id>undefined</md:content-id><md:title/><md:uuid>c2d75deb-a7b4-463b-8e5f-76ed06f54e8d</md:uuid>
+</metadata>
+
+  <content>
+    <para id="para1">The split-radix algorithm, first clearly described and named by <cite target-id="Duhamel"><cite-title>Duhamel and Hollman</cite-title></cite>
+in 1984, required fewer total multiply and add operations
+    operations than any previous power-of-two algorithm.
+    (<cite target-id="Yavne"><cite-title>Yavne</cite-title></cite> first derived essentially the same algorithm in 1968,
+    but the description was so atypical that the work was largely neglected.)
+    For a time many FFT experts thought it to be optimal in terms of total complexity,
+    but even more efficient variations have more recently been discovered by
+    <cite target-id="JohnsonAndFrigo"><cite-title>Johnson and Frigo</cite-title></cite>.
+    </para>
+    <para id="element-534">The split-radix algorithm can be derived by careful examination of the <link document="m12016">radix-2</link> and <link document="m12027">radix-4</link> flowgraphs as in Figure 1 below.  While in most places the <link document="m12027">radix-4</link> algorithm has fewer nontrivial twiddle factors, in some places the <link document="m12016">radix-2</link> actually lacks twiddle factors present in the <link document="m12027">radix-4</link> structure or those twiddle factors simplify to multiplication by
+<m:math>
+  <m:apply>
+    <m:minus/>
+       <m:imaginaryi/>
+    </m:apply>
+</m:math>,
+which actually requires only additions.  By mixing <link document="m12016">radix-2</link> and <link document="m12027">radix-4</link> computations appropriately, an algorithm of lower complexity than either can be derived.</para><figure id="fig1" orient="horizontal"><title>Motivation for split-radix algorithm</title> 
+      <subfigure id="idm8413840">
+	<title>radix-2</title>
+	<media id="idp725520" alt=""><image src="../../media/image1-2e1a.png" mime-type="image/png"/></media>
+      </subfigure>
+      <subfigure id="idp2239376">
+	<title>radix-4</title>
+	<media id="idm979664" alt=""><image src="../../media/image2-66b7.png" mime-type="image/png"/></media>
+      </subfigure>
+      <caption>See <link document="m12016">Decimation-in-Time (DIT) Radix-2 FFT</link> and <link document="m12027">Radix-4 FFT Algorithms</link> for more information on these algorithms.
+      </caption>
+    </figure>
+    <para id="element-4">An alternative derivation notes that radix-2 butterflies of the form shown in Figure 2 can merge twiddle factors from two successive stages to eliminate one-third of them; hence, the split-radix algorithm requires only about two-thirds as many multiplications as a radix-2 FFT.</para><figure id="fig2" orient="horizontal"><subfigure id="idp4527616">
+	<media id="idm8179616" alt=""><image src="../../media/image3-cf4d.png" mime-type="image/png"/></media>
+      </subfigure>
+     <subfigure id="idp2300944">
+	<media id="idp2903264" alt=""><image src="../../media/image4-5f9b.png" mime-type="image/png"/></media>
+      </subfigure>
+      <caption>Note that these two butterflies are equivalent</caption>
+    </figure>
+       
+    <para id="para2">The split-radix algorithm can also be derived by mixing the <link document="m12016">radix-2</link> and
+      <link document="m12027">radix-4</link> decompositions.
+    </para>
+    <equation id="eq1"><title>DIT Split-radix derivation</title>
+      <m:math>
+	<m:apply>
+	  <m:eq/>
+	  <m:apply>
+	    <m:ci type="fn">X</m:ci>
+	    <m:ci>k</m:ci>
+	  </m:apply>
+	  <m:apply>
+	    <m:plus/>
+	    <m:apply>
+	      <m:sum/>
+	      <m:bvar>
+		<m:ci>n</m:ci>
+	      </m:bvar>
+	      <m:uplimit>
+		<m:apply>
+		  <m:minus/>
+		  <m:apply>
+		    <m:divide/>
+		    <m:ci>N</m:ci>
+		    <m:cn>2</m:cn>
+		  </m:apply>
+		  <m:cn>1</m:cn>
+		</m:apply>
+	      </m:uplimit>
+	      <m:lowlimit>
+		<m:cn>0</m:cn>
+	      </m:lowlimit>
+	      <m:apply>
+		<m:times/>
+		<m:apply>
+		  <m:ci type="fn">x</m:ci>
+		  <m:apply>
+		    <m:times/>
+		    <m:cn>2</m:cn>
+		    <m:ci>n</m:ci>
+		  </m:apply>
+		</m:apply>
+		<m:apply>
+		  <m:exp/>
+		  <m:apply>
+		    <m:minus/>
+		    <m:apply>
+		      <m:times/>
+		      <m:imaginaryi/>
+		      <m:apply>
+			<m:divide/>
+			<m:apply>
+			  <m:times/>
+			  <m:cn>2</m:cn>
+			  <m:pi/>
+			  <m:apply>
+			    <m:times/>
+			    <m:cn>2</m:cn>
+			    <m:ci>n</m:ci>
+			  </m:apply>
+			  <m:ci>k</m:ci>
+			</m:apply>
+			<m:ci>N</m:ci>
+		      </m:apply>
+		    </m:apply>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+	    </m:apply>
+	    <m:apply>
+	      <m:sum/>
+	      <m:bvar>
+		<m:ci>n</m:ci>
+	      </m:bvar>
+	      <m:uplimit>
+		<m:apply>
+		  <m:minus/>
+		  <m:apply>
+		    <m:divide/>
+		    <m:ci>N</m:ci>
+		    <m:cn>4</m:cn>
+		  </m:apply>
+		  <m:cn>1</m:cn>
+		</m:apply>
+	      </m:uplimit>
+	      <m:lowlimit>
+		<m:cn>0</m:cn>
+	      </m:lowlimit>
+	      <m:apply>
+		<m:times/>
+		<m:apply>
+		  <m:ci type="fn">x</m:ci>
+		  <m:apply>
+		    <m:plus/>
+		    <m:apply>
+		      <m:times/>
+		      <m:cn>4</m:cn>
+		      <m:ci>n</m:ci>
+		    </m:apply>
+		    <m:cn>1</m:cn>
+		  </m:apply>
+		</m:apply>
+		<m:apply>
+		  <m:exp/>
+		  <m:apply>
+		    <m:minus/>
+		    <m:apply>
+		      <m:times/>
+		      <m:imaginaryi/>
+		      <m:apply>
+			<m:divide/>
+			<m:apply>
+			  <m:times/>
+			  <m:cn>2</m:cn>
+			  <m:pi/>
+			  <m:apply>
+			    <m:plus/>
+			    <m:apply>
+			      <m:times/>
+			      <m:cn>4</m:cn>
+			      <m:ci>n</m:ci>
+			    </m:apply>
+			    <m:cn>1</m:cn>
+			  </m:apply>
+			  <m:ci>k</m:ci>
+			</m:apply>
+			<m:ci>N</m:ci>
+		      </m:apply>
+		    </m:apply>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+	    </m:apply>
+	    <m:apply>
+	      <m:sum/>
+	      <m:bvar>
+		<m:ci>n</m:ci>
+	      </m:bvar>
+	      <m:uplimit>
+		<m:apply>
+		  <m:minus/>
+		  <m:apply>
+		    <m:divide/>
+		    <m:ci>N</m:ci>
+		    <m:cn>4</m:cn>
+		  </m:apply>
+		  <m:cn>1</m:cn>
+		</m:apply>
+	      </m:uplimit>
+	      <m:lowlimit>
+		<m:cn>0</m:cn>
+	      </m:lowlimit>
+	      <m:apply>
+		<m:times/>
+		<m:apply>
+		  <m:ci type="fn">x</m:ci>
+		  <m:apply>
+		    <m:plus/>
+		    <m:apply>
+		      <m:times/>
+		      <m:cn>4</m:cn>
+		      <m:ci>n</m:ci>
+		    </m:apply>
+		    <m:cn>3</m:cn>
+		  </m:apply>
+		</m:apply>
+		<m:apply>
+		  <m:exp/>
+		  <m:apply>
+		    <m:minus/>
+		    <m:apply>
+		      <m:times/>
+		      <m:imaginaryi/>
+		      <m:apply>
+			<m:divide/>
+			<m:apply>
+			  <m:times/>
+			  <m:cn>2</m:cn>
+			  <m:pi/>
+			  <m:apply>
+			    <m:plus/>
+			    <m:apply>
+			      <m:times/>
+			      <m:cn>4</m:cn>
+			      <m:ci>n</m:ci>
+			    </m:apply>
+			    <m:cn>3</m:cn>
+			  </m:apply>
+			  <m:ci>k</m:ci>
+			</m:apply>
+			<m:ci>N</m:ci>
+		      </m:apply>
+		    </m:apply>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+	    </m:apply>
+	  </m:apply>
+	  <m:apply>
+	    <m:plus/>
+	    <m:apply>
+	      <m:ci type="fn" class="discrete">
+		<m:msub>
+		  <m:mi>DFT</m:mi>
+		  <m:mfrac>
+		    <m:mi>N</m:mi>
+		    <m:mn>2</m:mn>
+		  </m:mfrac>
+		</m:msub>
+	      </m:ci>
+	      <m:apply>
+		<m:ci type="fn">x</m:ci>
+		<m:apply>
+		  <m:times/>
+		  <m:cn>2</m:cn>
+		  <m:ci>n</m:ci>
+		</m:apply>
+	      </m:apply>
+	    </m:apply>
+	    <m:apply>
+	      <m:times/>
+	      <m:ci>
+		<m:msubsup>
+		  <m:mi>W</m:mi>
+		  <m:mi>N</m:mi>
+		  <m:mi>k</m:mi>
+		</m:msubsup>
+	      </m:ci>
+	      <m:apply>
+		<m:msub>
+		<m:ci type="fn" class="discrete">DFT</m:ci>
+		  <m:mfrac>
+		    <m:mi>N</m:mi>
+		    <m:mn>4</m:mn>
+		  </m:mfrac>
+		</m:msub>
+		<m:apply>
+		  <m:ci type="fn">x</m:ci>
+		  <m:apply>
+		    <m:plus/>
+		    <m:apply>
+		      <m:times/>
+		      <m:cn>4</m:cn>
+		      <m:ci>n</m:ci>
+		    </m:apply>
+		    <m:cn>1</m:cn>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+	    </m:apply>
+	    <m:apply>
+	      <m:times/>
+	      <m:ci>
+		<m:msubsup>
+		  <m:mi>W</m:mi>
+		  <m:mi>N</m:mi>
+		  <m:mrow>
+		    <m:mn>3</m:mn>
+		    <m:mi>k</m:mi>
+		  </m:mrow>
+		</m:msubsup>
+	      </m:ci>
+	      <m:apply>
+		<m:msub>
+		<m:ci type="fn" class="discrete">DFT</m:ci>
+		  <m:mfrac>
+		    <m:mi>N</m:mi>
+		    <m:mn>4</m:mn>
+		  </m:mfrac>
+		</m:msub>
+		<m:apply>
+		  <m:ci type="fn">x</m:ci>
+		  <m:apply>
+		    <m:plus/>
+		    <m:apply>
+		      <m:times/>
+		      <m:cn>4</m:cn>
+		      <m:ci>n</m:ci>
+		    </m:apply>
+		    <m:cn>3</m:cn>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+	    </m:apply>
+	  </m:apply>
+	</m:apply>
+      </m:math>
+    </equation>
+    <para id="element-733">Figure 3 illustrates the resulting split-radix butterfly.</para><figure id="fig3"><title>Decimation-in-Time Split-Radix Butterfly</title>
+      <media id="idp5285824" alt=""><image src="../../media/image5.png" mime-type="image/png"/></media>
+    <caption>The split-radix butterfly mixes radix-2 and radix-4 decompositions and is L-shaped</caption>
+    </figure>
+    <para id="element-845">Further decomposition of the half- and quarter-length DFTs yields the full split-radix algorithm.  The mix of different-length FFTs in different parts of the flowgraph results in a somewhat irregular algorithm; <cite target-id="Sorensen"><cite-title>Sorensen et al.</cite-title></cite> show how to adjust the computation such that the data retains the simpler radix-2 bit-reverse order.
+A decimation-in-frequency split-radix FFT can be derived analogously.</para><figure id="fig4"><media id="idm8705360" alt=""><image src="../../media/image6.png" mime-type="image/png"/></media>
+      <caption>The split-radix transform has L-shaped butterflies</caption>
+    </figure>
+    <para id="element-984">The multiplicative complexity of the split-radix algorithm is only about two-thirds that of the radix-2 FFT, and is better than the radix-4 FFT or any higher power-of-two radix as well.  The additions within the complex twiddle-factor multiplies are similarly reduced, but since the underlying butterfly tree remains the same in all power-of-two algorithms, the butterfly additions remain the same and the overall reduction in additions is much less.</para><table id="table1" summary="">
+<title>Operation Counts</title>
+<tgroup cols="4"><thead>
+	  <row>
+            <entry/>
+	    <entry>Complex M/As</entry>
+	    <entry>Real M/As (4/2)</entry>
+	    <entry>Real M/As (3/3)</entry>
+	  </row>
+	</thead>
+	<tbody>
+	  <row>
+            <entry>Multiplies</entry>
+	    <entry>
+	      <m:math>
+		<m:apply>
+		  <m:ci type="fn" class="discrete">O</m:ci>
+		  <m:apply>
+		    <m:times/>
+		    <m:apply>
+		      <m:divide/>
+		      <m:ci>N</m:ci>
+		      <m:cn>3</m:cn>
+		    </m:apply>
+		    <m:apply>
+		      <m:log/>
+		      <m:logbase>
+			<m:cn>2</m:cn>
+		      </m:logbase>
+		      <m:ci>N</m:ci>
+		    </m:apply>
+		  </m:apply>
+		</m:apply>
+	      </m:math>
+	    </entry>
+	    <entry>
+	      <m:math>
+		<m:apply>
+		  <m:plus/>
+		  <m:apply>
+		    <m:minus/>
+		    <m:apply>
+		      <m:times/>
+		      <m:apply>
+			<m:divide/>
+			<m:cn>4</m:cn>
+			<m:cn>3</m:cn>
+		      </m:apply>
+		      <m:ci>N</m:ci>
+		      <m:apply>
+			<m:log/>
+			<m:logbase>
+			  <m:cn>2</m:cn>
+			</m:logbase>
+			<m:ci>N</m:ci>
+		      </m:apply>
+		    </m:apply>
+		    <m:apply>
+		      <m:times/>
+		      <m:apply>
+			<m:divide/>
+			<m:cn>38</m:cn>
+			<m:cn>9</m:cn>
+		      </m:apply>
+		      <m:ci>N</m:ci>
+		    </m:apply>
+		  </m:apply>
+		  <m:cn>6</m:cn>
+		  <m:apply>
+		    <m:times/>
+		    <m:apply>
+		      <m:divide/>
+		      <m:cn>2</m:cn>
+		      <m:cn>9</m:cn>
+		    </m:apply>
+		    <m:apply>
+		      <m:power/>
+		      <m:apply>
+			<m:minus/>
+			<m:cn>1</m:cn>
+		      </m:apply>
+		      <m:cn>M</m:cn>
+		    </m:apply>
+		  </m:apply>
+		</m:apply>
+	      </m:math>
+	    </entry>
+	    <entry>
+	      <m:math>
+		<m:apply>
+		  <m:plus/>
+		  <m:apply>
+		    <m:minus/>
+		    <m:apply>
+		      <m:times/>
+		      <m:ci>N</m:ci>
+		      <m:apply>
+			<m:log/>
+			<m:logbase>
+			  <m:cn>2</m:cn>
+			</m:logbase>
+			<m:ci>N</m:ci>
+		      </m:apply>
+		    </m:apply>
+		    <m:apply>
+		      <m:times/>
+		      <m:cn>3</m:cn>
+		      <m:ci>N</m:ci>
+		    </m:apply>
+		  </m:apply>
+		  <m:cn>4</m:cn>
+		</m:apply>
+	      </m:math>
+	    </entry>
+	  </row>
+	  <row>
+            <entry>Additions</entry>
+	    <entry>
+	      <m:math>
+		<m:apply>
+		  <m:ci type="fn" class="discrete">O</m:ci>
+		  <m:apply>
+		    <m:times/>
+		    <m:ci>N</m:ci>
+		    <m:apply>
+		      <m:log/>
+		      <m:logbase>
+			<m:cn>2</m:cn>
+		      </m:logbase>
+		      <m:ci>N</m:ci>
+		    </m:apply>
+		  </m:apply>
+		</m:apply>
+	      </m:math>
+	    </entry>
+	    <entry>
+	      <m:math>
+		<m:apply>
+		  <m:plus/>
+		  <m:apply>
+		    <m:minus/>
+		    <m:apply>
+		      <m:times/>
+		      <m:apply>
+			<m:divide/>
+			<m:cn>8</m:cn>
+			<m:cn>3</m:cn>
+		      </m:apply>
+		      <m:ci>N</m:ci>
+		      <m:apply>
+			<m:log/>
+			<m:logbase>
+			  <m:cn>2</m:cn>
+			</m:logbase>
+			<m:ci>N</m:ci>
+		      </m:apply>
+		    </m:apply>
+		    <m:apply>
+		      <m:times/>
+		      <m:apply>
+			<m:divide/>
+			<m:cn>16</m:cn>
+			<m:cn>9</m:cn>
+		      </m:apply>
+		      <m:ci>N</m:ci>
+		    </m:apply>
+		  </m:apply>
+		  <m:cn>2</m:cn>
+		  <m:apply>
+		    <m:times/>
+		    <m:apply>
+		      <m:divide/>
+		      <m:cn>2</m:cn>
+		      <m:cn>9</m:cn>
+		    </m:apply>
+		    <m:apply>
+		      <m:power/>
+		      <m:apply>
+			<m:minus/>
+			<m:cn>1</m:cn>
+		      </m:apply>
+		      <m:cn>M</m:cn>
+		    </m:apply>
+		  </m:apply>
+		</m:apply>
+	      </m:math>
+	    </entry>
+	    <entry>
+	      <m:math>
+		<m:apply>
+		  <m:plus/>
+		  <m:apply>
+		    <m:minus/>
+		    <m:apply>
+		      <m:times/>
+		      <m:cn>3</m:cn>
+		      <m:ci>N</m:ci>
+		      <m:apply>
+			<m:log/>
+			<m:logbase>
+			  <m:cn>2</m:cn>
+			</m:logbase>
+			<m:ci>N</m:ci>
+		      </m:apply>
+		    </m:apply>
+		    <m:apply>
+		      <m:times/>
+		      <m:cn>3</m:cn>
+		      <m:ci>N</m:ci>
+		    </m:apply>
+		  </m:apply>
+		  <m:cn>4</m:cn>
+		</m:apply>
+	      </m:math>
+	    </entry>
+	  </row>
+	</tbody>
+      
+
+</tgroup>
+</table>
+    <list id="list20" list-type="bulleted"><title>Comments</title>
+      <item>
+	The split-radix algorithm has a somewhat irregular structure.  Successful
+	progams have been written (<cite target-id="Sorensen"><cite-title>Sorensen</cite-title></cite>) for uni-processor machines,
+	but it may be difficult to efficiently code the split-radix algorithm
+        for vector or multi-processor machines.
+      </item>
+      <item>
+	<cite target-id="Bruun"><cite-title>G. Bruun's algorithm</cite-title></cite> requires only
+	<m:math>
+	    <m:apply>
+	      <m:minus/>
+	      <m:ci>N</m:ci>
+	      <m:cn>2</m:cn>
+	    </m:apply>
+	</m:math>
+        more operations than the split-radix algorithm and has a regular structure,
+        so it might be better for multi-processor or special-purpose hardware.
+      </item>
+      <item>
+        The execution time of FFT programs generally depends more on compiler- or hardware-friendly
+        software design than on the exact computational complexity.
+        See <link document="m12021">Efficient FFT Algorithm and Programming Tricks</link>
+        for further pointers and links to good code.
+      </item></list>
+  </content>
+  <bib:file>
+    <bib:entry id="Duhamel">
+      <bib:article>
+	<bib:author>P. Duhamel and H. Hollman</bib:author>
+	<bib:title>Split-radix FFT algorithms</bib:title>
+	<bib:journal>Electronics Letters</bib:journal>
+	<bib:year>1984</bib:year>
+	<bib:volume>20</bib:volume>
+	<bib:pages>14-16</bib:pages>
+	<bib:month>Jan 5</bib:month>
+      </bib:article>
+    </bib:entry>
+    <bib:entry id="Yavne">
+      <bib:article>
+	<bib:author>R. Yavne</bib:author>
+	<bib:title>An economical method for calculating the discrete Fourier transform</bib:title>
+	<bib:journal>Proc. AFIPS Fall Joint Computer Conf.,</bib:journal>
+	<bib:year>1968</bib:year>
+	<bib:volume>33</bib:volume>
+	<bib:pages>115-125</bib:pages>
+      </bib:article>
+    </bib:entry>
+    <bib:entry id="JohnsonAndFrigo">
+      <bib:article>
+	<bib:author>S.G Johnson and M. Frigo</bib:author>
+	<bib:title>A modified split-radix FFT with fewer arithmetic operations</bib:title>
+	<bib:journal>IEEE Transactions on Signal Processing</bib:journal>
+	<bib:year>2006</bib:year>
+	<bib:volume>54</bib:volume>
+	<bib:pages/>
+	<bib:month/>
+      </bib:article>
+    </bib:entry>
+    <bib:entry id="Sorensen">
+      <bib:article>
+	<bib:author>H.V. Sorensen, M.T. Heideman, and C.S. Burrus</bib:author>
+	<bib:title>On computing the split-radix FFT</bib:title>
+	<bib:journal>IEEE Transactions on Signal Processing</bib:journal>
+	<bib:year>1986</bib:year>
+	<bib:volume>34</bib:volume>
+	<bib:number>1</bib:number>
+	<bib:pages>152-156</bib:pages>
+      </bib:article>
+    </bib:entry>
+    <bib:entry id="Bruun">
+      <bib:article>
+	<bib:author>G. Bruun</bib:author>
+	<bib:title>Z-Transform DFT Filters and FFTs</bib:title>
+	<bib:journal>IEEE Transactions on Signal Processing</bib:journal>
+	<bib:year>1978</bib:year>
+	<bib:volume>26</bib:volume>
+	<bib:pages>56-63</bib:pages>
+	<bib:month>February</bib:month>
+      </bib:article>
+    </bib:entry>   
+  </bib:file>
+</document>

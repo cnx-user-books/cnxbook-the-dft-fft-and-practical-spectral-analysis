@@ -1,0 +1,963 @@
+<document xmlns="http://cnx.rice.edu/cnxml" xmlns:m="http://www.w3.org/1998/Math/MathML" xmlns:md="http://cnx.rice.edu/mdml" xmlns:bib="http://bibtexml.sf.net/">
+  <title>Radix-4 FFT Algorithms</title>
+  <metadata><md:content-id>undefined</md:content-id><md:title/><md:uuid>e8275e14-5c4d-4898-9d25-a848886f688e</md:uuid>
+</metadata>
+
+  <content>
+    <para id="element-880">The radix-4 <link document="m12016">decimation-in-time</link> and <link document="m12018">decimation-in-frequency</link> <link document="m12026">fast Fourier transforms
+(FFTs)</link> gain their speed by reusing the results of smaller,
+intermediate computations to compute multiple DFT frequency outputs.
+The radix-4 decimation-in-time algorithm rearranges the <link document="m12019">discrete Fourier transform (DFT) equation</link>
+into four parts: sums over all groups of every fourth discrete-time index
+<m:math>
+  <m:apply>
+    <m:eq/>
+      <m:ci>n</m:ci>
+      <m:list>
+        <m:cn>0</m:cn>
+        <m:cn>4</m:cn>
+        <m:cn>8</m:cn>
+        <m:ci>…</m:ci>
+        <m:apply>
+          <m:minus/>
+            <m:ci>N</m:ci>
+            <m:cn>4</m:cn>
+        </m:apply>
+      </m:list>
+  </m:apply>
+</m:math>,
+<m:math>
+  <m:apply>
+    <m:eq/>
+      <m:ci>n</m:ci>
+      <m:list>
+        <m:cn>1</m:cn>
+        <m:cn>5</m:cn>
+        <m:cn>9</m:cn>
+        <m:ci>…</m:ci>
+        <m:apply>
+          <m:minus/>
+            <m:ci>N</m:ci>
+            <m:cn>3</m:cn>
+        </m:apply>
+      </m:list>
+  </m:apply>
+</m:math>,
+<m:math>
+  <m:apply>
+    <m:eq/>
+      <m:ci>n</m:ci>
+      <m:list>
+        <m:cn>2</m:cn>
+        <m:cn>6</m:cn>
+        <m:cn>10</m:cn>
+        <m:ci>…</m:ci>
+        <m:apply>
+          <m:minus/>
+            <m:ci>N</m:ci>
+            <m:cn>2</m:cn>
+        </m:apply>
+      </m:list>
+  </m:apply>
+</m:math>
+and
+<m:math>
+  <m:apply>
+    <m:eq/>
+      <m:ci>n</m:ci>
+      <m:list>
+        <m:cn>3</m:cn>
+        <m:cn>7</m:cn>
+        <m:cn>11</m:cn>
+        <m:ci>…</m:ci>
+        <m:apply>
+          <m:minus/>
+            <m:ci>N</m:ci>
+            <m:cn>1</m:cn>
+        </m:apply>
+      </m:list>
+  </m:apply>
+</m:math>
+as in <link target-id="eq1"/>.
+(This works out only when the FFT length is a multiple of four.)
+Just as in the <link document="m12016">radix-2 decimation-in-time FFT</link>,
+further mathematical manipulation shows that the length-<m:math><m:ci>N</m:ci></m:math> DFT
+can be computed as the sum of the outputs of four
+length-<m:math>
+         <m:apply>
+           <m:divide/>
+             <m:ci>N</m:ci>
+             <m:cn>4</m:cn>
+         </m:apply>
+       </m:math>
+DFTs, of the even-indexed and odd-indexed discrete-time samples, respectively,
+where three of them are multiplied by so-called <term>twiddle factors</term>
+<m:math>
+  <m:apply>
+    <m:eq/>
+      <m:ci>
+	<m:msubsup>
+	  <m:mi>W</m:mi>
+	  <m:mi>N</m:mi>
+	  <m:mi>k</m:mi>
+	</m:msubsup>
+      </m:ci>
+      <m:apply>
+	<m:exp/>
+	  <m:apply>
+	    <m:minus/>
+              <m:apply>
+	        <m:times/>
+		  <m:imaginaryi/>
+		    <m:apply>
+		      <m:divide/>
+		       <m:apply>
+			<m:times/>
+			<m:cn>2</m:cn>
+			<m:pi/>
+			<m:ci>k</m:ci>
+		       </m:apply>
+		     <m:ci>N</m:ci>
+		    </m:apply>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+        </m:apply>
+	</m:math>,
+<m:math>
+      <m:ci>
+	<m:msubsup>
+	  <m:mi>W</m:mi>
+	  <m:mi>N</m:mi>
+          <m:apply>
+            <m:times/>
+              <m:mn>2</m:mn>
+	      <m:mi>k</m:mi>
+          </m:apply>
+	</m:msubsup>
+      </m:ci>
+</m:math>,
+and
+<m:math>
+      <m:ci>
+	<m:msubsup>
+	  <m:mi>W</m:mi>
+	  <m:mi>N</m:mi>
+          <m:apply>
+            <m:times/>
+              <m:mn>3</m:mn>
+	      <m:mi>k</m:mi>
+          </m:apply>
+	</m:msubsup>
+      </m:ci>
+</m:math>.
+</para><para id="para1"><equation id="eq1">
+	<m:math>
+	  <m:apply>
+	    <m:eq/>
+	    <m:apply>
+	      <m:ci type="fn">X</m:ci>
+	      <m:ci>k</m:ci>
+	    </m:apply>
+	    <m:apply>
+	      <m:sum/>
+	      <m:bvar>
+		<m:cn>n</m:cn>
+	      </m:bvar>
+	      <m:uplimit>
+		<m:apply>
+		  <m:minus/>
+		  <m:ci>N</m:ci>
+		  <m:cn>1</m:cn>
+		</m:apply>
+	      </m:uplimit>
+	      <m:lowlimit>
+		<m:cn>0</m:cn>
+	      </m:lowlimit>
+	      <m:apply>
+		<m:times/>
+		<m:apply>
+		  <m:ci type="fn">x</m:ci>
+		  <m:ci>n</m:ci>
+		</m:apply>
+		<m:apply>
+		  <m:exp/>
+		  <m:apply>
+		    <m:minus/>
+		    <m:apply>
+		      <m:times/>
+		      <m:imaginaryi/>
+		      <m:apply>
+			<m:divide/>
+			<m:apply>
+			  <m:times/>
+			  <m:cn>2</m:cn>
+			  <m:pi/>
+			  <m:ci>n</m:ci>
+			  <m:ci>k</m:ci>
+			</m:apply>
+			<m:ci>N</m:ci>
+		      </m:apply>
+		    </m:apply>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+	    </m:apply>
+	    <m:apply>
+	      <m:plus/>
+	      <m:apply>
+		<m:sum/>
+		<m:bvar>
+		  <m:ci>n</m:ci>
+		</m:bvar>
+		<m:uplimit>
+		  <m:apply>
+		    <m:minus/>
+		    <m:apply>
+		      <m:divide/>
+		      <m:ci>N</m:ci>
+		      <m:cn>4</m:cn>
+		    </m:apply>
+		    <m:cn>1</m:cn>
+		  </m:apply>
+		</m:uplimit>
+		<m:lowlimit>
+		  <m:cn>0</m:cn>
+		</m:lowlimit>
+		<m:apply>
+		  <m:times/>
+		  <m:apply>
+		    <m:ci type="fn">x</m:ci>
+		    <m:apply>
+		      <m:times/>
+		      <m:cn>4</m:cn>
+		      <m:ci>n</m:ci>
+		    </m:apply>
+		  </m:apply>
+		  <m:apply>
+		    <m:exp/>
+		    <m:apply>
+		      <m:minus/>
+		      <m:apply>
+			<m:times/>
+			<m:imaginaryi/>
+		       	<m:apply>
+			  <m:divide/>
+			  <m:apply>
+			    <m:times/>
+			    <m:cn>2</m:cn>
+			    <m:pi/>
+			    <m:apply>
+			      <m:times/>
+			      <m:cn>4</m:cn>
+			      <m:ci>n</m:ci>
+			    </m:apply>
+			    <m:ci>k</m:ci>
+			  </m:apply>
+			  <m:ci>N</m:ci>
+			</m:apply>
+		      </m:apply>
+		    </m:apply>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+	      <m:apply>
+		<m:sum/>
+		<m:bvar>
+		  <m:ci>n</m:ci>
+		</m:bvar>
+		<m:uplimit>
+		  <m:apply>
+		    <m:minus/>
+		    <m:apply>
+		      <m:divide/>
+		      <m:ci>N</m:ci>
+		      <m:cn>4</m:cn>
+		    </m:apply>
+		    <m:cn>1</m:cn>
+		  </m:apply>
+		</m:uplimit>
+		<m:lowlimit>
+		  <m:cn>0</m:cn>
+		</m:lowlimit>
+		<m:apply>
+		  <m:times/>
+		  <m:apply>
+		    <m:ci type="fn">x</m:ci>
+		    <m:apply>
+		      <m:plus/>
+		      <m:apply>
+			<m:times/>
+			<m:cn>4</m:cn>
+			<m:ci>n</m:ci>
+		      </m:apply>
+		      <m:cn>1</m:cn>
+		    </m:apply>
+		  </m:apply>
+		  <m:apply>
+		    <m:exp/>
+		    <m:apply>
+		      <m:minus/>
+		      <m:apply>
+			<m:times/>
+			<m:imaginaryi/>
+			<m:apply>
+			  <m:divide/>
+			  <m:apply>
+			    <m:times/>
+			    <m:cn>2</m:cn>
+			    <m:pi/>
+			    <m:apply>
+			      <m:plus/>
+			      <m:apply>
+				<m:times/>
+				<m:cn>4</m:cn>
+				<m:ci>n</m:ci>
+			      </m:apply>
+			      <m:cn>1</m:cn>
+			    </m:apply>
+			    <m:ci>k</m:ci>
+			  </m:apply>
+			  <m:ci>N</m:ci>
+			</m:apply>
+		      </m:apply>
+		    </m:apply>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+	      <m:apply>
+		<m:sum/>
+		<m:bvar>
+		  <m:ci>n</m:ci>
+		</m:bvar>
+		<m:uplimit>
+		  <m:apply>
+		    <m:minus/>
+		    <m:apply>
+		      <m:divide/>
+		      <m:ci>N</m:ci>
+		      <m:cn>4</m:cn>
+		    </m:apply>
+		    <m:cn>1</m:cn>
+		  </m:apply>
+		</m:uplimit>
+		<m:lowlimit>
+		  <m:cn>0</m:cn>
+		</m:lowlimit>
+		<m:apply>
+		  <m:times/>
+		  <m:apply>
+		    <m:ci type="fn">x</m:ci>
+		    <m:apply>
+		      <m:plus/>
+		      <m:apply>
+			<m:times/>
+			<m:cn>4</m:cn>
+			<m:ci>n</m:ci>
+		      </m:apply>
+		      <m:cn>2</m:cn>
+		    </m:apply>
+		  </m:apply>
+		  <m:apply>
+		    <m:exp/>
+		    <m:apply>
+		      <m:minus/>
+		      <m:apply>
+			<m:times/>
+			<m:imaginaryi/>
+			<m:apply>
+			  <m:divide/>
+			  <m:apply>
+			    <m:times/>
+			    <m:cn>2</m:cn>
+			    <m:pi/>
+			    <m:apply>
+			      <m:plus/>
+			      <m:apply>
+				<m:times/>
+				<m:cn>4</m:cn>
+				<m:ci>n</m:ci>
+			      </m:apply>
+			      <m:cn>2</m:cn>
+			    </m:apply>
+			    <m:ci>k</m:ci>
+			  </m:apply>
+			  <m:ci>N</m:ci>
+			</m:apply>
+		      </m:apply>
+		    </m:apply>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+	      <m:apply>
+		<m:sum/>
+		<m:bvar>
+		  <m:ci>n</m:ci>
+		</m:bvar>
+		<m:uplimit>
+		  <m:apply>
+		    <m:minus/>
+		    <m:apply>
+		      <m:divide/>
+		      <m:ci>N</m:ci>
+		      <m:cn>4</m:cn>
+		    </m:apply>
+		    <m:cn>1</m:cn>
+		  </m:apply>
+		</m:uplimit>
+		<m:lowlimit>
+		  <m:cn>0</m:cn>
+		</m:lowlimit>
+		<m:apply>
+		  <m:times/>
+		  <m:apply>
+		    <m:ci type="fn">x</m:ci>
+		    <m:apply>
+		      <m:plus/>
+		      <m:apply>
+			<m:times/>
+			<m:cn>4</m:cn>
+			<m:ci>n</m:ci>
+		      </m:apply>
+		      <m:cn>3</m:cn>
+		    </m:apply>
+		  </m:apply>
+		  <m:apply>
+		    <m:exp/>
+		    <m:apply>
+		      <m:minus/>
+		      <m:apply>
+			<m:times/>
+			<m:imaginaryi/>
+			  <m:apply>
+			  <m:divide/>
+			    <m:apply>
+			    <m:times/>
+			    <m:cn>2</m:cn>
+			    <m:pi/>
+			    <m:apply>
+			      <m:plus/>
+			      <m:apply>
+				<m:times/>
+				<m:cn>4</m:cn>
+				<m:ci>n</m:ci>
+			      </m:apply>
+			      <m:cn>3</m:cn>
+			    </m:apply>
+			    <m:ci>k</m:ci>
+			  </m:apply>
+			  <m:ci>N</m:ci>
+			</m:apply>
+		      </m:apply>
+		    </m:apply>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+	    </m:apply>
+	    <m:apply>
+	      <m:plus/>
+	      <m:apply>
+		<m:ci type="fn" class="discrete">
+		  <m:msub>
+		    <m:mi>DFT</m:mi>
+		    <m:mfrac>
+		      <m:mi>N</m:mi>
+		      <m:mn>4</m:mn>
+		    </m:mfrac>
+		  </m:msub>
+		</m:ci>
+		<m:apply>
+		  <m:ci type="fn">x</m:ci>
+		  <m:apply>
+		    <m:times/>
+		    <m:cn>4</m:cn>
+		    <m:ci>n</m:ci>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+	      <m:apply>
+		<m:times/>
+		<m:ci>
+		  <m:msubsup>
+		    <m:mi>W</m:mi>
+		    <m:mi>N</m:mi>
+		    <m:mi>k</m:mi>
+		  </m:msubsup>
+		</m:ci>
+		<m:apply>
+		  <m:ci type="fn" class="discrete">
+		    <m:msub>
+		      <m:mi>DFT</m:mi>
+		      <m:mfrac>
+			<m:mi>N</m:mi>
+		      <m:mn>4</m:mn>
+		      </m:mfrac>
+		    </m:msub>
+		  </m:ci>
+		  <m:apply>
+		    <m:ci type="fn">x</m:ci>
+		    <m:apply>
+		      <m:plus/>
+		      <m:apply>
+			<m:times/>
+			<m:cn>4</m:cn>
+			<m:ci>n</m:ci>
+		      </m:apply>
+		      <m:cn>1</m:cn>
+		    </m:apply>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+	      <m:apply>
+		<m:times/>
+		<m:ci>
+		  <m:msubsup>
+		    <m:mi>W</m:mi>
+		    <m:mi>N</m:mi>
+		    <m:mrow>
+		      <m:mn>2</m:mn>
+		      <m:mi>k</m:mi>
+		    </m:mrow>
+		  </m:msubsup>
+		</m:ci>
+		<m:apply>
+		  <m:ci type="fn" class="discrete">
+		    <m:msub>
+		      <m:mi>DFT</m:mi>
+		      <m:mfrac>
+			<m:mi>N</m:mi>
+			<m:mn>4</m:mn>
+		      </m:mfrac>
+		    </m:msub>
+		  </m:ci>
+		  <m:apply>
+		    <m:ci type="fn">x</m:ci>
+		    <m:apply>
+		      <m:plus/>
+		      <m:apply>
+			<m:times/>
+			<m:cn>4</m:cn>
+			<m:ci>n</m:ci>
+		      </m:apply>
+		      <m:cn>2</m:cn>
+		    </m:apply>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+	      <m:apply>
+		<m:times/>
+		<m:ci>
+		  <m:msubsup>
+		    <m:mi>W</m:mi>
+		    <m:mi>N</m:mi>
+		    <m:mrow>
+		      <m:mn>3</m:mn>
+		      <m:mi>k</m:mi>
+		    </m:mrow>
+		  </m:msubsup>
+		  </m:ci>
+		<m:apply>
+		  <m:ci type="fn" class="discrete">
+		    <m:msub>
+		      <m:mi>DFT</m:mi>
+		      <m:mfrac>
+			<m:mi>N</m:mi>
+			<m:mn>4</m:mn>
+		      </m:mfrac>
+		    </m:msub>
+		  </m:ci>
+		  <m:apply>
+		    <m:ci type="fn">x</m:ci>
+		    <m:apply>
+		      <m:plus/>
+		      <m:apply>
+			<m:times/>
+			<m:cn>4</m:cn>
+			<m:ci>n</m:ci>
+		      </m:apply>
+		      <m:cn>3</m:cn>
+		    </m:apply>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+	    </m:apply>
+	  </m:apply>
+	</m:math>
+      </equation>
+      
+    </para>   
+    <para id="element-197">This is called a <term>decimation in time</term> because the
+time samples are rearranged in alternating groups,
+and a <term>radix-4</term> algorithm because there
+are four groups.
+<link target-id="fig1"/> graphically illustrates this form of the DFT computation.
+</para>
+
+<figure id="fig1"><title>Radix-4 DIT structure</title>
+      <media id="idm8016112" alt=""><image src="../../media/image3-0c31.png" mime-type="image/png"/></media>
+        <caption>Decimation in time of a length-<m:math><m:ci>N</m:ci></m:math> DFT
+          into four length-<m:math><m:apply><m:divide/><m:ci>N</m:ci><m:cn>4</m:cn></m:apply></m:math>
+          DFTs followed by a combining stage.
+        </caption>
+</figure>
+    <para id="element-496">Due to the periodicity with
+	<m:math>
+	  <m:apply>
+	    <m:divide/>
+	    <m:ci>N</m:ci>
+	    <m:cn>4</m:cn>
+	  </m:apply>
+	</m:math>
+of the short-length DFTs,
+their outputs for frequency-sample <m:math><m:ci>k</m:ci></m:math>
+are reused to compute
+<m:math>
+  <m:apply>
+    <m:ci type="fn">X</m:ci>
+    <m:ci>k</m:ci>
+  </m:apply>
+</m:math>,
+<m:math>
+  <m:apply>
+    <m:ci type="fn">X</m:ci>
+    <m:apply>
+      <m:plus/>
+        <m:ci>k</m:ci>
+        <m:apply>
+          <m:divide/>
+            <m:ci>N</m:ci>
+            <m:cn>4</m:cn>
+        </m:apply>
+    </m:apply>
+  </m:apply>
+</m:math>,
+<m:math>
+  <m:apply>
+    <m:ci type="fn">X</m:ci>
+    <m:apply>
+      <m:plus/>
+        <m:ci>k</m:ci>
+        <m:apply>
+          <m:divide/>
+            <m:ci>N</m:ci>
+            <m:cn>2</m:cn>
+        </m:apply>
+    </m:apply>
+  </m:apply>
+</m:math>,
+and
+<m:math>
+  <m:apply>
+    <m:ci type="fn">X</m:ci>
+    <m:apply>
+      <m:plus/>
+        <m:ci>k</m:ci>
+        <m:apply>
+          <m:divide/>
+            <m:apply>
+              <m:times/>
+                <m:cn>3</m:cn>
+                <m:ci>N</m:ci>
+            </m:apply>
+            <m:cn>4</m:cn>
+        </m:apply>
+    </m:apply>
+  </m:apply>
+</m:math>.
+It is this reuse that gives the radix-4 FFT its efficiency.
+The computations involved with each group of four frequency samples
+constitute the <term>radix-4 butterfly</term>, which is shown in
+<link target-id="fig2"/>.
+	Through further rearrangement, it can be shown that this
+      computation can be simplified to three twiddle-factor multiplies and a length-4 DFT!
+      The theory of <link document="m12025">multi-dimensional index maps</link>
+      shows that this must be the case, and that FFTs of any factorable
+      length may consist of successive stages of shorter-length FFTs
+      with twiddle-factor multiplications in between.
+      The length-4 DFT requires no multiplies and only eight complex additions
+      (this efficient computation can be derived using a <link document="m12016">radix-2 FFT</link>).
+    </para>
+      <figure id="fig2"><subfigure id="idp4027280">
+	  <media id="idp4027632" alt=""><image src="imageX.png" mime-type="image/png"/></media>
+	</subfigure>
+	<subfigure id="idm7712720">
+	  <media id="idp4218880" alt=""><image src="../../media/image1-aa6f.png" mime-type="image/png"/></media>
+	</subfigure>
+	<caption>
+	  The radix-4 DIT butterfly can be simplified to a length-4 DFT preceded
+          by three twiddle-factor multiplies.
+	</caption>
+      </figure><para id="element-614">If the FFT length
+      <m:math>
+	<m:apply>
+	  <m:eq/>
+	  <m:ci>N</m:ci>
+	  <m:apply>
+	    <m:power/>
+	    <m:cn>4</m:cn>
+	    <m:ci>M</m:ci>
+	  </m:apply>
+	</m:apply>
+      </m:math>,
+      the shorter-length DFTs can be further decomposed recursively in the same manner
+      to produce the full <term>radix-4 decimation-in-time FFT</term>.
+      As in the <link document="m12016">radix-2 decimation-in-time FFT</link>, each
+      stage of decomposition creates additional savings in computation.
+      To determine the total computational cost of the radix-4 FFT, note that
+      there are
+	<m:math>
+	  <m:apply>
+	    <m:eq/>
+            <m:ci>M</m:ci>
+	    <m:apply>
+	      <m:log/>
+	      <m:logbase>
+		<m:cn>4</m:cn>
+	      </m:logbase>
+	      <m:ci>N</m:ci>
+	    </m:apply>
+	    <m:apply>
+	      <m:divide/>
+	      <m:apply>
+		<m:log/>
+		<m:logbase>
+		  <m:cn>2</m:cn>
+		</m:logbase>
+		<m:ci>N</m:ci>
+	      </m:apply>
+	      <m:cn>2</m:cn>
+	    </m:apply>
+	  </m:apply>
+	</m:math>
+       stages, each with
+	<m:math>
+	  <m:apply>
+	    <m:divide/>
+	    <m:ci>N</m:ci>
+	    <m:cn>4</m:cn>
+	  </m:apply>
+	</m:math>
+        butterflies per stage.
+        Each radix-4 butterfly requires <m:math><m:cn>3</m:cn></m:math>
+	complex multiplies and <m:math><m:cn>8</m:cn></m:math> complex
+	additions.
+        The total cost is then</para>
+    <list id="element-767" list-type="bulleted"><title>Radix-4 FFT Operation Counts</title>
+
+      <item>
+	<m:math>
+	  <m:apply>
+	    <m:eq/>
+	    <m:apply>
+	      <m:times/>
+	      <m:ci>3</m:ci>
+	      <m:apply>
+		<m:divide/>
+		<m:ci>N</m:ci>
+		<m:cn>4</m:cn>
+	      </m:apply>
+	      <m:apply>
+		<m:divide/>
+		<m:apply>
+		  <m:log/>
+		  <m:logbase>
+		    <m:cn>2</m:cn>
+		  </m:logbase>
+		  <m:ci>N</m:ci>
+		</m:apply>
+		<m:cn>2</m:cn>
+	      </m:apply>
+	    </m:apply>
+	    <m:apply>
+	      <m:times/>
+	      <m:apply>
+		<m:divide/>
+		<m:cn>3</m:cn>
+		<m:cn>8</m:cn>
+	      </m:apply>
+	      <m:ci>N</m:ci>
+	      <m:apply>
+		<m:log/>
+		<m:logbase>
+		  <m:cn>2</m:cn>
+		</m:logbase>
+		<m:ci>N</m:ci>
+	      </m:apply>
+	    </m:apply>
+	  </m:apply>
+	</m:math> complex multiplies (75% of a radix-2 FFT)
+      </item>
+      <item>
+	<m:math>
+	  <m:apply>
+	    <m:eq/>
+	    <m:apply>
+	      <m:times/>
+	      <m:ci>8</m:ci>
+	      <m:apply>
+		<m:divide/>
+		<m:ci>N</m:ci>
+		<m:cn>4</m:cn>
+	      </m:apply>
+	      <m:apply>
+		<m:divide/>
+		<m:apply>
+		  <m:log/>
+		  <m:logbase>
+		    <m:cn>2</m:cn>
+		  </m:logbase>
+		  <m:ci>N</m:ci>
+		</m:apply>
+		<m:cn>2</m:cn>
+	      </m:apply>
+	    </m:apply>
+	    <m:apply>
+	      <m:times/>
+	      <m:ci>N</m:ci>
+	      <m:apply>
+		<m:log/>
+		<m:logbase>
+		  <m:cn>2</m:cn>
+		</m:logbase>
+		<m:ci>N</m:ci>
+	      </m:apply>
+	    </m:apply>
+	  </m:apply>
+	</m:math> complex adds (same as a radix-2 FFT)
+      </item>
+ </list><para id="element-868">The radix-4 FFT requires only 75% as many complex multiplies as the <link document="m12016">radix-2</link> FFTs,
+although it uses the same number of complex additions.
+These additional savings make it a widely-used FFT algorithm.</para><para id="element-400">The decimation-in-time operation regroups the input samples at each successive
+stage of decomposition, resulting in a "digit-reversed" input order.
+That is, if the time-sample index <m:math><m:ci>n</m:ci>
+      </m:math> is written as a base-4 number, the order is that
+      base-4 number reversed.
+The digit-reversal process is illustrated for a length-<m:math>
+  <m:apply>
+    <m:eq/>
+      <m:ci>N</m:ci>
+      <m:cn>64</m:cn>
+  </m:apply>
+</m:math>
+example below.</para><example id="ex1">
+      <title>N = 64 = 4^3
+      </title>
+      <table id="table1" summary="">
+<tgroup cols="4" align="center"><thead>
+	    <row>
+	      <entry>Original Number</entry>
+	      <entry>Original Digit Order</entry>
+	      <entry>Reversed Digit Order</entry>
+	      <entry>Digit-Reversed Number</entry>
+	    </row>
+	  </thead>
+	  <tbody>
+	    <row>
+	      <entry align="center">0</entry>
+	      <entry align="center">000</entry>
+	      <entry align="center">000</entry>
+	      <entry align="center">0</entry>
+	    </row>
+	    <row>
+	      <entry align="center">1</entry>
+	      <entry align="center">001</entry>
+	      <entry align="center">100</entry>
+	      <entry align="center">16</entry>
+	    </row>
+	    <row>
+	      <entry align="center">2</entry>
+	      <entry align="center">002</entry>
+	      <entry align="center">200</entry>
+	      <entry align="center">32</entry>
+	    </row>
+	    <row>
+	      <entry align="center">3</entry>
+	      <entry align="center">003</entry>
+	      <entry align="center">300</entry>
+	      <entry align="center">48</entry>
+	    </row>
+	    <row>
+	      <entry align="center">4</entry>
+	      <entry align="center">010</entry>
+	      <entry align="center">010</entry>
+	      <entry align="center">4</entry>
+	    </row>
+	    <row>
+	      <entry align="center">5</entry>
+	      <entry align="center">011</entry>
+	      <entry align="center">110</entry>
+	      <entry align="center">20</entry>
+	    </row>
+	    <row>
+	      <entry align="center">⋮</entry>
+	      <entry align="center">⋮</entry>
+	      <entry align="center">⋮</entry>
+	      <entry align="center">⋮</entry>
+	    </row>
+	  </tbody>
+	
+</tgroup>
+</table>
+    </example>
+    
+    
+    <para id="para11">It is important to note that, if the input signal data are placed in digit-reversed order
+before beginning the FFT computations, the outputs of each butterfly throughout the
+computation can be placed in the same memory locations from which the inputs were fetched,
+resulting in an <term>in-place algorithm</term> that requires no extra memory to perform
+the FFT.
+Most FFT implementations are in-place, and overwrite the input data with the intermediate
+values and finally the output.
+A slight rearrangement within the radix-4 FFT introduced by <cite target-id="Burrus"><cite-title>Burrus</cite-title></cite> allows
+the inputs to be arranged in <link document="m12016">bit-reversed</link> rather than digit-reversed order.</para>
+    <para id="para12">A radix-4 <link document="m12018">decimation-in-frequency</link> FFT can be derived
+similarly to the <link document="m12018">radix-2 DIF FFT</link>,
+by separately computing all four groups of every fourth <emphasis>output</emphasis>
+frequency sample.
+The DIF radix-4 FFT is a flow-graph reversal of the DIT radix-4 FFT, with the same
+operation counts and twiddle factors in the reversed order.
+The output ends up in digit-reversed order for an in-place DIF algorithm.</para>
+    <exercise id="exer1"><problem id="idp4470256">
+	<para id="para13">
+	  How do we derive a radix-4 algorithm when
+	  <m:math>
+	    <m:apply>
+	      <m:eq/>
+	      <m:ci>N</m:ci>
+	      <m:apply>
+		<m:times/>
+		<m:apply>
+		  <m:power/>
+		  <m:cn>4</m:cn>
+		  <m:ci>M</m:ci>
+		</m:apply>
+		<m:cn>2</m:cn>
+	      </m:apply>
+	    </m:apply>
+	  </m:math>?
+	</para>
+      </problem>
+      <solution id="idm9303808">
+        <para id="sol1">
+          Perform a radix-2 decomposition for one stage, then radix-4 decompositions of all
+          subsequent shorter-length DFTs.
+        </para>
+      </solution></exercise>
+  </content>
+  <bib:file>
+    <bib:entry id="Burrus">
+      <bib:article>
+	<bib:author>C.S. Burrus</bib:author>
+	<bib:title>Unscrambling for fast DFT algorithms</bib:title>
+	<bib:journal>IEEE Transactions on Acoustics, Speech, and Signal Processing</bib:journal>
+	<bib:year>1988</bib:year>
+	<bib:volume>ASSP-36</bib:volume>
+	<bib:number>7</bib:number>
+	<bib:pages>1086-1089</bib:pages>
+	<bib:month>July</bib:month>
+      </bib:article>
+    </bib:entry>
+  </bib:file>
+	
+    
+</document>

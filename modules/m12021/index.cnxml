@@ -1,0 +1,637 @@
+<document xmlns="http://cnx.rice.edu/cnxml" xmlns:m="http://www.w3.org/1998/Math/MathML" xmlns:md="http://cnx.rice.edu/mdml" xmlns:bib="http://bibtexml.sf.net/">
+  <title>Efficient FFT Algorithm and Programming Tricks</title>
+  <metadata><md:content-id>undefined</md:content-id><md:title/><md:uuid>e240a1a1-c1cc-4427-94e1-b9d978c01421</md:uuid>
+</metadata>
+
+  <content>
+  <para id="element-328">The use of <link document="m12026">FFT algorithms</link> such as the
+<link document="m12016">radix-2 decimation-in-time</link> or
+<link document="m12018">decimation-in-frequency</link> methods
+result in tremendous savings in computations when computing the
+<link document="m12019">discrete Fourier transform</link>.
+While most of the speed-up of FFTs comes from this,
+careful implementation can provide additional savings ranging
+from a few percent to several-fold increases in program speed.</para><section id="idm419632">
+  <title>Precompute twiddle factors</title>
+      <para id="p1">The <link document="m12016">twiddle factor</link>, or
+<m:math>
+  <m:apply>
+    <m:eq/>
+      <m:ci>
+	<m:msubsup>
+	  <m:mi>W</m:mi>
+	  <m:mi>N</m:mi>
+	  <m:mi>k</m:mi>
+	</m:msubsup>
+      </m:ci>
+      <m:apply>
+	<m:exp/>
+	  <m:apply>
+	    <m:minus/>
+              <m:apply>
+	        <m:times/>
+		  <m:imaginaryi/>
+		    <m:apply>
+		      <m:divide/>
+		       <m:apply>
+			<m:times/>
+			<m:cn>2</m:cn>
+			<m:pi/>
+			<m:ci>k</m:ci>
+		       </m:apply>
+		     <m:ci>N</m:ci>
+		    </m:apply>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+        </m:apply>
+	</m:math>,
+ terms
+        that multiply the intermediate data in the <link document="m12026">FFT algorithms</link> consist of cosines and sines
+        that each take the equivalent of several multiplies to compute.
+        However, at most <m:math><m:ci>N</m:ci></m:math> unique
+        twiddle factors can appear in any FFT or DFT algorithm.
+        (For example, in the <link document="m12016">radix-2 decimation-in-time FFT</link>,
+        only
+        <m:math>
+          <m:apply>
+          <m:divide/>
+            <m:ci>N</m:ci>
+            <m:ci>2</m:ci>
+          </m:apply>
+        </m:math>
+        twiddle factors
+	<m:math>
+	  <m:apply>
+	    <m:forall/>
+	    <m:bvar>
+	      <m:ci>k</m:ci>
+	    </m:bvar>
+	    <m:condition>
+	      <m:apply>
+		<m:eq/>
+		<m:ci>k</m:ci>
+		<m:set>
+		  <m:cn>0</m:cn>
+		  <m:cn>1</m:cn>
+		  <m:cn>2</m:cn>
+		  <m:ci>…</m:ci>
+		  <m:apply>
+		    <m:minus/>
+		    <m:apply>
+		      <m:divide/>
+		      <m:ci>N</m:ci>
+		      <m:cn>2</m:cn>
+		    </m:apply>
+		    <m:cn>1</m:cn>
+		  </m:apply>
+		</m:set>
+	      </m:apply>
+	    </m:condition>
+	    <m:apply>
+	      <m:power/>
+	      <m:ci><m:msub>
+		  <m:mi>W</m:mi>
+		  <m:mi>N</m:mi>
+		</m:msub></m:ci>
+	      <m:ci>k</m:ci>
+	    </m:apply>
+	  </m:apply>
+	</m:math>
+        are used.)
+        These twiddle factors can be precomputed once and stored
+        in an array in computer memory, and accessed in the FFT
+        algorithm by <term>table lookup</term>.
+        This simple technique yields very substantial savings and
+        is almost always used in practice.</para>
+    </section>
+    <section id="idm9895760">
+    <title>Compiler-friendly programming</title>
+      <para id="p3">On most computers, only some of the total computation time
+        of an FFT is spent performing the FFT butterfly computations;
+        determining indices, loading and storing data, computing
+        loop parameters and other operations consume the majority
+        of cycles.
+        Careful programming that allows the compiler to generate
+        efficient code can make a several-fold improvement in the
+        run-time of an FFT.
+        The best choice of radix in terms of program speed may depend more on characteristics
+        of the hardware (such as the number of CPU registers) or
+        compiler than on the exact number of computations.
+        Very often the manufacturer's library codes are carefully
+        crafted by experts who know intimately both the hardware
+        and compiler architecture and how to get the most performance
+        out of them, so use of well-written FFT libraries is
+        generally recommended.
+        Certain freely available programs and libraries are also
+        very good.
+        Perhaps the best current general-purpose library is the
+        <link url="http://www.fftw.org">FFTW</link> package;
+        information can be found at
+        <link url="http://www.fftw.org">http://www.fftw.org</link>.
+        A paper by <cite target-id="Frigo"><cite-title>Frigo and Johnson</cite-title></cite> describes many of the key issues in developing
+        compiler-friendly code.
+       </para>
+       </section>
+       <section id="idp768624">
+<title>Program in assembly language</title>
+<para id="element-551">While compilers continue to improve, FFT programs written directly
+in the assembly language of a specific machine are often
+several times faster than the best compiled code.
+This is particularly true for DSP microprocessors, which have
+special instructions for accelerating FFTs that compilers don't use.
+(I have myself seen differences of up to 26 to 1 in favor of assembly!)
+Very often, FFTs in the manufacturer's or high-performance third-party libraries
+are hand-coded in assembly.
+For DSP microprocessors, the codes developed by
+<cite target-id="Meyer"><cite-title>Meyer, Schuessler, and Schwarz</cite-title></cite>
+are perhaps the best ever developed;
+while the particular processors are now obsolete, the techniques
+remain equally relevant today.
+Most DSP processors provide special instructions and a
+hardware design favoring the radix-2 decimation-in-time algorithm,
+which is thus generally fastest on these machines.</para>
+    </section>
+    <section id="idp2022416">
+    <title>Special hardware</title>
+      <para id="p4">Some processors have special hardware accelerators or co-processors
+      specifically designed to accelerate FFT computations.
+      For example, <link url="http://www.amis.com">AMI Semiconductor's</link> <link url="http://www.amis.com/products/dsp/toccata_plus.html">Toccata</link> ultra-low-power DSP microprocessor family,
+      which is widely used in digital hearing aids, have on-chip FFT accelerators; it is always faster and more power-efficient to use such accelerators and whatever radix they prefer.</para><para id="element-535">In a surprising number of applications, almost all of the computations
+     are FFTs.
+     A number of special-purpose chips are designed to specifically
+     compute FFTs, and are used in specialized high-performance
+     applications such as radar systems.
+     Other systems, such as <link url="http://en.wikipedia.org/wiki/OFDM">OFDM</link>-based
+     communications receivers, have special FFT hardware built
+     into the digital receiver circuit.
+     Such hardware can run many times faster, with much less power
+     consumption, than FFT programs on general-purpose processors.</para>
+    </section>
+    <section id="idp3896992">
+    <title>Effective memory management</title>
+      <para id="p7">Cache misses or excessive data movement between registers and memory
+        can greatly slow down an FFT computation.
+        Efficient programs such as the <link url="http://www.fftw.org">FFTW package</link>
+        are carefully designed to minimize these inefficiences.
+        <link document="m12016">In-place algorithms</link> reuse the data
+        memory throughout the transform, which can reduce cache misses for
+        longer lengths.
+      </para>
+    </section>
+    <section id="idm1686736">
+    <title>Real-valued FFTs</title>
+      <para id="p9">FFTs of real-valued signals require only half as many computations as with complex-valued data.
+    There are several methods for reducing the computation,
+    which are described in more detail in
+        <cite target-id="Sorensen2"><cite-title>Sorensen et al.</cite-title></cite>
+    <list id="list6" list-type="enumerated"><item>Use <link document="m12019">DFT symmetry properties</link> to do two real-valued DFTs at once with one FFT program</item>
+
+      <item>Perform one stage of the <link document="m12016">radix-2 decimation-in-time</link> decomposition
+        and compute the two length-<m:math>
+          <m:apply>
+          <m:divide/>
+            <m:ci>N</m:ci>
+            <m:cn>2</m:cn>
+          </m:apply>
+         </m:math>
+         DFTs using the above approach.
+      </item>
+      <item>Use a direct  real-valued FFT algorithm; see <cite target-id="Sorensen2"><cite-title>H.V. Sorensen
+      et.al.</cite-title></cite>
+      </item>
+
+    </list>
+      </para>
+    </section>
+    <section id="idm1223440">
+    <title>Special cases</title>
+      <para id="p10">Occasionally only certain DFT frequencies are needed,
+        the input signal values are mostly zero, the signal
+        is real-valued (as discussed above), or other special
+        conditions exist for which faster algorithms can be
+        developed.
+        <cite target-id="Sorensen3"><cite-title>Sorensen and Burrus</cite-title></cite>
+        describe slightly faster algorithms for <link url="http://www.fftw.org/pruned.html">pruned</link>
+        or <link document="m12032" target-id="zeropad">zero-padded</link> data.
+        <link document="m12024">Goertzel's algorithm</link> is useful
+        when only a few DFT outputs are needed.
+        The <link document="m12029">running FFT</link> can be faster
+        when DFTs of highly overlapped blocks of data are needed,
+        as in a <link document="m10570">spectrogram</link>.
+</para>
+    </section>
+    <section id="idp1331280">
+    <title>Higher-radix algorithms</title>
+      <para id="p12">Higher-radix algorithms, such as the <link document="m12027">radix-4</link>, radix-8, or <link document="m12031">split-radix</link> FFTs,
+        require fewer computations and can produce modest but worthwhile savings.
+        Even the <link document="m12031">split-radix FFT</link>
+        reduces the multiplications by only 33% and the additions
+        by a much lesser amount relative to the <link document="m12016">radix-2 FFTs</link>;
+        significant improvements in program speed are often
+        due to implicit <link url="http://en.wikipedia.org/wiki/Loop_unrolling">loop-unrolling</link> or other compiler benefits
+        than from the computational reduction itself!
+      </para>
+    </section>
+    <section id="idm444256">
+    <title>Fast bit-reversal</title>
+      <para id="p8"><link document="m12016">Bit-reversing</link> the input
+        or output data can consume several percent of the total
+        run-time of an FFT program.
+        Several fast bit-reversal algorithms have been developed
+        that can reduce this to two percent or less, including
+        the method published by <cite target-id="Evans"><cite-title>D.M.W. Evans</cite-title></cite>.
+      </para>
+    </section>
+    <section id="idp4303520">
+    <title>Trade additions for multiplications</title>
+      <para id="p2">When FFTs first became widely used, hardware multipliers
+        were relatively rare on digital computers, and multiplications
+        generally required many more cycles than additions.
+        Methods to reduce multiplications, even at the expense
+        of a substantial increase in additions, were often beneficial.
+        The <link document="m12033">prime factor algorithms</link>
+        and the <link document="m12023">Winograd Fourier transform algorithms</link>,
+        which required fewer multiplies and considerably more additions
+        than the <link document="m12059">power-of-two-length algorithms</link>,
+        were developed during this period.
+        Current processors generally have high-speed pipelined
+        hardware multipliers, so trading multiplies for additions
+        is often no longer beneficial.
+        In particular, most machines now support single-cycle
+        multiply-accumulate (MAC) operations, so balancing the
+        number of multiplies and adds and combining them into
+        single-cycle MACs generally results in the fastest code.
+        Thus, the prime-factor and Winograd FFTs are rarely used
+        today unless the application requires FFTs of a specific length.
+      </para>
+      <para id="p33">It is possible to implement a complex multiply with
+	3 real multiplies and 5 real adds rather than the usual
+        4 real multiplies and 2 real adds:
+	<m:math display="block">
+	  <m:apply>
+	    <m:eq/>
+	    <m:apply>
+	      <m:times/>
+	      <m:apply>
+		<m:plus/>
+		<m:ci>C</m:ci>
+		<m:apply>
+		  <m:times/>
+		  <m:imaginaryi/>
+		  <m:ci>S</m:ci>
+		</m:apply>
+	      </m:apply>
+	      <m:apply>
+		<m:plus/>
+		<m:ci>X</m:ci>
+		<m:apply>
+		  <m:times/>
+		  <m:imaginaryi/>
+		  <m:ci>Y</m:ci>
+		</m:apply>
+	      </m:apply>
+	    </m:apply>
+	    <m:apply>
+	      <m:plus/>
+	      <m:apply>
+		<m:minus/>
+		<m:apply>
+		  <m:times/>
+		  <m:ci>C</m:ci>
+		  <m:ci>X</m:ci>
+		</m:apply>
+		<m:apply>
+		  <m:times/>
+		  <m:ci>S</m:ci>
+		  <m:ci>Y</m:ci>
+		</m:apply>
+	      </m:apply>
+	      <m:apply>
+		<m:times/>
+		<m:imaginaryi/>
+		<m:apply>
+		  <m:plus/>
+		  <m:apply>
+		    <m:times/>
+		    <m:ci>C</m:ci>
+		    <m:ci>Y</m:ci>
+		  </m:apply>
+		  <m:apply>
+		    <m:times/>
+		    <m:ci>S</m:ci>
+		    <m:ci>X</m:ci>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+	    </m:apply>
+	  </m:apply>
+	</m:math>
+	but alernatively
+	<m:math display="block">
+	  <m:apply>
+	    <m:eq/>
+	    <m:ci>Z</m:ci>
+	    <m:apply>
+	      <m:times/>
+	      <m:ci>C</m:ci>
+	      <m:apply>
+		<m:minus/>
+		<m:ci>X</m:ci>
+		<m:ci>Y</m:ci>
+	      </m:apply>
+	    </m:apply>
+	  </m:apply>
+	</m:math>
+	<m:math display="block">
+	  <m:apply>
+	    <m:eq/>
+	    <m:ci>D</m:ci>
+	    <m:apply>
+	      <m:plus/>
+	      <m:ci>C</m:ci>
+	      <m:ci>S</m:ci>
+	    </m:apply>
+	  </m:apply>
+	</m:math>
+	<m:math display="block">
+	  <m:apply>
+	    <m:eq/>
+	    <m:ci>E</m:ci>
+	    <m:apply>
+	      <m:minus/>
+	      <m:ci>C</m:ci>
+	      <m:ci>S</m:ci>
+	    </m:apply>
+	  </m:apply>
+	</m:math>
+
+	<m:math display="block">
+	  <m:apply>
+	    <m:eq/>
+	    <m:apply>
+	      <m:minus/>
+	      <m:apply>
+		<m:times/>
+		<m:ci>C</m:ci>
+		<m:ci>X</m:ci>
+	      </m:apply>
+	      <m:apply>
+		<m:times/>
+		<m:ci>S</m:ci>
+		<m:ci>Y</m:ci>
+	      </m:apply>
+	    </m:apply>
+	    <m:apply>
+	      <m:plus/>
+	      <m:apply>
+		<m:times/>
+		<m:ci>E</m:ci>
+		<m:ci>Y</m:ci>
+	      </m:apply>
+	      <m:ci>Z</m:ci>
+	    </m:apply>
+	  </m:apply>
+	</m:math>
+	<m:math display="block">
+	  <m:apply>
+	    <m:eq/>
+	    <m:apply>
+	      <m:plus/>
+	      <m:apply>
+		<m:times/>
+		<m:ci>C</m:ci>
+		<m:ci>Y</m:ci>
+	      </m:apply>
+	      <m:apply>
+		<m:times/>
+		<m:ci>S</m:ci>
+		<m:ci>X</m:ci>
+	      </m:apply>
+	    </m:apply>
+	    <m:apply>
+	      <m:minus/>
+	      <m:apply>
+		<m:times/>
+		<m:ci>D</m:ci>
+		<m:ci>X</m:ci>
+	      </m:apply>
+	      <m:ci>Z</m:ci>
+	    </m:apply>
+	  </m:apply>
+	</m:math>
+              In an FFT,
+	<m:math><m:ci>D</m:ci></m:math> and
+	<m:math><m:ci>E</m:ci></m:math> 
+        come entirely from the twiddle factors,
+        so they can be precomputed and stored in a look-up table.
+        This reduces the cost of the complex twiddle-factor multiply
+        to 3 real multiplies and 3 real adds, or one less and one more,
+        respectively, than the conventional 4/2 computation.</para>
+    </section>
+
+    <section id="idm3297920">
+    <title>Special butterflies</title>
+    <para id="element-992">Certain twiddle factors,
+        namely
+	<m:math>
+        <m:apply>
+        <m:eq/>
+	  <m:ci>
+	    <m:msubsup>
+	      <m:mi>W</m:mi>
+	      <m:mi>N</m:mi>
+	      <m:mn>0</m:mn>
+	    </m:msubsup>
+	  </m:ci>
+          <m:cn>1</m:cn>
+        </m:apply>
+	</m:math>,
+	<m:math>
+	  <m:ci>
+	    <m:msubsup>
+	      <m:mi>W</m:mi>
+	      <m:mi>N</m:mi>
+	      <m:mfrac>
+		<m:mi>N</m:mi>
+		<m:mn>2</m:mn>
+	      </m:mfrac>
+	    </m:msubsup>
+	  </m:ci>
+	</m:math>,
+	<m:math>
+	  <m:ci>
+	    <m:msubsup>
+	      <m:mi>W</m:mi>
+	      <m:mi>N</m:mi>
+	      <m:mfrac>
+		<m:mi>N</m:mi>
+		<m:mn>4</m:mn>
+	      </m:mfrac>
+	    </m:msubsup>
+	  </m:ci>
+	</m:math>,
+	<m:math>
+	  <m:ci>
+	    <m:msubsup>
+	      <m:mi>W</m:mi>
+	      <m:mi>N</m:mi>
+	      <m:mfrac>
+		<m:mi>N</m:mi>
+		<m:mn>8</m:mn>
+	      </m:mfrac>
+	    </m:msubsup>
+	  </m:ci>
+	</m:math>,
+	<m:math>
+	  <m:ci>
+	    <m:msubsup>
+	      <m:mi>W</m:mi>
+	      <m:mi>N</m:mi>
+	      <m:mfrac>
+		<m:mrow>
+		  <m:mn>3</m:mn>
+		  <m:mi>N</m:mi>
+		</m:mrow>
+		<m:mn>8</m:mn>
+	      </m:mfrac>
+	    </m:msubsup>
+	  </m:ci>
+	</m:math>, etc., can be implemented
+with no additional operations, or with fewer real operations than
+a general complex multiply.
+Programs that specially implement such butterflies in the most
+efficient manner throughout the algorithm can reduce the
+computational cost by up to several <m:math><m:ci>N</m:ci></m:math>
+multiplies and additions in a length-<m:math><m:ci>N</m:ci></m:math>
+FFT.
+      </para>
+      </section>
+      <section id="idp4576432">
+      <title>Practical Perspective</title>
+      <para id="element-269">When optimizing FFTs for speed, it can be important to maintain
+perspective on the benefits that can be expected from
+any given optimization.
+The following list categorizes the various techniques by potential
+benefit;
+these will be somewhat situation- and machine-dependent, but clearly
+one should begin with the most significant and put the most effort
+where the pay-off is likely to be largest.</para><list id="list2" list-type="bulleted"><title>Methods to speed up computation of DFTs</title>
+	<item><label>Tremendous Savings</label>
+        <list id="listX" list-type="enumerated">
+        <item>
+	  FFT 
+	  (<m:math>
+	    <m:apply>
+	      <m:divide/>
+	      <m:ci>N</m:ci>
+	      <m:apply>
+		<m:log/>
+		<m:logbase>
+		  <m:cn>2</m:cn>
+		</m:logbase>
+		<m:ci>N</m:ci>
+	      </m:apply>
+	    </m:apply>
+	  </m:math> savings)
+          </item>
+        </list>
+	</item>
+	<item><label>Substantial Savings</label>
+	  (<m:math>
+	    <m:apply>
+	      <m:geq/>
+	      <m:ci>2</m:ci>
+	    </m:apply>
+	  </m:math>)
+	  <list id="list3" list-type="enumerated">
+	    <item>Table lookup of cosine/sine</item>
+	    <item>Compiler tricks/good programming</item>
+	    <item>Assembly-language programming</item>
+	    <item>Special-purpose hardware</item>
+	    <item>Real-data FFT for real data (factor of 2)</item>
+	    <item>Special cases</item>
+	  </list>
+	</item>
+	<item><label>Minor Savings</label>
+	  
+	  <list id="list4" list-type="enumerated"><item><link document="m12027">radix-4</link>, <link document="m12031">split-radix</link> (-10% - +30%)</item>
+            <item>special butterflies</item>
+	    <item>
+	      3-real-multiplication complex multiply
+	    </item>
+	    <item>Fast bit-reversal (up to 6%)</item>
+	  </list>
+	</item>
+      </list>
+    </section>
+    <note type="fact" id="idm1401136"><label>Fact</label>On general-purpose machines, computation is only part
+      of the total run time.  Address generation, indexing, data
+      shuffling, and memory access take up much or most of the cycles.
+    </note>
+    <note type="fact" id="idm10021408"><label>Fact</label>A well-written <link document="m12016">radix-2</link> program will run much faster than a poorly written
+      <link document="m12031">split-radix</link> program!
+    </note>
+    
+  </content>
+  <bib:file>
+    <bib:entry id="Evans">
+      <bib:article>
+	<bib:author>D.M.W. Evans</bib:author>
+	<bib:title>An improved digit-reversal permutation algorithm
+	for the fast Fourier and Hartley transforms</bib:title>
+	<bib:journal>IEEE Transactions on Signal Processing</bib:journal>
+	<bib:year>1987</bib:year>
+	<bib:volume>35</bib:volume>
+	<bib:number>8</bib:number>
+	<bib:pages>1120-1125</bib:pages>
+	<bib:month>August</bib:month>
+      </bib:article>
+    </bib:entry>
+    <bib:entry id="Frigo">
+      <bib:article>
+	<bib:author>M. Frigo and S.G. Johnson</bib:author>
+	<bib:title>The design and implementation of FFTW3</bib:title>
+	<bib:journal>Proceedings of the IEEE</bib:journal>
+	<bib:year>2005</bib:year>
+	<bib:volume>93</bib:volume>
+	<bib:number>2</bib:number>
+	<bib:pages>216-231</bib:pages>
+	<bib:month>February</bib:month>
+      </bib:article>
+    </bib:entry>
+    <bib:entry id="Meyer">
+      <bib:article>
+	<bib:author>R. Meyer, H.W. Schuessler, and K. Schwarz</bib:author>
+	<bib:title>FFT Implmentation on DSP chips - Theory and Practice</bib:title>
+	<bib:journal>IEEE International Conference on Acoustics, Speech, and Signal Processing</bib:journal>
+	<bib:year>1990</bib:year>
+      </bib:article>
+    </bib:entry>
+    <bib:entry id="Sorensen2">
+      <bib:article>
+	<bib:author>H.V. Sorensen, D.L Jones, M.T. Heideman, and
+	C.S. Burrus</bib:author>
+	<bib:title>Real-valued fast Fourier transform algorithms</bib:title>
+	<bib:journal>IEEE Transactions on Signal Processing</bib:journal>
+	<bib:year>1987</bib:year>
+	<bib:volume>35</bib:volume>
+	<bib:number>6</bib:number>
+	<bib:pages>849-863</bib:pages>
+	<bib:month>June</bib:month>
+      </bib:article>
+    </bib:entry>
+    <bib:entry id="Sorensen3">
+      <bib:article>
+	<bib:author>H.V. Sorensen and C.S. Burrus</bib:author>
+	<bib:title>Efficient computation of the DFT with only a subset of input or output points</bib:title>
+	<bib:journal>IEEE Transactions on Signal Processing</bib:journal>
+	<bib:year>1993</bib:year>
+	<bib:volume>41</bib:volume>
+	<bib:number>3</bib:number>
+	<bib:pages>1184-1200</bib:pages>
+	<bib:month>March</bib:month>
+      </bib:article>
+    </bib:entry>
+  </bib:file>
+</document>

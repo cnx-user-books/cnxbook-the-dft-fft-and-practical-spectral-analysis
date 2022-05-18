@@ -1,0 +1,1916 @@
+<document xmlns="http://cnx.rice.edu/cnxml" xmlns:m="http://www.w3.org/1998/Math/MathML" xmlns:md="http://cnx.rice.edu/mdml">
+  <title>Spectrum Analysis Using the Discrete Fourier Transform</title>
+  <metadata><md:content-id>undefined</md:content-id><md:title/><md:uuid>e23c86ab-f737-49e3-9e6a-f47172e3f688</md:uuid>
+</metadata>
+
+  <content>
+    <section id="DTFT">
+    <title>Discrete-Time Fourier Transform</title>
+    <para id="para1">The <link document="m10247">Discrete-Time Fourier Transform (DTFT)</link>
+      is the primary theoretical tool for understanding the frequency content
+      of a discrete-time (sampled) signal.
+      The <link document="m10247">DTFT</link> is defined as
+      <equation id="DTFTequation">
+	<m:math display="block">
+	  <m:apply>
+	    <m:eq/>
+	    <m:apply>
+	      <m:ci>X</m:ci>
+	      <m:ci>ω</m:ci>
+	    </m:apply>
+	    <m:apply>
+	      <m:sum/>
+	      <m:bvar>
+		<m:ci>n</m:ci>
+	      </m:bvar>
+	      <m:lowlimit>
+		<m:apply>
+		  <m:minus/>
+		  <m:infinity/>
+		</m:apply>
+	      </m:lowlimit>
+	      <m:uplimit>
+		<m:infinity/>
+	      </m:uplimit>
+	      <m:apply>
+		<m:times/>
+		<m:apply>
+		  <m:ci>x</m:ci>
+		  <m:ci>n</m:ci>
+		</m:apply>
+		<m:apply>
+		  <m:exp/>
+		  <m:apply>
+		    <m:minus/>
+		    <m:apply>
+		      <m:times/>
+		      <m:imaginaryi/>
+		      <m:ci>ω</m:ci>
+		      <m:ci>n</m:ci>
+		    </m:apply>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+	    </m:apply>
+	  </m:apply>
+	</m:math>
+      </equation>
+    The inverse DTFT (IDTFT) is defined by an integral formula, because it operates on a continuous-frequency DTFT spectrum:
+      <equation id="IDTFTequation"><m:math>
+	      <m:apply>
+		<m:eq/>
+		<m:apply>
+		  <m:ci type="fn">x</m:ci>
+		  <m:ci>n</m:ci>
+		</m:apply>
+		<m:apply>
+		  <m:times/>
+		  <m:apply>
+		    <m:divide/>
+		    <m:cn>1</m:cn>
+		    <m:apply>
+		      <m:times/>
+		      <m:cn>2</m:cn>
+		      <m:pi/>
+		    </m:apply>
+		  </m:apply>
+		  <m:apply>
+		    <m:int/>
+		    <m:bvar>
+		      <m:ci>ω</m:ci>
+		    </m:bvar>
+		    <m:uplimit>
+		      <m:pi/>
+		    </m:uplimit>
+		    <m:lowlimit>
+		      <m:apply>
+			<m:minus/>
+			<m:pi/>
+		      </m:apply>
+		    </m:lowlimit>
+		    <m:apply>
+		      <m:times/>
+		        <m:apply>
+		        <m:ci type="fn">X</m:ci>
+		        <m:ci>k</m:ci>
+		        </m:apply>
+		      <m:apply>
+			<m:exp/>
+			<m:apply>
+			  <m:times/>
+			  <m:imaginaryi/>
+			  <m:ci>ω</m:ci>
+			  <m:ci>n</m:ci>
+			</m:apply>
+		      </m:apply>
+		    </m:apply>
+		  </m:apply>
+		</m:apply>
+		
+	      </m:apply>
+	    </m:math>
+      </equation></para> 
+    <para id="para2">The DTFT is very useful for theory and analysis, but is not practical for
+      numerically computing a spectrum digitally, because 
+      <list id="list1" list-type="enumerated"><item>infinite time samples means
+	  <list id="list2" list-type="bulleted"><item>infinite computation</item>
+	    <item>infinite delay</item>
+	  </list>
+	</item>
+	<item>The transform is continuous in the discrete-time frequency, ω</item>
+      </list>
+    </para>
+    <para id="para3">For practical computation of the frequency content of real-world signals,
+      the Discrete Fourier Transform (DFT) is used.
+    </para>
+    </section>
+    <section id="DFT">
+    <title>Discrete Fourier Transform</title>
+    <para id="paraDFT">The DFT transforms <m:math><m:ci>N</m:ci></m:math> samples of a discrete-time 
+      signal to the same number of discrete frequency samples, and is defined as
+      <equation id="DFTequation"><m:math display="block">
+	  <m:apply>
+	    <m:eq/>
+	    <m:apply>
+	      <m:ci>X</m:ci>
+	      <m:ci>k</m:ci>
+	    </m:apply>
+	    <m:apply>
+	    <m:sum/>
+	      <m:bvar>
+		<m:ci>n</m:ci>
+	      </m:bvar>
+	      <m:lowlimit>
+		<m:cn>0</m:cn>
+	      </m:lowlimit>
+	      <m:uplimit>
+		<m:apply>
+		  <m:minus/>
+		  <m:ci>N</m:ci>
+		  <m:cn>1</m:cn>
+		</m:apply>
+	      </m:uplimit>
+	      <m:apply>
+		<m:times/>
+		<m:apply>
+		  <m:ci>x</m:ci>
+		  <m:ci>n</m:ci>
+		</m:apply>
+		<m:apply>
+		  <m:exp/>
+		  <m:apply>
+		    <m:minus/>
+		    <m:apply>
+		      <m:divide/>
+		      <m:apply>
+			<m:times/>
+			<m:imaginaryi/>
+			<m:cn>2</m:cn>
+			<m:ci>π</m:ci>
+			<m:ci>n</m:ci>
+			<m:ci>k</m:ci>
+		      </m:apply>
+		      <m:ci>N</m:ci>
+		    </m:apply>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+	    </m:apply>
+	  </m:apply>
+	</m:math>
+      </equation>
+      The DFT is invertible by the inverse discrete Fourier transform (IDFT):
+      <equation id="IDFTequation">
+	<m:math display="block">
+	  <m:apply>
+	    <m:eq/>
+	    <m:apply>
+	      <m:ci type="fn">x</m:ci>
+	      <m:ci>n</m:ci>
+	    </m:apply>
+	    <m:apply>
+	      <m:times/>
+	      <m:apply>
+		<m:divide/>
+		<m:ci>1</m:ci>
+		<m:cn>N</m:cn>
+	      </m:apply>
+	      <m:apply>
+		<m:sum/>
+		<m:bvar>
+		  <m:ci>k</m:ci>
+		</m:bvar>
+		<m:uplimit>
+		  <m:apply>
+		    <m:minus/>
+		    <m:ci>N</m:ci>
+		    <m:cn>1</m:cn>
+		  </m:apply>
+		</m:uplimit>
+		<m:lowlimit>
+		  <m:ci>0</m:ci>
+		</m:lowlimit>
+		<m:apply>
+		  <m:times/>
+		  <m:apply>
+		    <m:ci type="fn">X</m:ci>
+		    <m:ci>k</m:ci>
+		  </m:apply>
+		  <m:apply>
+		    <m:exp/>
+		    <m:apply>
+		      <m:plus/>
+		      <m:apply>
+			<m:times/>
+			<m:imaginaryi/>
+			<m:apply>
+			  <m:divide/>
+			  <m:apply>
+			    <m:times/>
+			    <m:cn>2</m:cn>
+			    <m:pi/>
+			    <m:ci>n</m:ci>
+			    <m:ci>k</m:ci>
+			  </m:apply>
+			  <m:ci>N</m:ci>
+			</m:apply>
+		      </m:apply>
+		    </m:apply>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+	    </m:apply>
+	  </m:apply>
+	</m:math>
+      </equation>
+      The <link target-id="DFTequation">DFT</link> and <link target-id="IDFTequation">IDFT</link> are a self-contained,
+      one-to-one transform pair for a
+      length-<m:math><m:ci>N</m:ci></m:math> discrete-time
+      signal. (That is, the <link target-id="DFTequation">DFT</link> is not
+      <emphasis>merely</emphasis> an approximation to the
+      <link target-id="DTFTequation">DTFT</link> as discussed next.)
+      However, the <link target-id="DFTequation">DFT</link> is very often used as a
+      practical approximation to the <link target-id="DTFTequation">DTFT</link>.
+	    
+    </para>
+    </section>
+    <section id="section1">
+      <title>Relationships Between DFT and DTFT</title>
+        <section id="DFTandDFSsect">
+        <title>DFT and Discrete Fourier Series</title>
+	<para id="para5">The <link target-id="DFTequation">DFT</link> gives the discrete-time
+	  Fourier series coefficients of a periodic sequence
+	  (<m:math>
+	    <m:apply>
+	      <m:eq/>
+	      <m:apply>
+		<m:ci type="fn">x</m:ci>
+		<m:ci>n</m:ci>
+	      </m:apply>
+	      <m:apply>
+		<m:ci type="fn">x</m:ci>
+		<m:apply>
+		  <m:plus/>
+		  <m:ci>n</m:ci>
+		    <m:ci>N</m:ci>
+		</m:apply>
+	      </m:apply>
+	    </m:apply>
+	  </m:math>)
+          of period <m:math><m:ci>N</m:ci></m:math> samples, or
+        <equation id="DFTandDFS">
+	  <m:math display="block">
+	    <m:apply>
+	      <m:eq/>
+	      <m:apply>
+		<m:ci type="fn">X</m:ci>
+		<m:ci>ω</m:ci>
+	      </m:apply>
+	      <m:apply>
+		<m:times/>
+		<m:apply>
+		  <m:divide/>
+		  <m:apply>
+		    <m:times/>
+		    <m:cn>2</m:cn>
+		    <m:pi/>
+		  </m:apply>
+		  <m:ci>N</m:ci>
+		</m:apply>
+		<m:apply>
+		  <m:sum/>
+		  <m:apply>
+		    <m:times/>
+		    <m:apply>
+		      <m:ci type="fn">X</m:ci>
+		      <m:ci>k</m:ci>
+		    </m:apply>
+		    <m:apply>
+		      <m:ci type="fn">δ</m:ci>
+		      <m:apply>
+			<m:minus/>
+			<m:ci>ω</m:ci>
+			<m:apply>
+			  <m:divide/>
+			  <m:apply>
+			    <m:times/>
+			    <m:cn>2</m:cn>
+			    <m:pi/>
+			    <m:ci>k</m:ci>
+			  </m:apply>
+                          <m:ci>N</m:ci>
+			</m:apply>
+		      </m:apply>
+		    </m:apply>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+	    </m:apply>
+	  </m:math>
+         </equation>
+	  as can easily be confirmed by computing the inverse DTFT of the corresponding line spectrum:
+	</para>
+	  <equation id="eq1"><m:math>
+	      <m:apply>
+		<m:eq/>
+		<m:apply>
+		  <m:ci type="fn">x</m:ci>
+		  <m:ci>n</m:ci>
+		</m:apply>
+		<m:apply>
+		  <m:times/>
+		  <m:apply>
+		    <m:divide/>
+		    <m:cn>1</m:cn>
+		    <m:apply>
+		      <m:times/>
+		      <m:cn>2</m:cn>
+		      <m:pi/>
+		    </m:apply>
+		  </m:apply>
+		  <m:apply>
+		    <m:int/>
+		    <m:bvar>
+		      <m:ci>ω</m:ci>
+		    </m:bvar>
+		    <m:uplimit>
+		      <m:pi/>
+		    </m:uplimit>
+		    <m:lowlimit>
+		      <m:apply>
+			<m:minus/>
+			<m:pi/>
+		      </m:apply>
+		    </m:lowlimit>
+		    <m:apply>
+		      <m:times/>
+		      <m:apply>
+			<m:times/>
+			<m:apply>
+		  <m:divide/>
+		  <m:apply>
+		    <m:times/>
+		    <m:cn>2</m:cn>
+		    <m:pi/>
+		  </m:apply>
+		  <m:ci>N</m:ci>
+		</m:apply>
+			<m:apply>
+		  <m:sum/>
+		  <m:apply>
+		    <m:times/>
+		    <m:apply>
+		      <m:ci type="fn">X</m:ci>
+		      <m:ci>k</m:ci>
+		    </m:apply>
+		    <m:apply>
+		      <m:ci type="fn">δ</m:ci>
+		      <m:apply>
+			<m:minus/>
+			<m:ci>ω</m:ci>
+			<m:apply>
+			  <m:divide/>
+			  <m:apply>
+			    <m:times/>
+			    <m:cn>2</m:cn>
+			    <m:pi/>
+			    <m:ci>k</m:ci>
+			  </m:apply>
+			  <m:ci>N</m:ci>
+			</m:apply>
+		      </m:apply>
+		    </m:apply>
+		  </m:apply>
+		</m:apply>
+		      </m:apply>
+		      <m:apply>
+			<m:exp/>
+			<m:apply>
+			  <m:times/>
+			  <m:imaginaryi/>
+			  <m:ci>ω</m:ci>
+			  <m:ci>n</m:ci>
+			</m:apply>
+		      </m:apply>
+		    </m:apply>
+		  </m:apply>
+		</m:apply>
+		<m:apply>
+		  <m:times/>
+		  <m:apply>
+		    <m:divide/>
+		    <m:ci>1</m:ci>
+		    <m:cn>N</m:cn>
+		  </m:apply>
+		  <m:apply>
+		    <m:sum/>
+		    <m:bvar>
+		      <m:ci>k</m:ci>
+		    </m:bvar>
+		    <m:uplimit>
+		      <m:apply>
+			<m:minus/>
+			<m:ci>N</m:ci>
+			<m:cn>1</m:cn>
+		      </m:apply>
+		    </m:uplimit>
+		    <m:lowlimit>
+		      <m:ci>0</m:ci>
+		    </m:lowlimit>
+		    <m:apply>
+		      <m:times/>
+		      <m:apply>
+			<m:ci type="fn">X</m:ci>
+			<m:ci>k</m:ci>
+		      </m:apply>
+		      <m:apply>
+			<m:exp/>
+			<m:apply>
+			  <m:plus/>
+			  <m:apply>
+			    <m:times/>
+			    <m:imaginaryi/>
+			    <m:apply>
+			      <m:divide/>
+			      <m:apply>
+				<m:times/>
+				<m:cn>2</m:cn>
+				<m:pi/>
+				<m:ci>n</m:ci>
+				<m:ci>k</m:ci>
+			      </m:apply>
+			      <m:ci>N</m:ci>
+			    </m:apply>
+			  </m:apply>
+			</m:apply>
+		      </m:apply>
+		    </m:apply>
+		  </m:apply>
+		</m:apply>
+		<m:apply>
+		  <m:ci type="fn">IDFT</m:ci>
+		  <m:apply>
+		    <m:ci type="fn">X</m:ci>
+		    <m:ci>k</m:ci>
+		  </m:apply>
+		</m:apply>
+		<m:apply>
+		  <m:ci type="fn">x</m:ci>
+		  <m:ci>n</m:ci>
+		</m:apply>
+	      </m:apply>
+	    </m:math>
+	</equation><para id="element-8">The DFT can thus be used to <emphasis>exactly</emphasis> compute the relative values of the
+<m:math><m:ci>N</m:ci></m:math> line spectral components of the DTFT of any periodic discrete-time sequence with an integer-length period.</para>
+      </section>
+      <section id="idp6536416">
+      <title>DFT and DTFT of finite-length data</title>
+        <para id="element-938">When a discrete-time sequence happens to equal zero for all samples except for those between <m:math><m:ci>0</m:ci></m:math> and <m:math><m:apply><m:minus/><m:ci>N</m:ci><m:ci>1</m:ci></m:apply></m:math>,
+the infinite sum in the <link target-id="DTFTequation">DTFT</link> equation becomes the same as the finite sum from <m:math><m:ci>0</m:ci></m:math> to <m:math><m:apply><m:minus/><m:ci>N</m:ci><m:ci>1</m:ci></m:apply></m:math>
+in the <link target-id="DFTequation">DFT</link> equation.
+By matching the arguments in the exponential terms, we observe that the
+DFT values <emphasis>exactly</emphasis> equal the DTFT for specific DTFT frequencies
+<m:math>
+<m:apply>
+		  <m:eq/>
+		  <m:ci>
+		    <m:msub>
+		      <m:mi>ω</m:mi>
+		      <m:mi>k</m:mi>
+		    </m:msub>
+		  </m:ci>
+		  <m:apply>
+		    <m:divide/>
+		    <m:apply>
+		      <m:times/>
+		      <m:cn>2</m:cn>
+		      <m:pi/>
+		      <m:ci>k</m:ci>
+		    </m:apply>
+		    <m:ci>N</m:ci>
+		  </m:apply>
+		</m:apply>
+</m:math>
+.
+That is, the DFT computes exact samples of the DTFT at <m:math><m:ci>N</m:ci></m:math> equally spaced frequencies
+<m:math>
+<m:apply>
+		  <m:eq/>
+		  <m:ci>
+		    <m:msub>
+		      <m:mi>ω</m:mi>
+		      <m:mi>k</m:mi>
+		    </m:msub>
+		  </m:ci>
+		  <m:apply>
+		    <m:divide/>
+		    <m:apply>
+		      <m:times/>
+		      <m:cn>2</m:cn>
+		      <m:pi/>
+		      <m:ci>k</m:ci>
+		    </m:apply>
+		    <m:ci>N</m:ci>
+		  </m:apply>
+		</m:apply>
+</m:math>,
+or</para><para id="para6f"><m:math display="block">
+	    <m:apply>
+	      <m:eq/>
+	      <m:apply>
+		<m:ci type="fn">
+		    <m:mi>X</m:mi>
+		</m:ci>
+		<m:apply>
+		  <m:eq/>
+		  <m:ci>
+		    <m:msub>
+		      <m:mi>ω</m:mi>
+		      <m:mi>k</m:mi>
+		    </m:msub>
+		  </m:ci>
+		  <m:apply>
+		    <m:divide/>
+		    <m:apply>
+		      <m:times/>
+		      <m:cn>2</m:cn>
+		      <m:pi/>
+		      <m:ci>k</m:ci>
+		    </m:apply>
+		    <m:ci>N</m:ci>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+	      <m:apply>
+		<m:sum/>
+		<m:bvar>
+		  <m:ci>n</m:ci>
+		</m:bvar>
+		<m:uplimit>
+                  <m:ci>∞</m:ci>
+		</m:uplimit>
+		<m:lowlimit>
+		  <m:apply>
+		    <m:minus/>
+		    <m:ci>∞</m:ci>
+		  </m:apply>
+		</m:lowlimit>
+		<m:apply>
+		  <m:times/>
+		  <m:apply>
+		    <m:ci type="fn">x</m:ci>
+		    <m:ci>n</m:ci>
+		  </m:apply>
+		  <m:apply>
+		    <m:exp/>
+		    <m:apply>
+		      <m:minus/>
+		      <m:apply>
+			<m:times/>
+			<m:imaginaryi/>
+			<m:ci>
+			  <m:msub>
+			    <m:mi>ω</m:mi>
+			    <m:mi>k</m:mi>
+			  </m:msub>
+			</m:ci>
+			<m:ci>n</m:ci>
+		      </m:apply>
+		    </m:apply>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+	    <m:apply>
+	    <m:sum/>
+	      <m:bvar>
+		<m:ci>n</m:ci>
+	      </m:bvar>
+	      <m:lowlimit>
+		<m:cn>0</m:cn>
+	      </m:lowlimit>
+	      <m:uplimit>
+		<m:apply>
+		  <m:minus/>
+		  <m:ci>N</m:ci>
+		  <m:cn>1</m:cn>
+		</m:apply>
+	      </m:uplimit>
+	      <m:apply>
+		<m:times/>
+		<m:apply>
+		  <m:ci>x</m:ci>
+		  <m:ci>n</m:ci>
+		</m:apply>
+		<m:apply>
+		  <m:exp/>
+		  <m:apply>
+		    <m:minus/>
+		    <m:apply>
+		      <m:divide/>
+		      <m:apply>
+			<m:times/>
+			<m:imaginaryi/>
+			<m:cn>2</m:cn>
+			<m:ci>π</m:ci>
+			<m:ci>n</m:ci>
+			<m:ci>k</m:ci>
+		      </m:apply>
+		      <m:ci>N</m:ci>
+		    </m:apply>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+	    </m:apply>
+	      <m:apply>
+		<m:ci type="fn">X</m:ci>
+		<m:ci>k</m:ci>
+	      </m:apply>
+	    </m:apply>
+	  </m:math>
+   </para>
+      </section>
+      <section id="idm7998304">
+      <title>DFT as a DTFT approximation</title>
+	<para id="para7">In most cases, the signal is neither exactly periodic nor truly of finite length;
+          in such cases, the DFT of a finite block of <m:math><m:ci>N</m:ci></m:math>
+          consecutive discrete-time samples does <emphasis>not</emphasis> exactly equal
+          samples of the DTFT at specific frequencies.
+          Instead, the <link target-id="DFTequation">DFT</link> gives frequency
+	  samples of a windowed (truncated) <link target-id="DTFTequation">DTFT</link>
+	  <m:math display="block">
+	    <m:apply>
+	      <m:eq/>
+	      <m:apply>
+		<m:ci type="fn">
+		  <m:mover>
+		    <m:mi>X</m:mi>
+		    <m:mi>^</m:mi>
+		  </m:mover>
+		</m:ci>
+		<m:apply>
+		  <m:eq/>
+		  <m:ci>
+		    <m:msub>
+		      <m:mi>ω</m:mi>
+		      <m:mi>k</m:mi>
+		    </m:msub>
+		  </m:ci>
+		  <m:apply>
+		    <m:divide/>
+		    <m:apply>
+		      <m:times/>
+		      <m:cn>2</m:cn>
+		      <m:pi/>
+		      <m:ci>k</m:ci>
+		    </m:apply>
+		    <m:ci>N</m:ci>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+	      <m:apply>
+		<m:sum/>
+		<m:bvar>
+		  <m:ci>n</m:ci>
+		</m:bvar>
+		<m:uplimit>
+		  <m:apply>
+		    <m:minus/>
+		    <m:ci>N</m:ci>
+		    <m:cn>1</m:cn>
+		  </m:apply>
+		</m:uplimit>
+		<m:lowlimit>
+		  <m:cn>0</m:cn>
+		</m:lowlimit>
+		<m:apply>
+		  <m:times/>
+		  <m:apply>
+		    <m:ci type="fn">x</m:ci>
+		    <m:ci>n</m:ci>
+		  </m:apply>
+		  <m:apply>
+		    <m:exp/>
+		    <m:apply>
+		      <m:minus/>
+		      <m:apply>
+			<m:times/>
+			<m:imaginaryi/>
+			<m:ci>
+			  <m:msub>
+			    <m:mi>ω</m:mi>
+			    <m:mi>k</m:mi>
+			  </m:msub>
+			</m:ci>
+			<m:ci>n</m:ci>
+		      </m:apply>
+		    </m:apply>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+	      <m:apply>
+		<m:sum/>
+		<m:bvar>
+		  <m:ci>n</m:ci>
+		</m:bvar>
+		<m:uplimit>
+		  <m:ci>∞</m:ci>
+		</m:uplimit>
+		<m:lowlimit>
+		  <m:apply>
+		    <m:minus/>
+		    <m:ci>∞</m:ci>
+		  </m:apply>
+		</m:lowlimit>
+		<m:apply>
+		  <m:times/>
+		  <m:apply>
+		    <m:ci type="fn">x</m:ci>
+		    <m:ci>n</m:ci>
+		  </m:apply>
+		  <m:apply>
+		    <m:ci type="fn">w</m:ci>
+		    <m:ci>n</m:ci>
+		  </m:apply>
+		  <m:apply>
+		    <m:exp/>
+		    <m:apply>
+		      <m:minus/>
+		      <m:apply>
+			<m:times/>
+			<m:imaginaryi/>
+			<m:ci>
+			  <m:msub>
+			    <m:mi>ω</m:mi>
+			    <m:mi>k</m:mi>
+			  </m:msub>
+			</m:ci>
+			<m:ci>n</m:ci>
+		      </m:apply>
+		    </m:apply>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+	      <m:apply>
+		<m:ci type="fn">X</m:ci>
+		<m:ci>k</m:ci>
+	      </m:apply>
+	    </m:apply>
+	  </m:math>
+	  where
+	  <m:math>
+	    <m:apply>
+	      <m:eq/>
+	      <m:apply>
+		<m:ci type="fn">w</m:ci>
+		<m:ci>n</m:ci>
+	      </m:apply>
+	      <m:piecewise>
+		<m:piece>
+		  <m:cn>1</m:cn>
+		  <m:apply>
+		    <m:leq/>
+		    <m:cn>0</m:cn>
+		    <m:apply>
+		      <m:lt/>
+		      <m:ci>n</m:ci>
+		      <m:ci>N</m:ci>
+		    </m:apply>
+		  </m:apply>
+		</m:piece>
+		<m:piece>
+		  <m:cn>0</m:cn>
+		  <m:mtext>else</m:mtext>
+		</m:piece>
+	      </m:piecewise>
+	    </m:apply>
+	  </m:math>
+          Once again, 
+	  <m:math>
+	    <m:apply>
+	      <m:ci type="fn">X</m:ci>
+	      <m:ci>k</m:ci>
+	    </m:apply>
+	  </m:math>
+	  <emphasis>exactly</emphasis> equals 
+	  <m:math>
+	    <m:apply>
+	      <m:ci type="fn">X</m:ci>
+	      <m:ci>
+		<m:msub>
+		  <m:mi>ω</m:mi>
+		  <m:mi>k</m:mi>
+		</m:msub>
+	      </m:ci>
+	    </m:apply>
+	  </m:math> a DTFT frequency sample only when
+	  <m:math>
+	    <m:apply>
+	      <m:forall/>
+	      <m:bvar>
+		<m:ci>n</m:ci>
+	      </m:bvar>
+	      <m:condition>
+		<m:apply>
+		  <m:notin/>
+		  <m:ci>n</m:ci>
+		  <m:interval>
+		    <m:cn>0</m:cn>
+		    <m:apply>
+		      <m:minus/>
+		      <m:ci>N</m:ci>
+		      <m:cn>1</m:cn>
+		    </m:apply>
+		  </m:interval>
+		</m:apply>
+	      </m:condition>
+	      <m:apply>
+		<m:eq/>		 
+		<m:apply>
+		  <m:ci type="fn">x</m:ci>
+		  <m:ci>n</m:ci>
+		</m:apply>
+		<m:cn>0</m:cn>
+	      </m:apply>
+	    </m:apply>
+	  </m:math>
+	</para>
+      </section>
+    </section>
+    <section id="idm853168">
+      <title>Relationship between continuous-time FT and DFT</title>
+      <para id="element-780">The goal of spectrum analysis is often to determine the frequency content of an analog (continuous-time) signal; very often, as in most modern spectrum analyzers, this is actually accomplished by sampling the analog signal, windowing (truncating)
+the data, and computing and plotting the magnitude of its DFT.
+It is thus essential to relate the DFT frequency samples back to the original analog frequency.
+Assuming that the analog signal is bandlimited and the sampling frequency exceeds twice that limit so that no frequency aliasing occurs, the relationship between
+the continuous-time Fourier frequency <m:math><m:ci>Ω</m:ci></m:math> (in radians) and the
+DTFT frequency <m:math><m:ci>ω</m:ci></m:math> imposed by sampling is
+<m:math>
+  <m:apply>
+    <m:eq/>
+    <m:ci>ω</m:ci>
+    <m:apply>
+      <m:times/>
+	<m:ci>Ω</m:ci>
+	<m:ci>T</m:ci>
+    </m:apply>
+    
+  </m:apply>
+</m:math>
+where <m:math><m:ci>T</m:ci></m:math> is the sampling period.
+Through the relationship
+<m:math>
+<m:apply>
+		  <m:eq/>
+		  <m:ci>
+		    <m:msub>
+		      <m:mi>ω</m:mi>
+		      <m:mi>k</m:mi>
+		    </m:msub>
+		  </m:ci>
+		  <m:apply>
+		    <m:divide/>
+		    <m:apply>
+		      <m:times/>
+		      <m:cn>2</m:cn>
+		      <m:pi/>
+		      <m:ci>k</m:ci>
+		    </m:apply>
+		    <m:ci>N</m:ci>
+		  </m:apply>
+		</m:apply>
+</m:math>
+ between the DTFT frequency <m:math><m:ci>ω</m:ci></m:math>
+and the DFT frequency index <m:math><m:ci>k</m:ci></m:math>, the correspondence between the DFT frequency index and the original analog frequency can be found:
+<m:math display="block">
+  <m:apply>
+    <m:eq/>
+      <m:ci>Ω</m:ci>
+      <m:apply>
+	<m:divide/>
+	  <m:apply>
+	    <m:times/>
+	      <m:cn>2</m:cn>
+	      <m:pi/>
+	      <m:ci>k</m:ci>
+	  </m:apply>
+	  <m:apply>
+	    <m:times/>
+	      <m:ci>N</m:ci>
+	      <m:ci>T</m:ci>
+	  </m:apply>
+	</m:apply>
+  </m:apply>
+</m:math>
+or in terms of analog frequency <m:math><m:ci>f</m:ci></m:math> in Hertz
+(cycles per second rather than radians)
+<m:math display="block">
+  <m:apply>
+    <m:eq/>
+      <m:ci>f</m:ci>
+      <m:apply>
+	<m:divide/>
+	  <m:apply>
+	    <m:times/>
+	      <m:ci>k</m:ci>
+	  </m:apply>
+	  <m:apply>
+	    <m:times/>
+	      <m:ci>N</m:ci>
+	      <m:ci>T</m:ci>
+	  </m:apply>
+	</m:apply>
+  </m:apply>
+</m:math>
+for <m:math><m:ci>k</m:ci></m:math> in the range
+<m:math><m:ci>k</m:ci></m:math>
+between <m:math><m:cn>0</m:cn></m:math> and
+<m:math>
+  <m:apply>
+    <m:divide/>
+    <m:ci>N</m:ci>
+    <m:cn>2</m:cn>
+  </m:apply>
+</m:math>.
+It is important to note that 
+<m:math>
+             <m:apply>
+	      <m:condition>
+		<m:apply>
+		  <m:in/>
+		  <m:ci>k</m:ci>
+		  <m:apply>
+		    <m:interval>
+                      <m:apply>
+                        <m:plus/>
+                          <m:apply>
+                            <m:divide/>
+                              <m:ci>N</m:ci>
+                              <m:cn>2</m:cn>
+                          </m:apply>
+                        <m:cn>1</m:cn>
+                      </m:apply>
+		      <m:apply>
+			<m:minus/>
+			<m:ci>N</m:ci>
+			<m:cn>1</m:cn>
+		      </m:apply>
+		    </m:interval>
+		  </m:apply>
+		</m:apply>
+	      </m:condition>
+             </m:apply>
+</m:math>
+correspond to <emphasis>negative</emphasis>
+frequencies due to the periodicity of the DTFT and the DFT.</para>
+      <exercise id="ex1"><problem id="idp1027504">    
+	  <para id="para8">In general, will DFT frequency values
+<m:math>
+  <m:apply>
+    <m:ci type="fn">X</m:ci>
+    <m:ci>k</m:ci>
+  </m:apply>
+</m:math>
+ <emphasis>exactly</emphasis> equal samples
+of the analog Fourier transform
+<m:math>
+  <m:apply>
+    <m:ci type="fn">
+      <m:msub>
+	<m:mi>X</m:mi>
+	<m:mi>a</m:mi>
+      </m:msub>
+    </m:ci>
+  </m:apply>
+</m:math>
+at the corresponding frequencies?
+That is, will
+	    <m:math>
+	      <m:apply>
+		<m:eq/>
+                  <m:apply>
+		  <m:ci type="fn">X</m:ci>
+		  <m:ci>k</m:ci>
+		</m:apply>
+		<m:apply>
+		<m:ci type="fn">
+		  <m:msub>
+		    <m:mi>X</m:mi>
+		    <m:mi>a</m:mi>
+		  </m:msub>
+		</m:ci>
+		<m:apply>
+		  <m:divide/>
+		  <m:apply>
+		    <m:times/>
+		    <m:cn>2</m:cn>
+		    <m:pi/>
+		    <m:ci>k</m:ci>
+		  </m:apply>
+		  <m:apply>
+		    <m:times/>
+		    <m:ci>N</m:ci>
+		    <m:ci>T</m:ci>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+	      </m:apply>
+	    </m:math>?
+	  </para>
+	</problem>
+        <solution id="idm278912">
+          <para id="s1">In general, <emphasis>NO</emphasis>.
+          The DTFT exactly corresponds to the continuous-time Fourier transform only when the signal is bandlimited and sampled at more than twice its highest frequency.
+The DFT frequency values exactly correspond to frequency samples of the DTFT
+only when the discrete-time signal is time-limited.
+However, a bandlimited continuous-time signal cannot be time-limited, so in
+general these conditions cannot both be satisfied.
+</para>
+<para id="s2">It can, however, be true for a small class of analog signals which are not time-limited
+but happen to exactly equal zero at all <emphasis>sample times</emphasis> outside of the interval
+<m:math>
+             <m:apply>
+	      <m:condition>
+		<m:apply>
+		  <m:in/>
+		  <m:ci>n</m:ci>
+		  <m:apply>
+		    <m:interval>
+		      <m:cn>0</m:cn>
+		      <m:apply>
+			<m:minus/>
+			<m:ci>N</m:ci>
+			<m:cn>1</m:cn>
+		      </m:apply>
+		    </m:interval>
+		  </m:apply>
+		</m:apply>
+	      </m:condition>
+             </m:apply>
+</m:math>.
+The sinc function with a bandwidth equal to the Nyquist frequency and centered at
+<m:math>
+<m:apply>
+    <m:eq/>
+      <m:ci>t</m:ci>
+      <m:ci>0</m:ci>
+  </m:apply>
+</m:math>
+is an example.</para>
+        </solution></exercise>
+    </section>
+    
+    <section id="zeropad">
+      <title>Zero-Padding</title>
+      <para id="para6">If more than <m:math><m:ci>N</m:ci></m:math> equally spaced frequency samples of
+a length-<m:math><m:ci>N</m:ci></m:math> signal are desired, they can easily be obtained
+by <term>zero-padding</term> the discrete-time signal and computing a DFT of the
+longer length.
+In particular, if
+        <m:math>
+          <m:apply><m:times/><m:ci>L</m:ci><m:ci>N</m:ci></m:apply>
+        </m:math>
+        <link target-id="DTFTequation">DTFT</link> samples are desired
+	of a length-<m:math><m:ci>N</m:ci></m:math> sequence, one can compute the length-<m:math>
+          <m:apply><m:times/><m:ci>L</m:ci><m:ci>N</m:ci></m:apply>
+        </m:math>
+	<link target-id="DFTequation">DFT</link> of a
+length-<m:math>
+          <m:apply><m:times/><m:ci>L</m:ci><m:ci>N</m:ci></m:apply>
+        </m:math> zero-padded
+	sequence
+	<m:math display="block">
+	  <m:apply>
+	    <m:eq/>
+	    <m:apply>
+	      <m:ci type="fn">z</m:ci>
+	      <m:ci>n</m:ci>
+	    </m:apply>
+	    <m:piecewise>
+	      <m:piece>
+		<m:apply>
+		  <m:ci type="fn">x</m:ci>
+		  <m:ci>n</m:ci>
+		</m:apply>
+		<m:apply>
+		  <m:leq/>
+		  <m:cn>0</m:cn>
+		  <m:ci>n</m:ci>
+		  <m:apply>
+		    <m:minus/>
+		    <m:ci>N</m:ci>
+		    <m:cn>1</m:cn>
+		  </m:apply>
+		</m:apply>
+	      </m:piece>
+	      <m:piece>
+		<m:cn>0</m:cn>
+		<m:apply>
+		  <m:leq/>
+		  <m:ci>N</m:ci>
+		  <m:ci>n</m:ci>
+		  <m:apply>
+		    <m:minus/>
+		    <m:apply>
+		      <m:times/>
+		      <m:ci>L</m:ci>
+		      <m:ci>N</m:ci>
+		    </m:apply>
+		    <m:cn>1</m:cn>
+		  </m:apply>
+		</m:apply>
+	      </m:piece>
+	    </m:piecewise>
+	  </m:apply>
+	</m:math>
+	<m:math display="block">
+	  <m:apply>
+	    <m:eq/>
+	    <m:apply>
+	      <m:ci type="fn">X</m:ci>
+	      <m:apply>
+		<m:eq/>
+		<m:ci>
+		  <m:msub>
+		    <m:mi>w</m:mi>
+		    <m:mi>k</m:mi>
+		  </m:msub>
+		</m:ci>
+		<m:apply>
+		  <m:divide/>
+		  <m:apply>
+		    <m:times/>
+		    <m:cn>2</m:cn>
+		    <m:pi/>
+		    <m:ci>k</m:ci>
+		  </m:apply>
+		  <m:apply>
+		    <m:times/>
+		    <m:ci>L</m:ci>
+		    <m:ci>N</m:ci>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+	    </m:apply>
+	    <m:apply>
+	      <m:sum/>
+	      <m:bvar>
+		<m:ci>n</m:ci>
+	      </m:bvar>
+	      <m:uplimit>
+		<m:apply>
+		  <m:minus/>
+		  <m:ci>N</m:ci>
+		  <m:cn>1</m:cn>
+		</m:apply>
+	      </m:uplimit>
+	      <m:lowlimit>
+		<m:cn>0</m:cn>
+	      </m:lowlimit>
+	      <m:apply>
+		<m:times/>
+		<m:apply>
+		  <m:ci type="fn">x</m:ci>
+		  <m:ci>n</m:ci>
+		</m:apply>
+		<m:apply>
+		  <m:exp/>
+		  <m:apply>
+		    <m:minus/>
+		    <m:apply>
+		      <m:times/>
+		      <m:imaginaryi/>
+		      <m:apply>
+			<m:divide/>
+			<m:apply>
+			  <m:times/>
+			  <m:cn>2</m:cn>
+			  <m:pi/>
+			  <m:ci>k</m:ci>
+			  <m:ci>n</m:ci>
+			</m:apply>
+			<m:apply>
+			  <m:times/>
+			  <m:ci>L</m:ci>
+			  <m:ci>N</m:ci>
+			</m:apply>
+		      </m:apply>
+		    </m:apply>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+	    </m:apply>
+	    <m:apply>
+	      <m:sum/>
+	      <m:bvar>
+		<m:ci>n</m:ci>
+	      </m:bvar>
+	      <m:uplimit>
+		<m:apply>
+		  <m:minus/>
+		  <m:apply>
+		    <m:times/>
+		    <m:ci>L</m:ci>
+		    <m:ci>N</m:ci>
+		  </m:apply>
+		  <m:cn>1</m:cn>
+		</m:apply>
+	      </m:uplimit>
+	      <m:lowlimit>
+		<m:cn>0</m:cn>
+	      </m:lowlimit>
+	      <m:apply>
+		<m:times/>
+		<m:apply>
+		  <m:ci type="fn">z</m:ci>
+		  <m:ci>n</m:ci>
+		</m:apply>
+		<m:apply>
+		  <m:exp/>
+		  <m:apply>
+		    <m:minus/>
+		    <m:apply>
+		      <m:times/>
+		      <m:imaginaryi/>
+		      <m:apply>
+			<m:divide/>
+			<m:apply>
+			  <m:times/>
+			  <m:cn>2</m:cn>
+			  <m:pi/>
+			  <m:ci>k</m:ci>
+			  <m:ci>n</m:ci>
+			</m:apply>
+			<m:apply>
+			  <m:times/>
+			  <m:ci>L</m:ci>
+			  <m:ci>N</m:ci>
+			</m:apply>
+		      </m:apply>
+		    </m:apply>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+	    </m:apply>
+	    <m:apply>
+	      <m:ci type="fn" class="discrete">
+		<m:msub>
+		  <m:mi>DFT</m:mi>
+		  <m:mrow>
+		    <m:mi>L</m:mi>
+		    <m:mi>N</m:mi>
+		  </m:mrow>
+		</m:msub>
+	      </m:ci>
+	      <m:apply>
+		<m:ci type="fn" class="discrete">z</m:ci>
+		<m:ci>n</m:ci>
+	      </m:apply>
+	    </m:apply>
+	  </m:apply>
+	</m:math>
+        Note that
+	zero-padding <emphasis>interpolates</emphasis> the spectrum.  One
+	should always zero-pad (by about at least a factor of 4) when
+	using the <link target-id="DFTequation">DFT</link> to approximate
+	the <link target-id="DTFTequation">DTFT</link> to get a clear
+	picture of the <link target-id="DTFTequation">DTFT</link>.
+        While performing computations on zeros may at first seem inefficient,
+        using <link document="m12026">FFT</link> algorithms, which generally
+        expect the same number of input and output samples, actually makes this
+        approach very efficient.</para>
+      <para id="s64"><link target-id="fig.1"/> shows the magnitude of the DFT values corresponding to the
+        non-negative frequencies of a real-valued length-64 DFT of a length-64 signal,
+        both in a "stem" format to emphasize the discrete nature of the DFT frequency samples,
+        and as a line plot to emphasize its use as an approximation to the 
+        continuous-in-frequency DTFT.
+        From this figure, it appears that the signal has a single dominant
+        frequency component.
+      <figure id="fig.1" orient="vertical"><title>Spectrum without zero-padding</title>
+      <subfigure id="idp6548576">
+	<title>Stem plot</title>
+	<media id="idp783472" alt=""><image src="../../media/zpstem64.png" mime-type="image/png"/></media>
+      </subfigure>
+      <subfigure id="idp3241552">
+	<title>Line Plot</title>
+	<media id="idm7178128" alt=""><image src="../../media/zpline64.png" mime-type="image/png"/></media>
+      </subfigure>
+      <caption>Magnitude DFT spectrum of 64 samples
+        of a signal with a length-64 DFT (no zero padding)
+      </caption>
+      </figure>
+      Zero-padding by a factor of two by appending 64 zero values to the
+      signal and computing a length-128 DFT yields <link target-id="fig.2"/>.
+      It can now be seen that the signal consists of at least two narrowband
+      frequency components; the gap between them fell between DFT samples
+      in <link target-id="fig.1"/>, resulting in a misleading picture of the
+      signal's spectral content.
+      This is sometimes called the <term>picket-fence effect</term>, and
+      is a result of insufficient sampling in frequency.
+      While zero-padding by a factor of two has revealed more structure,
+      it is unclear whether the peak magnitudes are reliably rendered, and
+      the jagged linear interpolation in the line graph does not yet reflect
+      the smooth, continuously-differentiable spectrum of the DTFT
+      of a finite-length truncated signal.
+      Errors in the apparent peak magnitude due to insufficient frequency sampling
+      is sometimes referred to as <term>scalloping loss</term>.
+      <figure id="fig.2" orient="vertical"><title>Spectrum with factor-of-two zero-padding</title>
+      <subfigure id="idp6243184">
+	<title>Stem plot</title>
+	<media id="idm6499344" alt=""><image src="../../media/zpstem128.png" mime-type="image/png"/></media>
+      </subfigure>
+      <subfigure id="idm7112032">
+	<title>Line Plot</title>
+	<media id="idp6493984" alt=""><image src="../../media/zpline128.png" mime-type="image/png"/></media>
+      </subfigure>
+      <caption>Magnitude DFT spectrum of 64 samples
+        of a signal with a length-128 DFT (double-length zero-padding)
+      </caption>
+      </figure>
+      Zero-padding to four times the length of the signal,
+      as shown in <link target-id="fig.3"/>,
+      clearly shows the spectral structure and reveals that the magnitude of
+      the two spectral lines are nearly identical.
+      The line graph is still a bit rough and the peak magnitudes and frequencies
+      may not be precisely captured, but the spectral characteristics of the
+      truncated signal are now clear.
+      <figure id="fig.3" orient="vertical"><title>Spectrum with factor-of-four zero-padding</title>
+      <subfigure id="idp3932976">
+	<title>Stem plot</title>
+	<media id="idp135456" alt=""><image src="../../media/zpstem256.png" mime-type="image/png"/></media>
+      </subfigure>
+      <subfigure id="idp2912224">
+	<title>Line Plot</title>
+	<media id="idm6997808" alt=""><image src="../../media/zpline256.png" mime-type="image/png"/></media>
+      </subfigure>
+      <caption>Magnitude DFT spectrum of 64 samples
+        of a signal with a length-256 zero-padded DFT (four times zero-padding)
+      </caption>
+      </figure>
+      Zero-padding to a length of 1024, as shown in <link target-id="fig.4"/>
+      yields a spectrum that is smooth and continuous to the resolution of the
+      computer screen, and produces a very accurate rendition of the DTFT of
+      the <emphasis>truncated</emphasis> signal.
+      <figure id="fig.4" orient="vertical"><title>Spectrum with factor-of-sixteen zero-padding</title>
+      <subfigure id="idm6470592">
+	<title>Stem plot</title>
+	<media id="idp2045360" alt=""><image src="../../media/zpstem1024.png" mime-type="image/png"/></media>
+      </subfigure>
+      <subfigure id="idp6440272">
+	<title>Line Plot</title>
+	<media id="idp4117008" alt=""><image src="../../media/zpline1024.png" mime-type="image/png"/></media>
+      </subfigure>
+      <caption>Magnitude DFT spectrum of 64 samples
+        of a signal with a length-1024 zero-padded DFT.
+        The spectrum now looks smooth and continuous and reveals all the
+        structure of the DTFT of a truncated signal.
+      </caption>
+      </figure>
+      The signal used in this example actually consisted of two pure sinusoids of
+      equal magnitude.
+      The slight difference in magnitude of the two dominant peaks, the breadth
+      of the peaks, and the sinc-like lesser
+      <term>side lobe</term> peaks throughout frequency are artifacts of the
+      truncation, or windowing, process used to practically approximate the DFT.
+      These problems and partial solutions to them are discussed in the following section.</para>
+      
+    </section>
+
+    <section id="windowing">
+      <title>Effects of Windowing</title>
+      <para id="para9">Applying the DTFT multiplication property
+	<m:math display="block">
+	  <m:apply>
+	    <m:eq/>
+	    <m:apply>
+	      <m:csymbol definitionURL="http://cnx.rice.edu/cd/cnxmath.ocd#estimate"/>
+	      <m:apply>
+		<m:ci type="fn">X</m:ci>
+		<m:ci>
+		  <m:msub>
+		    <m:mi>ω</m:mi>
+		    <m:mi>k</m:mi>
+		  </m:msub>
+		</m:ci>
+	      </m:apply>
+	    </m:apply>
+	    <m:apply>
+	      <m:sum/>
+	      <m:bvar>
+		<m:ci>n</m:ci>
+	      </m:bvar>
+	      <m:uplimit>
+		<m:ci>∞</m:ci>
+	      </m:uplimit>
+	      <m:lowlimit>
+		<m:apply>
+		  <m:minus/>
+		  <m:ci>∞</m:ci>
+		</m:apply>
+	      </m:lowlimit>
+	      <m:apply>
+		<m:times/>
+		<m:apply>
+		  <m:ci type="fn">x</m:ci>
+		  <m:ci>n</m:ci>
+		</m:apply>
+		<m:apply>
+		  <m:ci type="fn">w</m:ci>
+		  <m:ci>n</m:ci>
+		</m:apply>
+		<m:apply>
+		  <m:exp/>
+		  <m:apply>
+		    <m:minus/>
+		    <m:apply>
+		      <m:times/>
+		      <m:imaginaryi/>
+		      <m:ci>
+			<m:msub>
+			  <m:mi>ω</m:mi>
+			  <m:mi>k</m:mi>
+			</m:msub>
+		      </m:ci>
+                      <m:ci>n</m:ci>
+		    </m:apply>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+	    </m:apply>
+	    <m:apply>
+	      <m:times/>
+	      <m:apply>
+		<m:divide/>
+		<m:cn>1</m:cn>
+		<m:apply>
+		  <m:times/>
+		  <m:cn>2</m:cn>
+		  <m:pi/>
+		</m:apply>
+	      </m:apply>
+	      <m:apply>
+		<m:csymbol definitionURL="http://cnx.rice.edu/cd/cnxmath.ocd#convolve"/>
+		<m:apply>
+		  <m:ci type="fn">X</m:ci>
+		  <m:ci>
+		    <m:msub>
+		      <m:mi>ω</m:mi>
+		      <m:mi>k</m:mi>
+		    </m:msub>
+		  </m:ci>
+		</m:apply>
+		<m:apply>
+		  <m:ci type="fn">W</m:ci>
+		  <m:ci>
+		    <m:msub>
+		      <m:mi>ω</m:mi>
+		      <m:mi>k</m:mi>
+		  </m:msub>
+		  </m:ci>
+		</m:apply>
+	      </m:apply>
+	    </m:apply>
+	  </m:apply>
+	</m:math>
+	we find that the <link target-id="DFTequation">DFT</link>
+        of the windowed (truncated) signal produces
+	samples not of the true (desired)  DTFT spectrum
+	<m:math>
+	  <m:apply>
+	    <m:ci type="fn">X</m:ci>
+	    <m:ci>ω</m:ci>
+	  </m:apply>
+	</m:math>, but of a <emphasis>smoothed</emphasis> verson
+	<m:math>
+	  <m:apply>
+	    <m:csymbol definitionURL="http://cnx.rice.edu/cd/cnxmath.ocd#convolve"/>
+	    <m:apply>
+	      <m:ci type="fn">X</m:ci>
+	      <m:ci>ω</m:ci>
+	    </m:apply>
+	    <m:apply>
+	      <m:ci type="fn">W</m:ci>
+	      <m:ci>ω</m:ci>
+	    </m:apply>
+	  </m:apply>
+	</m:math>. We want this to resemble
+	<m:math>
+	  <m:apply>
+	    <m:ci type="fn">X</m:ci>
+	    <m:ci>ω</m:ci>
+	  </m:apply>
+	</m:math> as closely as possible, so 
+	<m:math>
+	  <m:apply>
+	    <m:ci type="fn">W</m:ci>
+	    <m:ci>ω</m:ci>
+	  </m:apply>
+	</m:math> should be as close to an impulse as possible.
+        The <term>window</term>
+        <m:math>
+          <m:apply>
+            <m:ci type="fn">w</m:ci>
+	    <m:ci>n</m:ci>
+	  </m:apply>
+	</m:math>
+        need not be a simple <term>truncation</term> (or 
+        <term>rectangle</term>, or <term>boxcar</term>) window; other shapes
+        can also be used as long as they limit the sequence to at most
+        <m:math><m:ci>N</m:ci></m:math> consecutive nonzero samples.
+        All good windows are impulse-like, and represent various tradeoffs
+	between three criteria:
+	<list id="list4" list-type="enumerated"><item>
+	    main lobe width: (limits resolution of closely-spaced peaks
+	    of equal height)
+	  </item>
+	  <item>
+	    height of first sidelobe: (limits ability to see a small peak near a big peak)
+	  </item>
+	  <item>
+	    slope of sidelobe drop-off: (limits ability to see small peaks further away from a big peak)
+	  </item>
+	</list>
+      </para><para id="element-320">Many different <link url="http://en.wikipedia.org/wiki/Window_function">window functions</link> have been
+developed for truncating and shaping a length-<m:math><m:ci>N</m:ci></m:math> signal segment for
+spectral analysis.
+The simple <term>truncation</term> window has a periodic sinc DTFT, as shown in <link target-id="fig.boxcar"/>.
+It has the narrowest main-lobe width,
+<m:math>
+  <m:apply>
+    <m:divide/>
+      <m:apply>
+        <m:times/>
+          <m:cn>2</m:cn>
+          <m:pi/>
+       </m:apply>
+       <m:ci>N</m:ci>
+  </m:apply>
+</m:math>
+at the -3 dB level and
+<m:math>
+  <m:apply>
+    <m:divide/>
+      <m:apply>
+        <m:times/>
+          <m:cn>4</m:cn>
+          <m:pi/>
+       </m:apply>
+       <m:ci>N</m:ci>
+  </m:apply>
+</m:math>
+between the two zeros surrounding the main lobe,
+of the common window functions, but also the largest side-lobe peak, at about -13 dB.
+The side-lobes also taper off relatively slowly.
+</para>
+      <figure id="fig.boxcar" orient="vertical">
+      <subfigure id="idm7227056">
+	<title>Rectangular window</title>
+	<media id="idm6672960" alt=""><image src="../../media/boxcar64.png" mime-type="image/png"/></media>
+      </subfigure>
+      <subfigure id="idm6991456">
+	<title>Magnitude of boxcar window spectrum</title>
+	<media id="idp2275472" alt=""><image src="../../media/boxcarfreq.png" mime-type="image/png"/></media>
+      </subfigure>
+      <caption>Length-64 truncation (boxcar) window and its magnitude DFT spectrum
+      </caption>
+      </figure>
+      <para id="element-653">The <term>Hann window</term> (sometimes also called the <term>hanning</term> window),
+illustrated in <link target-id="fig.hann"/>,
+takes the form
+<m:math>
+  <m:apply>
+  <m:eq/>
+    <m:apply>
+      <m:ci type="fn" class="discrete">w</m:ci>
+      <m:ci>n</m:ci>
+    </m:apply>
+    <m:apply>
+      <m:minus/>
+      <m:cn>0.5</m:cn>
+      <m:apply>
+        <m:times/>
+        <m:cn>0.5</m:cn>
+        <m:apply>
+          <m:cos/>
+          <m:apply>
+            <m:divide/>
+            <m:apply>
+              <m:times/>
+                <m:cn>2</m:cn>
+                <m:pi/>
+                <m:ci>n</m:ci>
+            </m:apply>
+            <m:apply>
+              <m:minus/>
+              <m:ci>N</m:ci>
+              <m:cn>1</m:cn>
+            </m:apply>
+          </m:apply>
+        </m:apply>
+      </m:apply>
+    </m:apply>
+  </m:apply>
+</m:math>
+for <m:math><m:cn>n</m:cn></m:math> between <m:math><m:cn>0</m:cn></m:math> and 
+<m:math>
+  <m:apply>
+    <m:minus/>
+    <m:ci>N</m:ci>
+    <m:cn>1</m:cn>
+  </m:apply>
+</m:math>.
+
+It has a main-lobe width (about
+<m:math>
+  <m:apply>
+    <m:divide/>
+      <m:apply>
+        <m:times/>
+          <m:cn>3</m:cn>
+          <m:pi/>
+       </m:apply>
+       <m:ci>N</m:ci>
+  </m:apply>
+</m:math>
+at the -3 dB level and
+<m:math>
+  <m:apply>
+    <m:divide/>
+      <m:apply>
+        <m:times/>
+          <m:cn>8</m:cn>
+          <m:pi/>
+       </m:apply>
+       <m:ci>N</m:ci>
+  </m:apply>
+</m:math>
+between the two zeros surrounding the main lobe) considerably larger than the
+rectangular window,
+but the largest side-lobe peak is much lower, at about -31.5 dB.
+The side-lobes also taper off much faster.
+For a given length, this window is worse than the boxcar window at separating
+closely-spaced spectral components of similar magnitude, but better for identifying
+smaller-magnitude components at a greater distance from the larger components.
+</para><figure id="fig.hann" orient="vertical">
+      <subfigure id="idp3958464">
+	<title>Hann window</title>
+	<media id="idp4108784" alt=""><image src="../../media/hann64.png" mime-type="image/png"/></media>
+      </subfigure>
+      <subfigure id="idp5858992">
+	<title>Magnitude of Hann window spectrum</title>
+	<media id="idp5262944" alt=""><image src="../../media/hannfreq.png" mime-type="image/png"/></media>
+      </subfigure>
+      <caption>Length-64 Hann window and its magnitude DFT spectrum
+      </caption></figure><para id="element-645">The <term>Hamming window</term>,
+illustrated in <link target-id="fig.hamming"/>,
+has a form similar to the Hann window but with slightly different constants:
+<m:math>
+  <m:apply>
+  <m:eq/>
+    <m:apply>
+      <m:ci type="fn" class="discrete">w</m:ci>
+      <m:ci>n</m:ci>
+    </m:apply>
+    <m:apply>
+      <m:minus/>
+      <m:cn>0.538</m:cn>
+      <m:apply>
+        <m:times/>
+        <m:cn>0.462</m:cn>
+        <m:apply>
+          <m:cos/>
+          <m:apply>
+            <m:divide/>
+            <m:apply>
+              <m:times/>
+                <m:cn>2</m:cn>
+                <m:pi/>
+                <m:ci>n</m:ci>
+            </m:apply>
+            <m:apply>
+              <m:minus/>
+              <m:ci>N</m:ci>
+              <m:cn>1</m:cn>
+            </m:apply>
+          </m:apply>
+        </m:apply>
+      </m:apply>
+    </m:apply>
+  </m:apply>
+</m:math>
+for <m:math><m:cn>n</m:cn></m:math> between <m:math><m:cn>0</m:cn></m:math> and 
+<m:math>
+  <m:apply>
+    <m:minus/>
+    <m:ci>N</m:ci>
+    <m:cn>1</m:cn>
+  </m:apply>
+</m:math>.
+
+Since it is composed of the same Fourier series harmonics as the Hann window,
+it has a similar main-lobe width (a bit less than
+<m:math>
+  <m:apply>
+    <m:divide/>
+      <m:apply>
+        <m:times/>
+          <m:cn>3</m:cn>
+          <m:pi/>
+       </m:apply>
+       <m:ci>N</m:ci>
+  </m:apply>
+</m:math>
+at the -3 dB level and
+<m:math>
+  <m:apply>
+    <m:divide/>
+      <m:apply>
+        <m:times/>
+          <m:cn>8</m:cn>
+          <m:pi/>
+       </m:apply>
+       <m:ci>N</m:ci>
+  </m:apply>
+</m:math>
+between the two zeros surrounding the main lobe),
+but the largest side-lobe peak is much lower, at about -42.5 dB.
+However, the side-lobes also taper off much more slowly than with the Hann window.
+For a given length, the Hamming window is better than the Hann (and of course
+the boxcar) windows at separating a small component relatively near to a large
+component, but worse than the Hann for identifying very small components at
+considerable frequency separation.
+Due to their shape and form, the Hann and Hamming windows are also known as
+<term>raised-cosine windows</term>.</para><figure id="fig.hamming" orient="vertical">
+      <subfigure id="idp6339072">
+	<title>Hamming window</title>
+	<media id="idp6580768" alt=""><image src="../../media/hamming64.png" mime-type="image/png"/></media>
+      </subfigure>
+      <subfigure id="idm6462112">
+	<title>Magnitude of Hamming window spectrum</title>
+	<media id="idm536784" alt=""><image src="../../media/hammingfreq.png" mime-type="image/png"/></media>
+      </subfigure>
+      <caption>Length-64 Hamming window and its magnitude DFT spectrum
+      </caption></figure><note id="idp2707600">Standard even-length windows are symmetric around a point halfway between the window
+samples
+<m:math>
+  <m:apply>
+    <m:minus/>
+    <m:apply>
+       <m:divide/>
+       <m:ci>N</m:ci>
+       <m:cn>2</m:cn>
+    </m:apply>
+    <m:cn>1</m:cn>
+  </m:apply>
+</m:math>
+and
+<m:math>
+  <m:apply>
+    <m:divide/>
+    <m:ci>N</m:ci>
+    <m:cn>2</m:cn>
+  </m:apply>
+</m:math>.
+For some applications such as <link document="m10570">time-frequency analysis</link>,
+it may be important to align the window perfectly to a sample.
+In such cases, a <term>DFT-symmetric</term> window that is symmetric around
+the
+<m:math>
+  <m:apply>
+    <m:divide/>
+    <m:ci>N</m:ci>
+    <m:cn>2</m:cn>
+  </m:apply>
+</m:math>-th
+sample can be used.
+For example, the DFT-symmetric Hamming window is
+<m:math>
+  <m:apply>
+  <m:eq/>
+    <m:apply>
+      <m:ci type="fn" class="discrete">w</m:ci>
+      <m:ci>n</m:ci>
+    </m:apply>
+    <m:apply>
+      <m:minus/>
+      <m:cn>0.538</m:cn>
+      <m:apply>
+        <m:times/>
+        <m:cn>0.462</m:cn>
+        <m:apply>
+          <m:cos/>
+          <m:apply>
+            <m:divide/>
+            <m:apply>
+              <m:times/>
+                <m:cn>2</m:cn>
+                <m:pi/>
+                <m:ci>n</m:ci>
+            </m:apply>
+            <m:ci>N</m:ci>
+          </m:apply>
+        </m:apply>
+      </m:apply>
+    </m:apply>
+  </m:apply>
+</m:math>.
+A DFT-symmetric window has a purely real-valued DFT and DTFT.
+DFT-symmetric versions of windows,
+such as the Hamming and Hann windows, composed of few discrete Fourier series terms
+of period <m:math><m:ci>N</m:ci></m:math>,
+have few non-zero DFT terms (only when <emphasis>not</emphasis> zero-padded)
+and can be used efficiently in <link document="m12029">running FFTs</link>.</note><para id="element-231">The main-lobe width of a window is an inverse function of the window-length
+<m:math>
+  <m:ci>N</m:ci>
+</m:math>;
+for any type of window, a longer window will always provide better resolution.
+</para><para id="element-253">Many other windows exist that make various other tradeoffs between main-lobe width,
+height of largest side-lobe, and side-lobe rolloff rate.
+The <link url="http://en.wikipedia.org/wiki/Kaiser_window">Kaiser window</link> family, based on a modified Bessel function, has an adjustable parameter that
+allows the user to tune the tradeoff over a continuous range.
+The Kaiser window has near-optimal time-frequency resolution and is widely used.
+A list of many different windows can be found <link url="http://en.wikipedia.org/wiki/Window_function">here</link>.
+</para>
+
+<example id="element-511">
+  <para id="element-975"><link target-id="fig.examplesig"/> shows 64 samples of a real-valued signal composed of several sinusoids
+    of various frequencies and amplitudes.
+      <figure id="fig.examplesig">
+	<media id="idm6793088" alt=""><image src="../../media/examplesig.png" mime-type="image/png"/></media>
+      <caption>64 samples of an unknown signal
+      </caption>
+      </figure>
+    <link target-id="fig.boxcarspec"/> shows the magnitude (in dB) of the
+    positive frequencies of a length-1024 zero-padded DFT of this signal
+    (that is, using a simple truncation, or rectangular, window).
+      <figure id="fig.boxcarspec">
+	<media id="idp53744" alt=""><image src="../../media/boxcarspec.png" mime-type="image/png"/></media>
+      <caption>Magnitude (in dB) of the zero-padded DFT spectrum of the signal in <link target-id="fig.examplesig"/>
+        using a simple length-64 rectangular window
+      </caption>
+      </figure>
+     From this spectrum, it is clear that the signal has two large, nearby
+     frequency components with frequencies near 1 radian of essentially the same magnitude.
+     </para>
+     <para id="hammingex"><link target-id="fig.hammingspec"/> shows the spectral estimate produced using
+     a length-64 Hamming window applied to the same signal shown in <link target-id="fig.examplesig"/>.
+      <figure id="fig.hammingspec">
+	<media id="idp6467472" alt=""><image src="../../media/hammingspec.png" mime-type="image/png"/></media>
+      <caption>Magnitude (in dB) of the zero-padded DFT spectrum of the signal in <link target-id="fig.examplesig"/>
+        using a length-64 Hamming window
+      </caption>
+      </figure>
+    The two large spectral peaks can no longer be resolved; they blur into a
+    single broad peak due to the reduced spectral resolution of the broader main
+    lobe of the Hamming window.
+    However, the lower side-lobes reveal a third component at a frequency of
+    about 0.7 radians at about 35 dB lower magnitude than the larger components.
+    This component was entirely buried under the side-lobes when the
+    rectangular window was used, but now stands out well above the much lower
+    nearby side-lobes of the Hamming window.
+    </para>
+    <para id="hannex">
+     <link target-id="fig.hannspec"/> shows the spectral estimate produced using
+     a length-64 Hann window applied to the same signal shown in <link target-id="fig.examplesig"/>.
+      <figure id="fig.hannspec">
+	<media id="idm7147408" alt=""><image src="../../media/hannspec.png" mime-type="image/png"/></media>
+      <caption>Magnitude (in dB) of the zero-padded DFT spectrum of the signal in <link target-id="fig.examplesig"/>
+        using a length-64 Hann window
+      </caption>
+      </figure>
+    The two large components again merge into a single peak, and the smaller
+    component observed with the Hamming window is largely lost under the higher
+    nearby side-lobes of the Hann window.
+    However, due to the much faster side-lobe rolloff of the Hann window's spectrum,
+    a fourth component at a frequency of about 2.5 radians with a magnitude
+    about 65 dB below that of the main peaks is now clearly visible.</para><para id="element-86">This example illustrates that no single window is best for all spectrum analyses.
+The best window depends on the nature of the signal, and different windows may
+be better for different components of the same signal.
+A skilled spectrum analysist may apply several different windows to a signal to
+gain a fuller understanding of the data.</para>
+</example>
+    </section>
+    
+	    
+  </content>
+  
+</document>

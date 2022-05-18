@@ -1,0 +1,1152 @@
+<document xmlns="http://cnx.rice.edu/cnxml" xmlns:m="http://www.w3.org/1998/Math/MathML" xmlns:md="http://cnx.rice.edu/mdml">
+  <title>Decimation-in-time (DIT) Radix-2 FFT</title>
+  <metadata><md:content-id>undefined</md:content-id><md:title/><md:uuid>ce67266a-1851-47e4-8bfc-82eb447212b4</md:uuid>
+</metadata>
+
+  <content>
+
+    <para id="element-709">The radix-2 decimation-in-time and <link document="m12018">decimation-in-frequency</link> fast Fourier transforms
+(FFTs) are the simplest <link document="m12026">FFT algorithms</link>.
+Like all FFTs, they gain their speed by reusing the results of smaller,
+intermediate computations to compute multiple DFT frequency outputs.
+    </para>
+  <section id="dit">
+  <title>Decimation in time</title>
+    <para id="whatever">
+The radix-2 decimation-in-time algorithm rearranges the
+<link document="m12019">discrete Fourier transform (DFT) equation</link>
+into two parts: a sum over the even-numbered discrete-time indices
+<m:math>
+  <m:apply>
+    <m:eq/>
+      <m:ci>n</m:ci>
+      <m:list>
+        <m:cn>0</m:cn>
+        <m:cn>2</m:cn>
+        <m:cn>4</m:cn>
+        <m:ci>…</m:ci>
+        <m:apply>
+          <m:minus/>
+            <m:ci>N</m:ci>
+            <m:cn>2</m:cn>
+        </m:apply>
+      </m:list>
+  </m:apply>
+</m:math>
+and a sum over the odd-numbered indices
+<m:math>
+  <m:apply>
+    <m:eq/>
+      <m:ci>n</m:ci>
+      <m:list>
+        <m:cn>1</m:cn>
+        <m:cn>3</m:cn>
+        <m:cn>5</m:cn>
+        <m:ci>…</m:ci>
+        <m:apply>
+          <m:minus/>
+            <m:ci>N</m:ci>
+            <m:cn>1</m:cn>
+        </m:apply>
+      </m:list>
+  </m:apply>
+</m:math>
+as in <link target-id="eq1"/>:</para><equation id="eq1">
+      <m:math>
+	<m:apply>
+	  <m:eq/>
+	  <m:apply>
+	    <m:ci type="fn">X</m:ci>
+	    <m:ci>k</m:ci>
+	  </m:apply>
+	  <m:apply>
+	    <m:sum/>
+	    <m:bvar>
+	      <m:ci>n</m:ci>
+	    </m:bvar>
+	    <m:uplimit>
+	      <m:apply>
+		<m:minus/>
+		<m:ci>N</m:ci>
+		<m:cn>1</m:cn>
+	      </m:apply>
+	    </m:uplimit>
+	    <m:lowlimit>
+	      <m:cn>0</m:cn>
+	      </m:lowlimit>
+	    <m:apply>
+	      <m:times/>
+	      <m:apply>
+		<m:ci type="fn">x</m:ci>
+		<m:ci>n</m:ci>
+	      </m:apply>
+	      <m:apply>
+		<m:exp/>
+		<m:apply>
+		  <m:minus/>
+		  <m:apply>
+		    <m:times/>
+		    <m:imaginaryi/>
+		    <m:apply>
+		      <m:divide/>
+		      <m:apply>
+			<m:times/>
+			<m:cn>2</m:cn>
+			<m:pi/>
+			<m:ci>n</m:ci>
+			<m:ci>k</m:ci>
+		      </m:apply>
+		      <m:ci>N</m:ci>
+		    </m:apply>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+	    </m:apply>
+	  </m:apply>
+	  <m:apply>
+	    <m:plus/>
+	    <m:apply>
+	      <m:sum/>
+	      <m:bvar>
+		<m:ci>n</m:ci>
+	      </m:bvar>
+	      <m:uplimit>
+		<m:apply>
+		  <m:minus/>
+		  <m:apply>
+		    <m:divide/>
+		    <m:ci>N</m:ci>
+		    <m:cn>2</m:cn>
+		  </m:apply>
+		  <m:cn>1</m:cn>
+		</m:apply>
+	      </m:uplimit>
+	      <m:lowlimit>
+		<m:cn>0</m:cn>
+	      </m:lowlimit>
+	      <m:apply>
+		<m:times/>
+		<m:apply>
+		  <m:ci type="fn">x</m:ci>
+		  <m:apply>
+		    <m:times/>
+		    <m:cn>2</m:cn>
+		    <m:ci>n</m:ci>
+		  </m:apply>
+		</m:apply>
+		<m:apply>
+		  <m:exp/>
+		  <m:apply>
+		    <m:minus/>
+		    <m:apply>
+		      <m:times/>
+		      <m:imaginaryi/>
+		      <m:apply>
+			<m:divide/>
+			<m:apply>
+			  <m:times/>
+			  <m:cn>2</m:cn>
+			  <m:pi/>
+			  <m:apply>
+			    <m:times/>
+			    <m:cn>2</m:cn>
+			    <m:ci>n</m:ci>
+			  </m:apply>
+			  <m:ci>k</m:ci>
+			</m:apply>
+			<m:ci>N</m:ci>
+		      </m:apply>
+		    </m:apply>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+	    </m:apply>
+	    <m:apply>
+	      <m:sum/>
+	      <m:bvar>
+		<m:ci>n</m:ci>
+	      </m:bvar>
+	      <m:uplimit>
+		<m:apply>
+		  <m:minus/>
+		  <m:apply>
+		    <m:divide/>
+		    <m:ci>N</m:ci>
+		    <m:cn>2</m:cn>
+		  </m:apply>
+		  <m:cn>1</m:cn>
+		</m:apply>
+	      </m:uplimit>
+	      <m:lowlimit>
+		<m:cn>0</m:cn>
+	      </m:lowlimit>
+	      <m:apply>
+		<m:times/>
+		<m:apply>
+		  <m:ci type="fn">x</m:ci>
+		  <m:apply>
+		    <m:plus/>
+		    <m:apply>
+		      <m:times/>
+		      <m:cn>2</m:cn>
+		      <m:ci>n</m:ci>
+		    </m:apply>
+		    <m:cn>1</m:cn>
+		  </m:apply>
+		</m:apply>
+		<m:apply>
+		  <m:exp/>
+		  <m:apply>
+		    <m:minus/>
+		    <m:apply>
+		      <m:times/>
+		      <m:imaginaryi/>
+		      <m:apply>
+			<m:divide/>
+			<m:apply>
+			  <m:times/>
+			  <m:cn>2</m:cn>
+			  <m:pi/>
+			  <m:apply>
+			    <m:plus/>
+			    <m:apply>
+			      <m:times/>
+			      <m:cn>2</m:cn>
+			      <m:ci>n</m:ci>
+			    </m:apply>
+			    <m:cn>1</m:cn>
+			  </m:apply>
+			  <m:ci>k</m:ci>
+			</m:apply>
+			<m:ci>N</m:ci>
+		      </m:apply>
+		    </m:apply>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+	    </m:apply>
+	  </m:apply>
+	  <m:apply>
+	    <m:plus/>
+	    <m:apply>
+	      <m:sum/>
+	      <m:bvar>
+		<m:ci>n</m:ci>
+	      </m:bvar>
+	      <m:uplimit>
+		<m:apply>
+		  <m:minus/>
+		  <m:apply>
+		    <m:divide/>
+		    <m:ci>N</m:ci>
+		    <m:cn>2</m:cn>
+		  </m:apply>
+		  <m:cn>1</m:cn>
+		</m:apply>
+	      </m:uplimit>
+	      <m:lowlimit>
+		<m:cn>0</m:cn>
+	      </m:lowlimit>
+	      <m:apply>
+		<m:times/>
+		<m:apply>
+		  <m:ci type="fn">x</m:ci>
+		  <m:apply>
+		    <m:times/>
+		    <m:cn>2</m:cn>
+		    <m:ci>n</m:ci>
+		  </m:apply>
+		</m:apply>
+		<m:apply>
+		  <m:exp/>
+		  <m:apply>
+		    <m:minus/>
+		    <m:apply>
+		      <m:times/>
+		      <m:imaginaryi/>
+		      <m:apply>
+			<m:divide/>
+			<m:apply>
+			  <m:times/>
+			  <m:cn>2</m:cn>
+			  <m:pi/>
+			  <m:ci>n</m:ci>
+			  <m:ci>k</m:ci>
+			</m:apply>
+			<m:apply>
+			  <m:divide/>
+			  <m:ci>N</m:ci>
+			  <m:cn>2</m:cn>
+			</m:apply>
+		      </m:apply>
+		    </m:apply>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+	    </m:apply>
+	    <m:apply>
+	      <m:times/>
+	      <m:apply>
+		<m:exp/>
+		<m:apply>
+		  <m:minus/>
+		  <m:apply>
+		    <m:times/>
+		    <m:imaginaryi/>
+		    <m:apply>
+		      <m:divide/>
+		      <m:apply>
+			<m:times/>
+			<m:cn>2</m:cn>
+			<m:pi/>
+			<m:ci>k</m:ci>
+		      </m:apply>
+		      <m:ci>N</m:ci>
+		    </m:apply>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+	      <m:apply>
+		<m:sum/>
+		<m:bvar>
+		  <m:ci>n</m:ci>
+		</m:bvar>
+		<m:uplimit>
+		  <m:apply>
+		    <m:minus/>
+		    <m:apply>
+		      <m:divide/>
+		      <m:ci>N</m:ci>
+		      <m:cn>2</m:cn>
+		    </m:apply>
+		    <m:cn>1</m:cn>
+		  </m:apply>
+		</m:uplimit>
+		<m:lowlimit>
+		  <m:cn>0</m:cn>
+		</m:lowlimit>
+		<m:apply>
+		  <m:times/>
+		  <m:apply>
+		    <m:ci type="fn">x</m:ci>
+		    <m:apply>
+		      <m:plus/>
+		      <m:apply>
+			<m:times/>
+			<m:cn>2</m:cn>
+			<m:ci>n</m:ci>
+		      </m:apply>
+		      <m:cn>1</m:cn>
+		    </m:apply>
+		  </m:apply>
+		  <m:apply>
+		    <m:exp/>
+		    <m:apply>
+		      <m:minus/>
+		      <m:apply>
+			<m:times/>
+			<m:imaginaryi/>
+			<m:apply>
+			  <m:divide/>
+			  <m:apply>
+			    <m:times/>
+			    <m:cn>2</m:cn>
+			    <m:pi/>
+			    <m:ci>n</m:ci>
+			    <m:ci>k</m:ci>
+			  </m:apply>
+			  <m:apply>
+			    <m:divide/>
+			    <m:ci>N</m:ci>
+			    <m:cn>2</m:cn>
+			  </m:apply>
+			</m:apply>
+		      </m:apply>
+		    </m:apply>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+	    </m:apply>
+	  </m:apply>
+	  <m:apply>
+	    <m:plus/>
+	    <m:apply>
+	      <m:ci type="fn" class="discrete">
+		<m:msub>
+		  <m:mi>DFT</m:mi>
+		  <m:mfrac>
+		    <m:mi>N</m:mi>
+		    <m:mn>2</m:mn>
+		  </m:mfrac>
+		</m:msub>
+	      </m:ci>
+	      <m:list>
+		<m:apply>
+		  <m:ci type="fn">x</m:ci>
+		  <m:cn>0</m:cn>
+		</m:apply>
+		<m:apply>
+		  <m:ci type="fn">x</m:ci>
+		  <m:cn>2</m:cn>
+		</m:apply>
+		<m:ci>…</m:ci>
+		<m:apply>
+		  <m:ci type="fn">x</m:ci>
+		  <m:apply>
+		    <m:minus/>
+		    <m:ci>N</m:ci>
+		    <m:cn>2</m:cn>
+		  </m:apply>
+		</m:apply>
+	      </m:list>
+	    </m:apply>
+	    <m:apply>
+	      <m:times/>
+	      <m:ci>
+		<m:msubsup>
+		  <m:mi>W</m:mi>
+		  <m:mi>N</m:mi>
+		  <m:mi>k</m:mi>
+		</m:msubsup>
+	      </m:ci>
+	      <m:apply>
+		<m:ci type="fn" class="discrete">
+		  <m:msub>
+		    <m:mi>DFT</m:mi>
+		    <m:mfrac>
+		      <m:mi>N</m:mi>
+		      <m:mn>2</m:mn>
+		    </m:mfrac>
+		  </m:msub>
+		</m:ci>
+		<m:list>
+		  <m:apply>
+		    <m:ci type="fn">x</m:ci>
+		    <m:cn>1</m:cn>
+		  </m:apply>
+		  <m:apply>
+		    <m:ci type="fn">x</m:ci>
+		    <m:cn>3</m:cn>
+		  </m:apply>
+		  <m:ci>…</m:ci>
+		  <m:apply>
+		    <m:ci type="fn">x</m:ci>
+		    <m:apply>
+		      <m:minus/>
+		      <m:ci>N</m:ci>
+		      <m:cn>1</m:cn>
+		    </m:apply>
+		  </m:apply>
+		</m:list>
+	      </m:apply>
+	    </m:apply>
+	  </m:apply>
+	</m:apply>
+      </m:math>
+    </equation>
+    <para id="element-439">The mathematical simplifications in
+<link target-id="eq1"/>
+reveal that all DFT frequency outputs
+<m:math>
+  <m:apply>
+    <m:ci type="fn">X</m:ci>
+    <m:ci>k</m:ci>
+  </m:apply>
+</m:math>
+can be computed as the sum of the outputs of two
+length-<m:math>
+         <m:apply>
+           <m:divide/>
+             <m:ci>N</m:ci>
+             <m:cn>2</m:cn>
+         </m:apply>
+       </m:math>
+DFTs, of the even-indexed and odd-indexed discrete-time samples, respectively,
+where the odd-indexed short DFT is multiplied by a so-called <term>twiddle factor</term>
+term
+<m:math>
+  <m:apply>
+    <m:eq/>
+      <m:ci>
+	<m:msubsup>
+	  <m:mi>W</m:mi>
+	  <m:mi>N</m:mi>
+	  <m:mi>k</m:mi>
+	</m:msubsup>
+      </m:ci>
+      <m:apply>
+	<m:exp/>
+	  <m:apply>
+	    <m:minus/>
+              <m:apply>
+	        <m:times/>
+		  <m:imaginaryi/>
+		    <m:apply>
+		      <m:divide/>
+		       <m:apply>
+			<m:times/>
+			<m:cn>2</m:cn>
+			<m:pi/>
+			<m:ci>k</m:ci>
+		       </m:apply>
+		     <m:ci>N</m:ci>
+		    </m:apply>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+        </m:apply>
+	</m:math>.
+This is called a <term>decimation in time</term> because the
+time samples are rearranged in alternating groups,
+and a <term>radix-2</term> algorithm because there
+are two groups.
+<link target-id="fig1"/> graphically illustrates this form of the DFT computation,
+where for convenience the frequency outputs of the length-<m:math>
+         <m:apply>
+           <m:divide/>
+             <m:ci>N</m:ci>
+             <m:cn>2</m:cn>
+         </m:apply>
+       </m:math>
+DFT of the even-indexed time samples are denoted
+<m:math>
+  <m:apply>
+    <m:ci type="fn">G</m:ci>
+    <m:ci>k</m:ci>
+  </m:apply>
+</m:math>
+and those of the odd-indexed samples as
+<m:math>
+  <m:apply>
+    <m:ci type="fn">H</m:ci>
+    <m:ci>k</m:ci>
+  </m:apply>
+</m:math>.
+Because of the periodicity with
+<m:math>
+  <m:apply>
+    <m:divide/>
+      <m:ci>N</m:ci>
+      <m:cn>2</m:cn>
+  </m:apply>
+</m:math>
+frequency samples of these
+length-<m:math>
+  <m:apply>
+    <m:divide/>
+      <m:ci>N</m:ci>
+      <m:cn>2</m:cn>
+  </m:apply>
+</m:math>
+DFTs,
+<m:math>
+  <m:apply>
+    <m:ci type="fn">G</m:ci>
+    <m:ci>k</m:ci>
+  </m:apply>
+</m:math>
+and
+<m:math>
+  <m:apply>
+    <m:ci type="fn">H</m:ci>
+    <m:ci>k</m:ci>
+  </m:apply>
+</m:math>
+can be used to compute <emphasis>two</emphasis> of the
+length-<m:math><m:ci>N</m:ci></m:math> DFT frequencies,
+namely
+<m:math>
+  <m:apply>
+    <m:ci type="fn">X</m:ci>
+    <m:ci>k</m:ci>
+  </m:apply>
+</m:math>
+and
+<m:math>
+  <m:apply>
+    <m:ci type="fn">X</m:ci>
+    <m:apply>
+      <m:plus/>
+        <m:ci>k</m:ci>
+        <m:apply>
+          <m:divide/>
+            <m:ci>N</m:ci>
+            <m:cn>2</m:cn>
+        </m:apply>
+    </m:apply>
+  </m:apply>
+</m:math>,
+but with a different twiddle factor.
+This reuse of these short-length DFT outputs
+gives the FFT its computational savings.</para><figure id="fig1"><media id="idm3337936" alt=""><image src="../../media/image1-dfab.png" mime-type="image/png"/><image for="pdf" src="../../media/DITfig1.eps" mime-type="application/postscript"/></media>
+        <caption>Decimation in time of a length-<m:math><m:ci>N</m:ci></m:math> DFT
+          into two length-<m:math><m:apply><m:divide/><m:ci>N</m:ci><m:cn>2</m:cn></m:apply></m:math>
+          DFTs followed by a combining stage.
+        </caption>
+    </figure>
+    <para id="element-671">Whereas direct computation of all <m:math><m:ci>N</m:ci></m:math> DFT frequencies
+according to the <link document="m12019">DFT equation</link> would require
+<m:math>
+  <m:apply>
+    <m:power/>
+      <m:ci>N</m:ci>
+      <m:cn>2</m:cn>
+  </m:apply>
+</m:math>
+complex multiplies and
+<m:math>
+  <m:apply>
+    <m:minus/>
+      <m:apply>
+        <m:power/>
+          <m:ci>N</m:ci>
+          <m:cn>2</m:cn>
+      </m:apply>
+      <m:ci>N</m:ci>
+  </m:apply>
+</m:math>
+complex additions (for complex-valued data),
+by reusing the results of the two short-length DFTs
+as illustrated in <link target-id="fig1"/>,
+the computational cost is now</para><list id="list1"><title>New Operation Counts</title>
+      <item>
+	<m:math>
+	  <m:apply>
+	    <m:eq/>
+	    <m:apply>
+	      <m:plus/>
+	      <m:apply>
+		<m:times/>
+		<m:cn>2</m:cn>
+		<m:apply>
+		  <m:power/>
+		  <m:apply>
+		    <m:divide/>
+		    <m:ci>N</m:ci>
+		    <m:cn>2</m:cn>
+		  </m:apply>
+		  <m:cn>2</m:cn>
+		</m:apply>
+	      </m:apply>
+	      <m:ci>N</m:ci>
+	    </m:apply>
+	    <m:apply>
+	      <m:plus/>
+	      <m:apply>
+		<m:divide/>
+		<m:apply>
+		  <m:power/>
+		  <m:ci>N</m:ci>
+		  <m:cn>2</m:cn>
+		</m:apply>
+		<m:cn>2</m:cn>
+	      </m:apply>
+	      <m:ci>N</m:ci>
+	    </m:apply>
+	  </m:apply>
+	</m:math>
+	complex multiplies
+      </item>
+      <item>
+	<m:math>
+	  <m:apply>
+	    <m:eq/>
+	    <m:apply>
+	      <m:plus/>
+	      <m:apply>
+		<m:times/>
+		<m:cn>2</m:cn>
+		<m:apply>
+		  <m:divide/>
+		  <m:ci>N</m:ci>
+		  <m:cn>2</m:cn>
+		</m:apply>
+		<m:apply>
+		  <m:minus/>
+		  <m:apply>
+		    <m:divide/>
+		    <m:ci>N</m:ci>
+		    <m:cn>2</m:cn>
+		  </m:apply>
+		  <m:cn>1</m:cn>
+		</m:apply>
+	      </m:apply>
+	      <m:ci>N</m:ci>
+	    </m:apply>
+	    <m:apply>
+	      <m:divide/>
+	      <m:apply>
+		<m:power/>
+		<m:ci>N</m:ci>
+		<m:cn>2</m:cn>
+	      </m:apply>
+	      <m:cn>2</m:cn>
+	    </m:apply>
+	  </m:apply>
+	</m:math>
+        complex additions
+      </item>
+    </list>
+    <para id="para1">This simple reorganization and reuse has reduced the total computation
+      by almost a factor of two over direct <link document="m12019">DFT</link> computation!
+    </para>
+    </section>
+    <section id="idp4280928">
+      <title>Additional Simplification</title> 
+      <para id="para2">A basic <term>butterfly</term> operation is shown in <link target-id="fig2"/>,
+	which requires only
+	
+	<m:math>
+	  <m:apply>
+	    <m:divide/>
+	    <m:ci>N</m:ci>
+	    <m:cn>2</m:cn>
+	  </m:apply>
+	</m:math> <term>twiddle-factor</term> multiplies per <term>stage</term>.
+      It is worthwhile to note that, after merging the twiddle factors to a single term on the lower branch,
+      the remaining butterfly is actually a length-2 DFT!
+      The theory of <link document="m12025">multi-dimensional index maps</link>
+      shows that this must be the case, and that FFTs of any factorable
+      length may consist of successive stages of shorter-length FFTs
+      with twiddle-factor multiplications in between.</para>
+      <figure id="fig2" orient="horizontal"><subfigure id="idm1354064">
+            <media id="idm1353712" alt=""><image src="../../media/image2-2ff9.png" mime-type="image/png"/><image for="pdf" src="../../media/DITfig2.eps" mime-type="application/postscript"/></media>
+	  </subfigure>
+	  <subfigure id="idp1424784">
+            <media id="idp1425088" alt=""><image src="../../media/image3-73c9.png" mime-type="image/png"/><image for="pdf" src="../../media/DITfig3.eps" mime-type="application/postscript"/></media>
+	  </subfigure>
+	  <caption>
+	    Radix-2 DIT butterfly simplification: both operations produce the same outputs
+	  </caption>
+	</figure>
+    </section>
+    <section id="r2dit">
+    <title>Radix-2 decimation-in-time FFT</title>
+      <para id="para3">The same radix-2 decimation in time can be applied recursively to the two length
+	<m:math>
+	  <m:apply>
+	    <m:divide/>
+	    <m:ci>N</m:ci>
+	    <m:cn>2</m:cn>
+	  </m:apply>
+	</m:math> <link document="m12019">DFT</link>s to save computation.  When successively applied until
+        the shorter and shorter DFTs reach length-2, the result is the <link target-id="fig3">radix-2 DIT FFT algorithm</link>.
+	<figure id="fig3"><media id="idp1957360" alt=""><image src="../../media/image4-8cf5.png" mime-type="image/png"/><image for="pdf" src="../../media/DITfig4.eps" mime-type="application/postscript"/></media>
+	  <caption>Radix-2 Decimation-in-Time FFT algorithm for a length-8 signal</caption></figure>
+      </para>
+      <para id="element-562">The full radix-2 decimation-in-time decomposition illustrated in <link target-id="fig3"/> using the <link target-id="fig2">simplified butterflies</link>
+involves
+	  <m:math>
+	    <m:apply>
+	      <m:eq/>
+	      <m:ci>M</m:ci>
+	      <m:apply>
+		<m:log/>
+		<m:logbase>
+		  <m:cn>2</m:cn>
+		</m:logbase>
+		<m:ci>N</m:ci>
+	      </m:apply>
+	    </m:apply>
+	  </m:math>
+          stages, each with
+	  <m:math>
+	    <m:apply>
+	      <m:divide/>
+	      <m:ci>N</m:ci>
+	      <m:cn>2</m:cn>
+	    </m:apply>
+	  </m:math>
+          butterflies per stage.
+          Each butterfly requires
+          <m:math><m:cn>1</m:cn></m:math>
+	  complex multiply and
+          <m:math><m:cn>2</m:cn></m:math>
+	  adds per butterfly.
+The total cost of the algorithm is thus</para><list id="list2" list-type="bulleted"><title>Computational cost of radix-2 DIT FFT</title>
+
+	<item>
+	  <m:math>
+	    <m:apply>
+	      <m:times/>
+	      <m:apply>
+		<m:divide/>
+		<m:ci>N</m:ci>
+		<m:cn>2</m:cn>
+	      </m:apply>
+	      <m:apply>
+		<m:log/>
+		<m:logbase>
+		  <m:cn>2</m:cn>
+		</m:logbase>
+		<m:ci>N</m:ci>
+	      </m:apply>
+	    </m:apply>
+	  </m:math> complex multiplies
+	</item>
+	<item>
+	  <m:math>
+	    <m:apply>
+	      <m:times/>
+	      <m:ci>N</m:ci>
+	      <m:apply>
+		<m:log/>
+		<m:logbase>
+		  <m:cn>2</m:cn>
+		</m:logbase>
+		<m:cn>N</m:cn>
+	      </m:apply>
+	    </m:apply>
+	  </m:math> complex adds
+	</item>
+      </list>
+      <para id="element-597">This is a remarkable savings over direct computation of the DFT.
+For example, a length-1024 DFT would require <m:math><m:cn>1048576</m:cn></m:math>
+complex multiplications and <m:math><m:cn>1047552</m:cn></m:math> complex additions
+with direct computation, but only <m:math><m:cn>5120</m:cn></m:math> complex multiplications and <m:math><m:cn>10240</m:cn></m:math> complex
+additions using the radix-2 FFT, a savings by a factor of 100 or more.
+The relative savings increase with longer FFT lengths, and are less for shorter lengths.</para><para id="para5">Modest additional reductions in computation can be achieved by noting that certain twiddle factors,
+        namely
+	Using special butterflies for 
+	<m:math>
+	  <m:ci>
+	    <m:msubsup>
+	      <m:mi>W</m:mi>
+	      <m:mi>N</m:mi>
+	      <m:mn>0</m:mn>
+	    </m:msubsup>
+	  </m:ci>
+	</m:math>,
+	<m:math>
+	  <m:ci>
+	    <m:msubsup>
+	      <m:mi>W</m:mi>
+	      <m:mi>N</m:mi>
+	      <m:mfrac>
+		<m:mi>N</m:mi>
+		<m:mn>2</m:mn>
+	      </m:mfrac>
+	    </m:msubsup>
+	  </m:ci>
+	</m:math>,
+	<m:math>
+	  <m:ci>
+	    <m:msubsup>
+	      <m:mi>W</m:mi>
+	      <m:mi>N</m:mi>
+	      <m:mfrac>
+		<m:mi>N</m:mi>
+		<m:mn>4</m:mn>
+	      </m:mfrac>
+	    </m:msubsup>
+	  </m:ci>
+	</m:math>,
+	<m:math>
+	  <m:ci>
+	    <m:msubsup>
+	      <m:mi>W</m:mi>
+	      <m:mi>N</m:mi>
+	      <m:mfrac>
+		<m:mi>N</m:mi>
+		<m:mn>8</m:mn>
+	      </m:mfrac>
+	    </m:msubsup>
+	  </m:ci>
+	</m:math>,
+	<m:math>
+	  <m:ci>
+	    <m:msubsup>
+	      <m:mi>W</m:mi>
+	      <m:mi>N</m:mi>
+	      <m:mfrac>
+		<m:mrow>
+		  <m:mn>3</m:mn>
+		  <m:mi>N</m:mi>
+		</m:mrow>
+		<m:mn>8</m:mn>
+	      </m:mfrac>
+	    </m:msubsup>
+	  </m:ci>
+	</m:math>,
+        require no multiplications, or fewer real multiplies than other ones.
+        By implementing special butterflies for these twiddle factors
+        as discussed in <link document="m">FFT algorithm and programming tricks</link>,
+        the computational cost of the radix-2 decimation-in-time FFT can be reduced to
+	<list id="list3" list-type="bulleted">
+	  <item>
+	    <m:math>
+	      <m:apply>
+		<m:plus/>
+		<m:apply>
+		  <m:minus/>
+		  <m:apply>
+		    <m:times/>
+		    <m:cn>2</m:cn>
+		    <m:ci>N</m:ci>
+		    <m:apply>
+		      <m:log/>
+		      <m:logbase>
+			<m:cn>2</m:cn>
+		      </m:logbase>
+		      <m:ci>N</m:ci>
+		    </m:apply>
+		  </m:apply>
+		  <m:apply>
+		    <m:times/>
+		    <m:cn>7</m:cn>
+		    <m:ci>N</m:ci>
+		  </m:apply>
+		</m:apply>
+		<m:cn>12</m:cn>
+	      </m:apply>
+	    </m:math> real multiplies
+	  </item>
+	  <item>
+	    <m:math>
+	      <m:apply>
+		<m:plus/>
+		<m:apply>
+		  <m:minus/>
+		  <m:apply>
+		    <m:times/>
+		    <m:cn>3</m:cn>
+		    <m:ci>N</m:ci>
+		    <m:apply>
+		      <m:log/>
+		      <m:logbase>
+			<m:cn>2</m:cn>
+		      </m:logbase>
+		      <m:ci>N</m:ci>
+		    </m:apply>
+		  </m:apply>
+		  <m:apply>
+		    <m:times/>
+		    <m:cn>3</m:cn>
+		    <m:ci>N</m:ci>
+		  </m:apply>
+		</m:apply>
+		<m:cn>4</m:cn>
+	      </m:apply>
+	    </m:math> real additions
+	  </item>
+	</list>
+      </para>
+      <note id="idm10021536">In a decimation-in-time radix-2 FFT as illustrated in <link target-id="fig3"/>,
+the input is in <term>bit-reversed</term> order (hence
+      "decimation-in-time").
+That is, if the time-sample index <m:math><m:ci>n</m:ci>
+      </m:math> is written as a binary number, the order is that
+      binary number reversed.
+The bit-reversal process is illustrated for a length-<m:math>
+  <m:apply>
+    <m:eq/>
+      <m:ci>N</m:ci>
+      <m:cn>8</m:cn>
+  </m:apply>
+</m:math>
+example below.
+      </note>
+      <example id="ex1">
+	<title>N=8</title>
+	<table id="table1" summary="">
+<tgroup cols="4"><thead>
+              <row>
+                <entry>In-order index</entry>
+                <entry>In-order index in binary</entry>
+                <entry>Bit-reversed binary</entry>
+                <entry>Bit-reversed index</entry>
+              </row>
+            </thead>
+	    <tbody>
+	      <row>
+		<entry>0</entry>
+		<entry>000</entry>
+		<entry>000</entry>
+		<entry>0</entry>
+	      </row>
+	      <row>
+		<entry>1</entry>
+		<entry>001</entry>
+		<entry>100</entry>
+		<entry>4</entry>
+	      </row>
+	       <row>
+		<entry>2</entry>
+		<entry>010</entry>
+		<entry>010</entry>
+		<entry>2</entry>
+	      </row>
+	       <row>
+		<entry>3</entry>
+		<entry>011</entry>
+		<entry>110</entry>
+		<entry>6</entry>
+	      </row>
+	       <row>
+		<entry>4</entry>
+		<entry>100</entry>
+		<entry>001</entry>
+		<entry>1</entry>
+	      </row>
+	       <row>
+		<entry>5</entry>
+		<entry>101</entry>
+		<entry>101</entry>
+		<entry>5</entry>
+	      </row>
+	       <row>
+		<entry>6</entry>
+		<entry>110</entry>
+		<entry>011</entry>
+		<entry>3</entry>
+	      </row>
+	       <row>
+		<entry>7</entry>
+		<entry>111</entry>
+		<entry>111</entry>
+		<entry>7</entry>
+	      </row>
+	    </tbody>
+	  
+</tgroup>
+</table>
+
+      </example>
+      <para id="element-268">It is important to note that, if the input signal data are placed in bit-reversed order
+before beginning the FFT computations, the outputs of each butterfly throughout the
+computation can be placed in the same memory locations from which the inputs were fetched,
+resulting in an <term>in-place algorithm</term> that requires no extra memory to perform
+the FFT.
+Most FFT implementations are in-place, and overwrite the input data with the intermediate
+values and finally the output.</para>
+      </section>
+      <section id="fftprog">
+	<title>Example FFT Code</title>
+	<para id="element-19">The following function, written in the C programming language, implements a radix-2 decimation-in-time FFT.
+It is designed for computing the DFT of complex-valued inputs to produce complex-valued outputs, with the real and
+imaginary parts of each number stored in separate double-precision floating-point arrays.
+It is an in-place algorithm, so the intermediate and final output values are stored in the same array as
+the input data, which is overwritten.
+After initializations, the program first bit-reverses the discrete-time samples, as is typical with a
+decimation-in-time algorithm (but see <link document="m12012">alternate FFT structures</link> for DIT
+algorithms with other input orders), then computes the FFT in stages according to the above description.
+</para>
+<para id="element-798">Ihis <link target-id="fftcode">FFT program</link> uses a standard three-loop structure
+for the main FFT computation.
+The outer loop steps through the stages (each column in <link target-id="fig3"/>);
+the middle loop steps through "<term>flights</term>" (butterflies with the same twiddle factor
+from each short-length DFT at each stage),
+and the inner loop steps through the individual butterflies.
+This ordering minimizes the number of fetches or computations of the twiddle-factor values.
+Since the bit-reverse of a bit-reversed index is the original index,
+bit-reversal can be performed fairly simply by swapping pairs of data.
+</para>
+<note id="idm1336560">While of
+<m:math>
+   <m:apply>
+     <m:ci type="fn">O</m:ci>
+     <m:apply>
+       <m:times/>
+         <m:ci>N</m:ci>
+         <m:apply>
+           <m:log/>
+           <m:ci>N</m:ci>          
+         </m:apply>
+     </m:apply>
+   </m:apply> 
+ </m:math>
+ complexity and thus much faster than a direct DFT,
+this simple program is optimized for clarity,
+not for speed.
+A speed-optimized program making use of additional
+<link document="m12021">efficient FFT algorithm and programming tricks</link>
+will compute a DFT several times faster on most machines.</note>
+<code display="block" id="fftcode">
+/**********************************************************/
+/* fft.c                                                  */
+/* (c) Douglas L. Jones                                   */
+/* University of Illinois at Urbana-Champaign             */
+/* January 19, 1992                                       */
+/*                                                        */
+/*   fft: in-place radix-2 DIT DFT of a complex input     */
+/*                                                        */
+/*   input:                                               */
+/* n: length of FFT: must be a power of two               */
+/* m: n = 2**m                                            */
+/*   input/output                                         */
+/* x: double array of length n with real part of data     */
+/* y: double array of length n with imag part of data     */
+/*                                                        */
+/*   Permission to copy and use this program is granted   */
+/*   under a Creative Commons "Attribution" license       */
+/*   http://creativecommons.org/licenses/by/1.0/          */
+/**********************************************************/
+fft(n,m,x,y)
+int n,m;
+double x[],y[];
+{
+int i,j,k,n1,n2;
+double c,s,e,a,t1,t2;        
+         
+  
+j = 0; /* bit-reverse */
+n2 = n/2;
+for (i=1; i &lt; n - 1; i++)
+{
+  n1 = n2;
+  while ( j &gt;= n1 )
+   {
+    j = j - n1;
+    n1 = n1/2;
+   }
+  j = j + n1;
+               
+  if (i &lt; j)
+   {
+    t1 = x[i];
+    x[i] = x[j];
+    x[j] = t1;
+    t1 = y[i];
+    y[i] = y[j];
+    y[j] = t1;
+   }
+}
+                                       
+                                           
+n1 = 0; /* FFT */
+n2 = 1;
+                                             
+for (i=0; i &lt; m; i++)
+{
+  n1 = n2;
+  n2 = n2 + n2;
+  e = -6.283185307179586/n2;
+  a = 0.0;
+                                             
+  for (j=0; j &lt; n1; j++)
+   {
+    c = cos(a);
+    s = sin(a);
+    a = a + e;
+                                            
+    for (k=j; k &lt; n; k=k+n2)
+     {
+      t1 = c*x[k+n1] - s*y[k+n1];
+      t2 = s*x[k+n1] + c*y[k+n1];
+      x[k+n1] = x[k] - t1;
+      y[k+n1] = y[k] - t2;
+      x[k] = x[k] + t1;
+      y[k] = y[k] + t2;
+     }
+   }
+}
+                                      
+return;
+}                          
+
+	</code>
+      
+    </section>
+  </content>
+  
+</document>

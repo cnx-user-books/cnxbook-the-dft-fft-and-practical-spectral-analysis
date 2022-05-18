@@ -1,0 +1,698 @@
+<document xmlns="http://cnx.rice.edu/cnxml" xmlns:m="http://www.w3.org/1998/Math/MathML" xmlns:md="http://cnx.rice.edu/mdml">
+  <title>DFT Definition and Properties</title>
+  <metadata><md:content-id>undefined</md:content-id><md:title/><md:uuid>01e3cf62-3ba9-4fc9-bbde-d62220112b12</md:uuid>
+</metadata>
+
+  <content>
+    <section id="idp11579472">
+      <title>DFT</title>
+      <para id="element-54">The <link document="m10992">discrete Fourier transform (DFT)</link> is the primary transform used for numerical computation in digital signal processing.
+It is very widely used for <link document="m12032">spectrum analysis</link>,
+<link document="m12022">fast convolution</link>, and many other applications.
+The DFT transforms <m:math><m:ci>N</m:ci></m:math> discrete-time samples to the same number of discrete frequency samples, and is defined as
+        <equation id="DFTequation"><m:math display="block">
+	  <m:apply>
+	    <m:eq/>
+	    <m:apply>
+	      <m:ci type="fn">X</m:ci>
+	      <m:ci>k</m:ci>
+	    </m:apply>
+	    <m:apply>
+	      <m:sum/>
+	      <m:bvar>
+		<m:ci>n</m:ci>
+	      </m:bvar>
+	      <m:uplimit>
+		<m:apply>
+		  <m:minus/>
+		  <m:ci>N</m:ci>
+		  <m:cn>1</m:cn>
+		</m:apply>
+	      </m:uplimit>
+	      <m:lowlimit>
+	      <m:cn>0</m:cn>
+	      </m:lowlimit>
+	      <m:apply>
+		<m:times/>
+		<m:apply>
+		  <m:ci type="fn">x</m:ci>
+		  <m:ci>n</m:ci>
+		</m:apply>
+		<m:apply>
+		  <m:exp/>
+		  <m:apply>
+		    <m:minus/>
+		    <m:apply>
+		      <m:times/>
+		      <m:imaginaryi/>
+		      <m:apply>
+			<m:divide/>
+			<m:apply>
+			  <m:times/>
+			  <m:cn>2</m:cn>
+			  <m:pi/>
+			  <m:ci>n</m:ci>
+			  <m:ci>k</m:ci>
+			</m:apply>
+			<m:ci>N</m:ci>
+		      </m:apply>
+		    </m:apply>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+	    </m:apply>
+	  </m:apply>
+	</m:math>
+      </equation>
+      The DFT is widely used in part because it can be computed very efficiently using <link document="col10281">fast Fourier transform (FFT)</link> algorithms.</para>
+    </section>
+    <section id="idp9266464">
+      <title>IDFT</title>
+      <para id="element-32">The inverse DFT (IDFT) transforms <m:math><m:ci>N</m:ci></m:math> discrete-frequency samples to the same number of discrete-time samples.
+The IDFT has a form very similar to the DFT,
+        <equation id="IDFTequation">
+	<m:math display="block">
+	  <m:apply>
+	    <m:eq/>
+	    <m:apply>
+	      <m:ci type="fn">x</m:ci>
+	      <m:ci>n</m:ci>
+	    </m:apply>
+	    <m:apply>
+	      <m:times/>
+	      <m:apply>
+		<m:divide/>
+		<m:cn>1</m:cn>
+		<m:ci>N</m:ci>
+	      </m:apply>
+	      <m:apply>
+		<m:sum/>
+		<m:bvar>
+		  <m:ci>k</m:ci>
+		</m:bvar>
+		<m:uplimit>
+		  <m:apply>
+		    <m:minus/>
+		    <m:ci>N</m:ci>
+		    <m:cn>1</m:cn>
+		  </m:apply>
+		</m:uplimit>
+		<m:lowlimit>
+		  <m:cn>0</m:cn>
+		</m:lowlimit>
+		<m:apply>
+		  <m:times/>
+		  <m:apply>
+		    <m:ci type="fn">X</m:ci>
+		    <m:ci>k</m:ci>
+		  </m:apply>
+		  <m:apply>
+		    <m:exp/>
+		    <m:apply>
+		      <m:times/>
+		      <m:imaginaryi/>
+		      <m:apply>
+			<m:divide/>
+			<m:apply>
+			  <m:times/>
+			  <m:cn>2</m:cn>
+			  <m:pi/>
+			  <m:ci>n</m:ci>
+			  <m:ci>k</m:ci>
+			</m:apply>
+			<m:ci>N</m:ci>
+		      </m:apply>
+		    </m:apply>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+	    </m:apply>
+	  </m:apply>
+	</m:math>
+        </equation>
+      and can thus also be computed efficiently using <link document="col10281">FFTs</link>.</para>
+    </section>
+  <section id="idp9688368">
+    <title>DFT and IDFT properties</title>
+    <section id="idp9450528">
+      <title>Periodicity</title>
+      <para id="element-38">Due to the <m:math><m:ci>N</m:ci></m:math>-sample periodicity of the complex exponential basis functions
+                <m:math>
+                  <m:apply>
+		    <m:exp/>
+		    <m:apply>
+		      <m:times/>
+		      <m:imaginaryi/>
+		      <m:apply>
+			<m:divide/>
+			<m:apply>
+			  <m:times/>
+			  <m:cn>2</m:cn>
+			  <m:pi/>
+			  <m:ci>n</m:ci>
+			  <m:ci>k</m:ci>
+			</m:apply>
+			<m:ci>N</m:ci>
+		      </m:apply>
+		    </m:apply>
+		  </m:apply>
+                </m:math>
+in the DFT and IDFT, the resulting transforms are also periodic with <m:math><m:ci>N</m:ci></m:math> samples.</para><para id="para3">
+	<m:math display="block">
+	  <m:apply>
+	    <m:eq/>
+	    <m:apply>
+	      <m:ci type="fn">X</m:ci>
+	      <m:apply>
+		<m:plus/>
+		<m:ci>k</m:ci>
+		<m:ci>N</m:ci>
+	      </m:apply>
+	    </m:apply>
+	    <m:apply>
+	      <m:ci type="fn">X</m:ci>
+	      <m:ci>k</m:ci>
+	    </m:apply>
+	  </m:apply>
+	</m:math>
+	<m:math display="block">
+	  <m:apply>
+	    <m:eq/>
+	    <m:apply>
+	      <m:ci type="fn">x</m:ci>
+	      <m:ci>n</m:ci>
+	    </m:apply>
+	    <m:apply>
+	      <m:ci type="fn">x</m:ci>
+	      <m:apply>
+		<m:plus/>
+		<m:ci>n</m:ci>
+		<m:ci>N</m:ci>
+	      </m:apply>
+	    </m:apply>
+	  </m:apply>
+	</m:math>
+      </para>
+    </section>
+    <section id="idm36304">
+      <title>Circular Shift</title>
+      <para id="element-337">A shift in time corresponds to a phase shift that is linear in frequency.
+Because of the periodicity induced by the DFT and IDFT, the shift is <emphasis>circular</emphasis>, or modulo <m:math><m:ci>N</m:ci></m:math> samples.</para><para id="para4"><m:math display="block">
+	  <m:apply>
+	    <m:mo></m:mo>
+	    <m:apply>
+	      <m:ci type="fn">x</m:ci>
+	      <m:apply>
+		<m:rem/>
+		<m:apply>
+		  <m:minus/>
+		  <m:ci>n</m:ci>
+		  <m:ci>m</m:ci>
+		</m:apply>
+		<m:ci>N</m:ci>
+	      </m:apply>
+	    </m:apply>
+	    <m:apply>
+	      <m:times/>
+	      <m:apply>
+		<m:ci type="fn">X</m:ci>
+		<m:ci>k</m:ci>
+	      </m:apply>
+	      <m:apply>
+		<m:exp/>
+		<m:apply>
+		  <m:minus/>
+		  <m:apply>
+		    <m:times/>
+		    <m:imaginaryi/>
+		    <m:apply>
+		      <m:divide/>
+		      <m:apply>
+			<m:times/>
+			<m:cn>2</m:cn>
+			<m:pi/>
+			<m:ci>k</m:ci>
+			<m:ci>m</m:ci>
+		      </m:apply>
+		      <m:ci>N</m:ci>
+		    </m:apply>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+	    </m:apply>
+	  </m:apply>
+	</m:math>
+	The modulus operator
+	<m:math>
+	  <m:apply>
+	    <m:rem/>
+	    <m:ci>p</m:ci>
+	    <m:ci>N</m:ci>
+	  </m:apply>
+	</m:math> means the <emphasis>remainder</emphasis> of
+	<m:math><m:ci>p</m:ci></m:math> when divided by
+	<m:math><m:ci>N</m:ci></m:math>.
+        For example,
+	<m:math display="block">
+	  <m:apply>
+	    <m:eq/>
+	    <m:apply>
+	      <m:rem/>
+	      <m:cn>9</m:cn>
+	      <m:cn>5</m:cn>
+	    </m:apply>
+	    <m:cn>4</m:cn>
+	  </m:apply>
+	</m:math>
+        and
+	<m:math display="block">
+	  <m:apply>
+	    <m:eq/>
+	    <m:apply>
+	      <m:rem/>
+	      <m:cn>-1</m:cn>
+	      <m:cn>5</m:cn>
+	    </m:apply>
+	    <m:cn>4</m:cn>
+	  </m:apply>
+	</m:math>
+      </para>
+    </section>
+    <section id="idm658272">
+      <title>Time Reversal</title>
+      <para id="para5"><m:math display="block">
+	  <m:apply>
+	    <m:mo></m:mo>
+	    <m:apply>
+	      <m:eq/>
+	      <m:apply>
+		<m:ci type="fn">x</m:ci>
+		<m:apply>
+		  <m:rem/>
+		  <m:apply>
+		    <m:minus/>
+		    <m:ci>n</m:ci>
+		  </m:apply>
+		  <m:ci>N</m:ci>
+		</m:apply>
+	      </m:apply>
+	      <m:apply>
+		<m:ci type="fn">x</m:ci>
+		<m:apply>
+		  <m:rem/>
+		  <m:apply>
+		    <m:minus/>
+		    <m:ci>N</m:ci>
+		    <m:ci>n</m:ci>
+		  </m:apply>
+		  <m:ci>N</m:ci>
+		</m:apply>
+	      </m:apply>
+	    </m:apply>
+	    <m:apply>
+	      <m:eq/>
+	      <m:apply>
+		<m:ci type="fn">X</m:ci>
+		<m:apply>
+		  <m:rem/>
+		  <m:apply>
+		    <m:minus/>
+		    <m:ci>N</m:ci>
+		    <m:ci>k</m:ci>
+		  </m:apply>
+		  <m:ci>N</m:ci>
+		</m:apply>
+	      </m:apply>
+	      <m:apply>
+		<m:ci type="fn">X</m:ci>
+		<m:apply>
+		  <m:rem/>
+		  <m:apply>
+		    <m:minus/>
+		    <m:ci>k</m:ci>
+		  </m:apply>
+		  <m:ci>N</m:ci>
+		</m:apply>
+	      </m:apply>
+	    </m:apply>
+	  </m:apply>
+	</m:math>
+	Note: time-reversal maps
+	<m:math>
+	  <m:apply>
+	    <m:mo></m:mo>
+	    <m:cn>0</m:cn>
+	    <m:cn>0</m:cn>
+	  </m:apply>
+	</m:math>,
+	<m:math>
+	  <m:apply>
+	    <m:mo></m:mo>
+	    <m:cn>1</m:cn>
+	    <m:apply>
+	      <m:minus/>
+	      <m:ci>N</m:ci>
+	      <m:cn>1</m:cn>
+	    </m:apply>
+	  </m:apply>
+	</m:math>,
+	<m:math>
+	  <m:apply>
+	    <m:mo></m:mo>
+	    <m:cn>2</m:cn>
+	    <m:apply>
+	      <m:minus/>
+	      <m:ci>N</m:ci>
+	      <m:cn>2</m:cn>
+	    </m:apply>
+	  </m:apply>
+	</m:math>, etc. as illustrated in the figure below.
+      </para>
+      <figure id="fig1" orient="horizontal"><subfigure id="idm396576">
+          <media id="idp11580848" alt=""><image src="../../media/image1-67ad.png" mime-type="image/png"/><image for="pdf" src="../../media/DFTPropfig1.eps" mime-type="application/postscript"/></media>
+        <caption>Original signal</caption>
+	</subfigure>
+	<subfigure id="idp13492080">
+          <media id="idp13492336" alt=""><image src="../../media/image2-6fde.png" mime-type="image/png"/><image for="pdf" src="../../media/DFTPropfig2.eps" mime-type="application/postscript"/></media>
+        <caption>Time-reversed</caption>
+	</subfigure>
+      <caption>Illustration of circular time-reversal</caption></figure>
+    </section>
+
+    <section id="idp7722752">
+      <title>Complex Conjugate</title>
+      <para id="para6">
+	<m:math display="block">
+	  <m:apply>
+	    <m:mo></m:mo>
+	    <m:apply>
+	      <m:conjugate/>
+	      <m:apply>
+		<m:ci type="fn">x</m:ci>
+		<m:ci>n</m:ci>
+	      </m:apply>
+	    </m:apply>
+	    <m:apply>
+	      <m:conjugate/>
+	      <m:apply>
+		<m:ci type="fn">X</m:ci>
+		<m:apply>
+		  <m:rem/>
+		  <m:apply>
+		    <m:minus/>
+		    <m:ci>k</m:ci>
+		  </m:apply>
+		  <m:ci>N</m:ci>
+		</m:apply>
+	      </m:apply>
+	    </m:apply>
+	  </m:apply>
+	</m:math>
+      </para>
+    </section>
+
+    <section id="idp12683984">
+      <title>Circular Convolution Property</title>
+      <para id="para8">
+        Circular convolution is defined as
+	<m:math display="block">
+	  <m:apply>
+	    <m:mo>≐</m:mo>
+	    <m:apply>
+	      <m:csymbol definitionURL="http://cnx.rice.edu/cd/cnxmath.ocd#convolve"/>
+	      <m:apply>
+		<m:ci type="fn">x</m:ci>
+		<m:ci>n</m:ci>
+	      </m:apply>
+	      <m:apply>
+		<m:ci type="fn">h</m:ci>
+		<m:ci>n</m:ci>
+	      </m:apply>
+	    </m:apply>
+	    <m:apply>
+	      <m:sum/>
+	      <m:bvar>
+		<m:ci>m</m:ci>
+	      </m:bvar>
+	      <m:uplimit>
+		<m:apply>
+		  <m:minus/>
+		  <m:ci>N</m:ci>
+		  <m:cn>1</m:cn>
+		</m:apply>
+	      </m:uplimit>
+	      <m:lowlimit>
+		<m:cn>0</m:cn>
+	      </m:lowlimit>
+	      <m:apply>
+		<m:times/>
+		<m:apply>
+		  <m:ci type="fn">x</m:ci>
+		  <m:ci>m</m:ci>
+		</m:apply>
+		<m:apply>
+		  <m:ci type="fn">x</m:ci>
+		  <m:apply>
+		    <m:rem/>
+		    <m:apply>
+		      <m:minus/>
+		      <m:ci>n</m:ci>
+		      <m:ci>m</m:ci>
+		    </m:apply>
+		    <m:ci>N</m:ci>
+		  </m:apply>
+		</m:apply>
+	      </m:apply>
+	    </m:apply>
+	  </m:apply>
+	</m:math>
+      </para>
+      <para id="para10">
+      Circular convolution of two discrete-time signals corresponds
+      to multiplication of their DFTs:
+	<m:math display="block">
+	  <m:apply>
+	    <m:mo></m:mo>
+	    <m:apply>
+	      <m:csymbol definitionURL="http://cnx.rice.edu/cd/cnxmath.ocd#convolve"/>
+	      <m:apply>
+		<m:ci type="fn">x</m:ci>
+		<m:ci>n</m:ci>
+	      </m:apply>
+	      <m:apply>
+		<m:ci type="fn">h</m:ci>
+		<m:ci>n</m:ci>
+	      </m:apply>
+	    </m:apply>
+	    <m:apply>
+	      <m:times/>
+	      <m:apply>
+		<m:ci type="fn">X</m:ci>
+		<m:ci>k</m:ci>
+	      </m:apply>
+	      <m:apply>
+		<m:ci type="fn">H</m:ci>
+		<m:ci>k</m:ci>
+	      </m:apply>
+	    </m:apply>
+	  </m:apply>
+	</m:math>
+      </para>
+    </section>
+    <section id="idp9340992">
+      <title>Multiplication Property</title>
+      <para id="para11">
+        A similar property relates multiplication in time to circular convolution in frequency.
+	<m:math display="block">
+	  <m:apply>
+	    <m:mo></m:mo>
+	    <m:apply>
+	      <m:times/>
+	      <m:apply>
+		<m:ci type="fn">x</m:ci>
+		<m:ci>n</m:ci>
+	      </m:apply>
+	      <m:apply>
+		<m:ci type="fn">h</m:ci>
+		<m:ci>n</m:ci>
+	      </m:apply>
+	    </m:apply>
+	    <m:apply>
+	      <m:times/>
+	      <m:apply>
+		<m:divide/>
+		<m:cn>1</m:cn>
+		<m:ci>N</m:ci>
+	      </m:apply>
+	      <m:apply>
+		<m:csymbol definitionURL="http://cnx.rice.edu/cd/cnxmath.ocd#convolve"/>
+		<m:apply>
+		  <m:ci type="fn">X</m:ci>
+		  <m:ci>k</m:ci>
+		</m:apply>
+		<m:apply>
+		  <m:ci type="fn">H</m:ci>
+		  <m:ci>k</m:ci>
+		</m:apply>
+	      </m:apply>
+	    </m:apply>
+	  </m:apply>
+	</m:math>
+      </para>
+    </section>
+
+    <section id="idm693472">
+      <title>Parseval's Theorem</title>
+      <para id="para11a">Parseval's theorem relates the energy of a length-<m:math><m:ci>N</m:ci></m:math> discrete-time signal (or one period) to the energy of its DFT.
+	<m:math display="block">
+	  <m:apply>
+	    <m:eq/>
+	    <m:apply>
+	      <m:sum/>
+	      <m:bvar>
+		<m:ci>n</m:ci>
+	      </m:bvar>
+	      <m:uplimit>
+		<m:apply>
+		  <m:minus/>
+		  <m:ci>N</m:ci>
+		  <m:cn>1</m:cn>
+		</m:apply>
+	      </m:uplimit>
+	      <m:lowlimit>
+		<m:cn>0</m:cn>
+	      </m:lowlimit>
+	      <m:apply>
+		<m:power/>
+		<m:apply>
+		  <m:abs/>
+		  <m:apply>
+		    <m:ci type="fn">x</m:ci>
+		    <m:ci>n</m:ci>
+		  </m:apply>
+		</m:apply>
+		<m:cn>2</m:cn>
+	      </m:apply>
+	    </m:apply>
+	    <m:apply>
+	      <m:times/>
+	      <m:apply>
+		<m:divide/>
+		<m:cn>1</m:cn>
+		<m:ci>N</m:ci>
+	      </m:apply>
+	      <m:apply>
+		<m:sum/>
+              <m:bvar>
+		<m:ci>k</m:ci>
+	      </m:bvar>
+	      <m:uplimit>
+		<m:apply>
+		  <m:minus/>
+		  <m:ci>N</m:ci>
+		  <m:cn>1</m:cn>
+		</m:apply>
+	      </m:uplimit>
+	      <m:lowlimit>
+		<m:cn>0</m:cn>
+	      </m:lowlimit>
+		<m:apply>
+		  <m:power/>
+		  <m:apply>
+		    <m:abs/>
+		    <m:apply>
+		      <m:ci type="fn">X</m:ci>
+		      <m:ci>k</m:ci>
+		    </m:apply>
+		  </m:apply>
+		  <m:cn>2</m:cn>
+		</m:apply>
+	      </m:apply>
+	    </m:apply>
+	  </m:apply>
+	</m:math>
+      </para>
+    </section>
+
+    <section id="idp13099456">
+      <title>Symmetry</title>
+      <para id="para12">
+	The <link document="m10098">continuous-time Fourier transform</link>,
+        the <link document="m12032" target-id="DTFTequation">DTFT</link>,
+        and <link document="m12032" target-id="DFTequation">DFT</link> are all
+        defined as transforms of complex-valued
+	data to complex-valued spectra.  However, in practice signals are
+	often real-valued.
+        The DFT of a real-valued discrete-time signal has a special symmetry,
+        in which the real part of the transform values are
+        <term>DFT even symmetric</term> and the imaginary part is
+        <term>DFT odd symmetric</term>, as illustrated in the equation and 
+        figure below.
+      </para>
+      <para id="para13"><m:math>
+	  <m:apply>
+	    <m:ci type="fn">x</m:ci>
+	    <m:ci>n</m:ci>
+	  </m:apply>
+	</m:math> real 
+	<m:math>
+	  <m:apply>
+	    <m:eq/>
+	    <m:apply>
+	      <m:ci type="fn">X</m:ci>
+	      <m:ci>k</m:ci>
+	    </m:apply>
+	    <m:apply>
+	      <m:conjugate/>
+	      <m:apply>
+		<m:ci type="fn">X</m:ci>
+		<m:apply>
+		  <m:rem/>
+		  <m:apply>
+		    <m:minus/>
+		    <m:ci>N</m:ci>
+		    <m:ci>k</m:ci>
+		  </m:apply>
+		  <m:ci>N</m:ci>
+		</m:apply>
+	      </m:apply>
+	    </m:apply>
+	  </m:apply>
+	</m:math> 
+	(This implies 
+	<m:math>
+	  <m:apply>
+	    <m:ci type="fn">X</m:ci>
+	    <m:cn>0</m:cn>
+	  </m:apply>
+	</m:math>,
+	<m:math>
+	  <m:apply>
+	    <m:ci type="fn">X</m:ci>
+	    <m:apply>
+	      <m:divide/>
+	      <m:ci>N</m:ci>
+	      <m:cn>2</m:cn>
+	    </m:apply>
+	  </m:apply>
+	</m:math> are real-valued.)
+      </para>
+      <figure id="fig2" orient="vertical">
+	<subfigure id="idp9094544">
+	  <title>Real part of X(k) is even</title>
+          <media id="idp667152" alt=""><image src="../../media/image3-7237.png" mime-type="image/png"/><image for="pdf" src="../../media/DFTPropfig3.eps" mime-type="application/postscript"/></media>
+	  <caption>Even-symmetry in DFT sense</caption>
+	</subfigure>
+	<subfigure id="idp9707120">
+	  <title>Imaginary part of X(k) is odd</title>
+	  <media id="idp7512016" alt=""><image src="../../media/image4-ce0e.png" mime-type="image/png"/><image for="pdf" src="../../media/DFTPropfig4.eps" mime-type="application/postscript"/></media>
+	  <caption>Odd-symmetry in DFT sense</caption>
+	</subfigure>
+        <caption>DFT symmetry of real-valued signal</caption>
+      </figure>
+	  
+    </section>
+  </section>
+  </content>
+  
+</document>
