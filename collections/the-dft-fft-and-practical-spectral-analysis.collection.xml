@@ -1,12 +1,13 @@
-<col:collection xmlns="http://cnx.rice.edu/collxml" xmlns:md="http://cnx.rice.edu/mdml" xmlns:col="http://cnx.rice.edu/collxml" xml:lang="en">
+<?xml version="1.0"?>
+<col:collection xmlns="http://cnx.rice.edu/collxml" xmlns:md="http://cnx.rice.edu/mdml" xmlns:col="http://cnx.rice.edu/collxml" xml:lang="en" authors="Douglas L. Jones">
   <metadata xmlns:md="http://cnx.rice.edu/mdml" mdml-version="0.5">
     <md:content-id>col10281</md:content-id>
     <md:title>The DFT, FFT, and Practical Spectral Analysis</md:title>
     <md:language>en</md:language>
     <md:license url="http://creativecommons.org/licenses/by/1.0">Creative Commons Attribution License</md:license>
     <md:uuid>d2c6d393-3590-403d-8a18-c892055b046b</md:uuid>
-<md:slug>the-dft-fft-and-practical-spectral-analysis</md:slug>
-</metadata>
+    <md:slug>the-dft-fft-and-practical-spectral-analysis</md:slug>
+  </metadata>
   <col:content>
     <col:subcollection>
       <md:title>The Discrete Fourier Transform</md:title>
